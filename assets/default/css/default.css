@@ -7,9 +7,9 @@
 .breadcrumb-container a:last-child::after{content:"";}
 
 table.dataTable{}
-table.dataTable thead.search{}
-table.dataTable thead.search th{}
-table.dataTable thead.search th input,table.dataTable thead.search th select,
+table.dataTable .thead-search{}
+table.dataTable .thead-search th{}
+table.dataTable .thead-search th input,table.dataTable .thead-search th select,
 table.dataTable tr.tr-edit input,table.dataTable tr.tr-edit select,
 table.dataTable tr.tr-add input,table.dataTable tr.tr-add select{
     width: 100%;

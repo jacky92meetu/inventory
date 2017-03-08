@@ -17,7 +17,7 @@ class lensesStores extends lensesMain{
         $this->table = "stores";
         $this->title = "Stores";
         $this->selected_menu = "stores";
-        $this->custom_form = false;
+        $this->custom_form = true;
         
         $account_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM accounts ORDER BY name'))){
@@ -43,18 +43,40 @@ class lensesStores extends lensesMain{
         $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Name','editable'=>true,'goto'=>base_url('/store_item')),array('id'=>'account_id','name'=>'Account','editable'=>true,'option_text'=>$account_list),array('id'=>'marketplace_id','name'=>'Market Place','editable'=>true,'option_text'=>$market_list),array('id'=>'warehouse_id','name'=>'Warehouse','editable'=>true,'option_text'=>$warehouse_list),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Normal','1'=>'Defected')));
     }
     
-    function ajax_save(){
-        $result = parent::ajax_save();
+    function ajax_custom_form(){
+        if(strlen($this->CI->input->post('id',true))>0 && $this->CI->input->post('id',true)>0){
+            $account_list = array();
+            if(($result = $this->CI->db->query('SELECT id,name FROM accounts ORDER BY name'))){
+                foreach($result->result_array() as $value){
+                    $account_list[$value['id']] = $value['name'];
+                }
+            }
+            $market_list = array();
+            if(($result = $this->CI->db->query('SELECT id,name FROM marketplaces ORDER BY name'))){
+                foreach($result->result_array() as $value){
+                    $market_list[$value['id']] = $value['name'];
+                }
+            }
+            $data = array(array('id'=>'id','name'=>'ID','readonly'=>'1'),array('id'=>'name','name'=>'Name'),array('id'=>'account_id','name'=>'Account','editable'=>true,'option_text'=>$account_list),array('id'=>'marketplace_id','name'=>'Market Place','editable'=>true,'option_text'=>$market_list),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Normal','1'=>'Defected')));
+            return parent::ajax_custom_form($data);
+        }
+        return parent::ajax_custom_form();
+    }
+    
+    function ajax_custom_form_save(){
+        $result = parent::ajax_custom_form_save();
         if($result['status']=='1' && isset($result['record_id'])){
             $rate = 1;
-            if(($result2 = $this->CI->db->query('SELECT b.currency FROM stores a, marketplaces b WHERE a.id="'.$result['record_id'].'" and a.marketplace_id=b.id LIMIT 1')) && ($row = $result2->row_array())){
+            $warehouse_id = 0;
+            if(($result2 = $this->CI->db->query('SELECT a.warehouse_id,b.currency FROM stores a, marketplaces b WHERE a.id="'.$result['record_id'].'" and a.marketplace_id=b.id LIMIT 1')) && ($row = $result2->row_array())){
                 $rate = $this->get_rate($row['currency']);
+                $warehouse_id = $row['warehouse_id'];
             }
             $sql = 'insert into store_item(store_id,warehouse_item_id,store_skucode,selling_price,expire_date)
                 select "'.$result['record_id'].'",d.id,concat(a.code,"-",c.code) skucode,(ifnull(d.selling_price,0) * '.$rate.'),ifnull(d.expire_date,"0000-00-00") from products a
                 join options b on a.option_id=b.id
                 join option_item c on a.option_id=c.option_id
-                join warehouse_item d on d.product_id=a.id and item_id=c.id
+                join warehouse_item d on d.product_id=a.id and item_id=c.id and d.warehouse_id="'.$warehouse_id.'"
                 left join store_item e on d.id=e.warehouse_item_id and e.store_id="'.$result['record_id'].'"
                 where e.id is null ORDER BY a.id,c.id';
             $this->CI->db->query($sql);

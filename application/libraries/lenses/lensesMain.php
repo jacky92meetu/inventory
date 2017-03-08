@@ -255,11 +255,17 @@ class lensesMain{
                 }
             }
         }
-        foreach($data as &$d){
+        $temp = array();
+        foreach($data as $d){
             if($d['is_date']=='1' && empty($d['value'])){
                 $d['value'] = date("d/m/Y");
             }
+            if(!isset($d['value'])){
+                $d['value'] = '';
+            }
+            $temp[$d['id']] = $d;
         }
+        $data = $temp;
         
         if(strlen($this->CI->input->post('id',true))>0 && $this->CI->input->post('id',true)>0){
             $sql = 'SELECT * FROM '.$this->table;
@@ -684,20 +690,32 @@ select w.id,a.id,c.id item_id,0,concat(a.code,"-",c.code) skucode from warehouse
         $this->CI->db->query($sql);
 
         //update stores
-        $sql = 'SELECT a.id,b.currency FROM stores a, marketplaces b WHERE a.marketplace_id=b.id';
+        $sql = 'SELECT a.id,a.warehouse_id,b.currency FROM stores a, marketplaces b WHERE a.marketplace_id=b.id';
         if(($result2 = $this->CI->db->query($sql)) && $result2->num_rows()){
             foreach($result2->result_array() as $row){
                 $rate = $this->get_rate($row['currency']);
                 $store_id = $row['id'];
+                $warehouse_id = $row['warehouse_id'];
+                
                 $sql = 'insert into store_item(store_id,warehouse_item_id,store_skucode,selling_price,expire_date)
                     select "'.$store_id.'",d.id,concat(a.code,"-",c.code) skucode,(ifnull(d.selling_price,0) * '.$rate.'),ifnull(d.expire_date,"0000-00-00") from products a
                     join options b on a.option_id=b.id
                     join option_item c on a.option_id=c.option_id
-                    join warehouse_item d on d.product_id=a.id and item_id=c.id
+                    join warehouse_item d on d.product_id=a.id and item_id=c.id and d.warehouse_id="'.$warehouse_id.'"
                     left join store_item e on d.id=e.warehouse_item_id and e.store_id="'.$store_id.'"
                     where e.id is null ORDER BY a.id,c.id';
                 $this->CI->db->query($sql);
             }
         }
+    }
+    
+    function maintain_store(){
+        $sql = 'UPDATE store_item a,stores b,warehouse_item c,warehouse_item d
+                SET a.warehouse_item_id=d.id
+                WHERE a.store_id=b.id 
+                and a.warehouse_item_id=c.id 
+                and d.product_id=c.product_id and d.item_id=c.item_id and d.warehouse_id=b.warehouse_id
+                and a.warehouse_item_id<>d.id';
+        $this->CI->db->query($sql);
     }
 }

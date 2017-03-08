@@ -21,8 +21,7 @@ class lensesSalesEntry extends lensesMain{
         $this->is_required = false;
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Save Transactions','url'=>base_url('ajax/sales_entry?method=save_transactions'));
-        $this->custom_form = false;
-        $this->add_btn = 'custom_form';
+        $this->custom_form = true;
         $this->ajax_url = base_url('ajax/sales_entry');
         $this->search_query = 'select * from (select a.id
             , b.name account_name
@@ -199,7 +198,8 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $return = parent::ajax_change_update($filter_list);
         $quantity_list = array('0'=>'0');
         if($return['status']=='1' && !empty($return['data']['store_item_id']['value'])){
-            $temp = $this->get_available_quantity($return['data']['store_item_id']['value']);
+            //$temp = $this->get_available_quantity($return['data']['store_item_id']['value']);
+            $temp = 99;
             if($temp>0){
                 $quantity_list = array();
                 for($i=1; $i<=min(100,$temp); $i++){
@@ -220,11 +220,13 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
                 //check available store_item_id
                 $store_item_id = $row['store_item_id'];
                 $quantity = $row['quantity'];
+                /*
                 $temp = $this->get_available_quantity($store_item_id,true);
                 if($quantity>$temp){
                     $this->CI->cmessage->set_message_url('Row no. '.$row['id'].' - Insufficient quantity.','error','/sales_entry');
                     continue;
                 }
+                */
                 $col_list = array();
                 foreach($row as $field => $v){
                     if(strtolower($field)!='id' && isset($row[$field])){

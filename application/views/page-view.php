@@ -8,19 +8,23 @@
 */ ?>
 <link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/media/css/dataTables.bootstrap.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/FixedColumns/css/fixedColumns.bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/FixedHeader/css/fixedHeader.bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/Responsive/css/responsive.bootstrap.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/css/select.dataTables.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css" />
 
 <div class="panel">
     <div class="panel-body">
+        <?php /*
         <div class="row">
             <div class="col-xs-12">
                 <h4 class="page-title"><b><?php echo $this->CI->cpage->template_data['view_title']; ?></b></h4>
             </div>
         </div>
+        */ ?>
         <div class="row">
             <div class="col-xs-6">
-                <?php if($this->cpage->template_data['add_btn']){ $is_custom = ($this->cpage->template_data['add_btn']=='custom_form')?"true":"false"; ?>
+                <?php if($this->cpage->template_data['add_btn']){ $is_custom = ($this->cpage->template_data['add_btn']==='custom_form')?"true":"false"; ?>
                 <span class="">
                     <button id="addToTable" class="btn btn-primary waves-effect waves-light" onclick="data_edit(null,'new',<?php echo $is_custom; ?>)">Add <i class="fa fa-lg fa-plus"></i></button>
                 </span>
@@ -48,10 +52,10 @@
         <br />
         <div class="row">
             <div class="col-xs-12">
-                <div class="table-responsive">
+                <div class="">
 
                     <table id="datatable-editable" class="dataTable table table-striped table-bordered table-hover <?php echo ((isset($this->cpage->template_data['custom_form']) && $this->cpage->template_data['custom_form'])?"custom_form":""); ?>" width="100%">
-                        <?php /*
+                        
                         <thead>
                             <tr>
                                 <th width="10">No.</th>
@@ -61,16 +65,9 @@
                                 <th width="10">Actions</th>
                             </tr>
                         </thead>
-                        */ ?>
-                        <style>
-                            table.dataTable thead.search th{position:relative;vertical-align:top !important;padding-top:30px;}
-                            table.dataTable thead.search .sorting:after, table.dataTable thead.search .sorting_asc:after, table.dataTable thead.search .sorting_desc:after{top: 0;margin-top: 30px;}
-                            .DTFC_LeftHeadWrapper table.dataTable thead.search th input, .DTFC_LeftHeadWrapper table.dataTable thead.search th select,
-                            .dataTables_scrollHead table.dataTable thead.search th input, .dataTables_scrollHead table.dataTable thead.search th select{position: absolute;top: 0;left: 0;}
-                        </style>
-                        <thead class="search">
+                        <tfoot class="thead-search">
                             <tr>
-                                <th width="10">No.</th>
+                                <th width="10"></th>
                                 <?php $count=1;
                                     foreach ($this->cpage->template_data['view_header'] as $header) {
                                         $goto_url = "";
@@ -105,7 +102,6 @@
                                         if(isset($header['option_text'])){
                                 ?>
                                 <th class="<?php echo $class; ?>">
-                                    <?php echo $header['name']; ?> <br/>
                                     <select class="column_filter <?php echo $class2; ?>" data-column="<?php echo $count; ?>" name="<?php echo $header['id']; ?>" <?php echo $sorting; ?>>
                                         <option value=""><?php echo "Search ".$header['name']; ?></option>
                                         <?php foreach($header['option_text'] as $key => $value){ ?>
@@ -116,17 +112,16 @@
                                 <?php
                                         }else{
                                 ?>
-                                <th class="<?php echo $class; ?>" <?php echo $goto_url; ?>><?php echo $header['name']; ?> <br/><input type="text" class="column_filter <?php echo $class2; ?>" placeholder="<?php echo "Search ".$header['name']; ?>" data-column="<?php echo $count; ?>" name="<?php echo $header['id']; ?>" value="<?php echo $search_get; ?>" <?php echo $sorting; ?>></th>
+                                <th class="<?php echo $class; ?>" <?php echo $goto_url; ?>><input type="text" class="column_filter <?php echo $class2; ?>" placeholder="<?php echo "Search ".$header['name']; ?>" data-column="<?php echo $count; ?>" name="<?php echo $header['id']; ?>" value="<?php echo $search_get; ?>" <?php echo $sorting; ?>></th>
                                 <?php   } 
                                         $count+=1;
                                     }
                                 ?>
                                 <th width="10">
-                                    Actions <br/>
                                     <button class="resetFilter btn btn-warning waves-effect waves-light"><i class="fa fa-lg fa-refresh"></i></button>
                                 </th>
                             </tr>
-                        </thead>
+                        </tfoot>
                         <tbody>
                             <?php 
                             foreach ($this->cpage->template_data['view_contents'] as $data) { 
@@ -234,6 +229,8 @@
 <script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/media/js/jquery.dataTables.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/media/js/dataTables.bootstrap.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/FixedColumns/js/dataTables.fixedColumns.min.js"></script>
+<script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/FixedHeader/js/dataTables.fixedHeader.min.js"></script>
+<script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/Responsive/js/dataTables.responsive.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/dataTables.select.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/action.js"></script>
@@ -368,7 +365,7 @@
                 var tr = $(obj).closest('tr');
                 var clone = tr.clone();
             }else{
-                var size = $('.dataTable').find('thead.search th').length;
+                var size = $('.dataTable').find('.thead-search th').length;
                 var clone = $('<tr></tr>');
                 for(var i = 0; i<size; i++){
                     $('<td></td>').appendTo(clone);
@@ -382,8 +379,8 @@
             var count = 0;
             var has_ajax = false;
             clone.find('td').each(function(){
-                if($('.dataTable').find('thead.search th:eq('+count+').editable .column_filter').length){
-                    var filter = $('.dataTable').find('thead.search th:eq('+count+') .column_filter');
+                if($('.dataTable').find('.thead-search th:eq('+count+').editable .column_filter').length){
+                    var filter = $('.dataTable').find('.thead-search th:eq('+count+') .column_filter');
                     var input = $('<input value="" required />');
                     if(id>0){
                         input.val($(this).attr('data-search'));
@@ -392,7 +389,7 @@
                         input.addClass('.datepicker-autoclose');
                         set_date(input);
                     }else if(filter.is('select')){
-                        var input = $('.dataTable').find('thead.search th:eq('+count+') select.column_filter').clone().removeClass('column_filter');
+                        var input = $('.dataTable').find('.thead-search th:eq('+count+') select.column_filter').clone().removeClass('column_filter');
                         input.find('option[value=""]').remove();
                         if(id>0){
                             input.find('option:contains("'+$(this).html()+'")').attr('selected','selected');
@@ -631,21 +628,23 @@
             var filter_sorting = [[ 1, "asc" ]];
             var obj = $(this);
 
-            if(obj.find('thead.search th .column_filter[filter-sorting]').length){
-                var t = obj.find('thead.search th .column_filter[filter-sorting]');
+            if(obj.find('.thead-search th .column_filter[filter-sorting]').length){
+                var t = obj.find('.thead-search th .column_filter[filter-sorting]');
                 filter_sorting = [[ t.attr('data-column'), t.attr('filter-sorting') ]];
             }
 
             var table = obj.on( 'init.dt', function () {
-                    $('.dataTables_scrollHead thead th').unbind('click.DT');
+                    
                 } ).DataTable({
                 //"stateSave": true,
-                //"fixedHeader": true,
+                "fixedHeader": {"header":true,"footer":true},
+                //"responsive": true,
                 //"select": true,
-                <?php if($this->cpage->template_data['freezePane']>0){ ?>
+                <?php if(false && $this->cpage->template_data['freezePane']>0){ ?>
                 "scrollX": true,
                 "scrollCollapse": true,
                 "fixedColumns": {
+                    "rightColumns": 1,
                     "leftColumns": <?php echo $this->cpage->template_data['freezePane']; ?>
                 },
                 <?php } ?>
@@ -662,14 +661,14 @@
                     $(row).attr('data-id',data[1]);
                     for(var i=0; i<data.length; i++){
                         var val = data[i];
-                        if(obj.find('thead.search th:eq('+i+')[data-goto]').length){
-                            $(row).find('td:eq('+i+')').html('<a href="'+obj.find('thead.search th:eq('+i+')[data-goto]').attr('data-goto')+'?id='+data[1]+'">'+val+'</a>');
-                        }else if(obj.find('thead.search th:eq('+i+')[custom-col]').length){
-                            $(row).find('td:eq('+i+')').html('<a href="javascript:void(0)" onclick="data_edit(this,\''+obj.find('thead.search th:eq('+i+')[custom-col]').attr('custom-col')+'\',true)">'+val+'</a>');
+                        if(obj.find('.thead-search th:eq('+i+')[data-goto]').length){
+                            $(row).find('td:eq('+i+')').html('<a href="'+obj.find('.thead-search th:eq('+i+')[data-goto]').attr('data-goto')+'?id='+data[1]+'">'+val+'</a>');
+                        }else if(obj.find('.thead-search th:eq('+i+')[custom-col]').length){
+                            $(row).find('td:eq('+i+')').html('<a href="javascript:void(0)" onclick="data_edit(this,\''+obj.find('.thead-search th:eq('+i+')[custom-col]').attr('custom-col')+'\',true)">'+val+'</a>');
                         }
                         $(row).find('td:eq('+i+')').attr('data-search',val).attr('data-order',val);
-                        if(obj.find('thead.search th:eq('+i+') select.column_filter option[value="'+val+'"]').length){
-                            $(row).find('td:eq('+i+')').html(obj.find('thead.search th:eq('+i+') select.column_filter option[value="'+val+'"]').text());
+                        if(obj.find('.thead-search th:eq('+i+') select.column_filter option[value="'+val+'"]').length){
+                            $(row).find('td:eq('+i+')').html(obj.find('.thead-search th:eq('+i+') select.column_filter option[value="'+val+'"]').text());
                         }
                     }
                     

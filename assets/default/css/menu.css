@@ -6,7 +6,7 @@ Email: coderthemes@gmail.com
 File: Menu
 */
 .wrapper {
-  margin-top: 145px;
+  margin-top: 80px;
 }
 #topnav {
   position: fixed;
@@ -264,23 +264,6 @@ File: Menu
   transition: -webkit-transform 0.5s ease;
   transition: transform .5s ease;
 }
-#topnav .navbar-toggle.open span {
-  position: absolute;
-}
-#topnav .navbar-toggle.open span:first-child {
-  top: 6px;
-  -webkit-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
-#topnav .navbar-toggle.open span:nth-child(2) {
-  visibility: hidden;
-}
-#topnav .navbar-toggle.open span:last-child {
-  width: 100%;
-  top: 6px;
-  -webkit-transform: rotate(-45deg);
-  transform: rotate(-45deg);
-}
 #topnav .navigation-menu {
   list-style: none;
   margin: 0;
@@ -429,10 +412,10 @@ File: Menu
     color: #949ba1;
   }
   #topnav .navbar-toggle {
-    display: none;
+    /* display: none; */
   }
   #topnav #navigation {
-    display: block !important;
+    display: none;
   }
 }
 @media (max-width: 991px) {

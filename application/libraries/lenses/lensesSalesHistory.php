@@ -124,6 +124,7 @@ class lensesSalesHistory extends lensesMain{
         //check available store_item_id
         $store_item_id = $this->CI->input->post('value[store_item_id]',true);
         $quantity = $this->CI->input->post('value[quantity]',true);
+        /*
         $temp = $this->get_available_quantity($store_item_id);
         if($id>0 && ($result = $this->CI->db->query('select quantity from transactions where id=? limit 1',$id)) && ($row = $result->row_array())){
             $quantity -= $row['quantity'];
@@ -132,7 +133,7 @@ class lensesSalesHistory extends lensesMain{
             $return['message'] = 'Insufficient quantity.';
             return $return;
         }
-        
+        */
         $col_list = array();
         $value = $this->CI->input->post('value',true);
         if(($temp = explode('/', $value['payment_date'])) && sizeof($temp)==3){
