@@ -255,6 +255,11 @@ class lensesMain{
                 }
             }
         }
+        foreach($data as &$d){
+            if($d['is_date']=='1' && empty($d['value'])){
+                $d['value'] = date("d/m/Y");
+            }
+        }
         
         if(strlen($this->CI->input->post('id',true))>0 && $this->CI->input->post('id',true)>0){
             $sql = 'SELECT * FROM '.$this->table;
