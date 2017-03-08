@@ -1,0 +1,31 @@
+.breadcrumb-container{
+    margin: 0 0 10px 0;
+}
+.breadcrumb-container a{}
+.breadcrumb-container a::after{content:" > ";padding:0 5px;}
+.breadcrumb-container a:last-child{color:#000;cursor:default;font-weight: bold;}
+.breadcrumb-container a:last-child::after{content:"";}
+
+table.dataTable{}
+table.dataTable thead.search{}
+table.dataTable thead.search th{}
+table.dataTable thead.search th input,table.dataTable thead.search th select,
+table.dataTable tr.tr-edit input,table.dataTable tr.tr-edit select,
+table.dataTable tr.tr-add input,table.dataTable tr.tr-add select{
+    width: 100%;
+    padding: 3px;
+    box-sizing: border-box;
+    line-height: 14px;
+    font-size: 14px;
+    color:#000;
+}
+table.dataTable tr.tr-edit td{
+    background-color: rgb(234, 175, 140);
+    /* color: #fff; */
+}
+table.dataTable tr.tr-add td{background-color: #1d7dca; color: #fff;}
+table.dataTable tr,table.dataTable td{cursor:default;}
+table.dataTable tbody tr.selected{
+    background-color: #d7dce5;
+}
+.dataTables_filter{display:none;}

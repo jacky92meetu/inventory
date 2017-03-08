@@ -1,0 +1,6 @@
+<Files ~ "\.(ini|htaccess|php|php5)$">
+order allow,deny
+deny from all
+</Files>
+Allow from all
+
