@@ -1,4 +1,6 @@
-<!-- DataTables -->
+<?php
+$editable = false;
+?>
 <?php /*
 <link href="<?php echo base_url('/assets/default'); ?>/plugins/datatables/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/plugins/datatables/buttons.bootstrap.min.css" rel="stylesheet" type="text/css" />
@@ -8,8 +10,7 @@
 */ ?>
 <link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/media/css/dataTables.bootstrap.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/FixedColumns/css/fixedColumns.bootstrap.min.css" rel="stylesheet" type="text/css" />
-<link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/FixedHeader/css/fixedHeader.bootstrap.min.css" rel="stylesheet" type="text/css" />
-<link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/Responsive/css/responsive.bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/Scroller/css/scroller.bootstrap.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/css/select.dataTables.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css" />
 
@@ -26,7 +27,7 @@
             <div class="col-xs-6">
                 <?php if($this->cpage->template_data['add_btn']){ $is_custom = ($this->cpage->template_data['add_btn']==='custom_form')?"true":"false"; ?>
                 <span class="">
-                    <button id="addToTable" class="btn btn-primary waves-effect waves-light" onclick="data_edit(null,'new',<?php echo $is_custom; ?>)">Add <i class="fa fa-lg fa-plus"></i></button>
+                    <button id="addToTable" class="btn btn-primary waves-effect waves-light" onclick="data_edit(null,'new',true)">Add <i class="fa fa-lg fa-plus"></i></button>
                 </span>
                 <?php } ?>
                 <?php if($this->cpage->template_data['delete_btn']){ ?>
@@ -57,16 +58,7 @@
                     <table id="datatable-editable" class="dataTable table table-striped table-bordered table-hover <?php echo ((isset($this->cpage->template_data['custom_form']) && $this->cpage->template_data['custom_form'])?"custom_form":""); ?>" width="100%">
                         
                         <thead>
-                            <tr>
-                                <th width="10">No.</th>
-                                <?php $count=1; foreach ($this->cpage->template_data['view_header'] as $header) { ?>
-                                    <th><?php echo $header['name']; ?></th>
-                                <?php $count+=1;} ?>
-                                <th width="10">Actions</th>
-                            </tr>
-                        </thead>
-                        <tfoot class="thead-search">
-                            <tr>
+                            <tr class="thead-search">
                                 <th width="10"></th>
                                 <?php $count=1;
                                     foreach ($this->cpage->template_data['view_header'] as $header) {
@@ -81,6 +73,7 @@
                                         }
                                         if(isset($header['editable'])){
                                             $class .= " editable";
+                                            $editable = true;
                                         }
                                         if(isset($header['is_date'])){
                                             $class2 .= " is_date";
@@ -117,43 +110,22 @@
                                         $count+=1;
                                     }
                                 ?>
+                                <?php if($editable){ ?>
                                 <th width="10">
                                     <button class="resetFilter btn btn-warning waves-effect waves-light"><i class="fa fa-lg fa-refresh"></i></button>
                                 </th>
+                                <?php } ?>
                             </tr>
-                        </tfoot>
-                        <tbody>
-                            <?php 
-                            foreach ($this->cpage->template_data['view_contents'] as $data) { 
-                                if(!isset($data['id'])){
-                                    foreach($data as $t){
-                                        $data['id'] = $t;
-                                        break;
-                                    }
-                                    unset($t);
-                                }
-                            ?>
-                                <tr data-id="<?php echo $data['id']; ?>">
-                                    <td></td>
-                                    <?php 
-                                        $count=0;
-                                        foreach ($data as $col) {
-                                            $data_search = $col;
-                                            if(isset($this->cpage->template_data['view_header'][$count]) && isset($this->cpage->template_data['view_header'][$count]['option_text']) && !empty($temp = $this->cpage->template_data['view_header'][$count]['option_text'][$col])){
-                                                $col = $temp;
-                                                $data_search = $temp;
-                                            }else if(isset($this->cpage->template_data['view_header'][$count]) && isset($this->cpage->template_data['view_header'][$count]['goto'])){
-                                                $col = '<a href="<'.$this->cpage->template_data['view_header'][$count]['goto'].'?id='.(!empty($this->cpage->template_data['view_header'][$count]['goto_id'])?$data[$this->cpage->template_data['view_header'][$count]['goto_id']]:$data['id']).'">'.$col.'</a>';
-                                            }
-                                    ?>
-                                    <td data-search="<?php echo $data_search; ?>" data-order="<?php echo $data_search; ?>"><?php echo $col; ?></td>
-                                    <?php $count+=1; } ?>
-                                    <td class="actions">
-                                        <a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a>
-                                    </td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
+                            <tr>
+                                <th width="10">No.</th>
+                                <?php $count=1; foreach ($this->cpage->template_data['view_header'] as $header) { ?>
+                                    <th><?php echo $header['name']; ?></th>
+                                <?php $count+=1;} ?>
+                                <?php if($editable){ ?>
+                                <th width="10">Actions</th>
+                                <?php } ?>
+                            </tr>
+                        </thead>
                     </table>
                 </div>
             </div>
@@ -229,8 +201,7 @@
 <script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/media/js/jquery.dataTables.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/media/js/dataTables.bootstrap.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/FixedColumns/js/dataTables.fixedColumns.min.js"></script>
-<script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/FixedHeader/js/dataTables.fixedHeader.min.js"></script>
-<script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/Responsive/js/dataTables.responsive.min.js"></script>
+<script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/Scroller/js/dataTables.scroller.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/dataTables.select.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/action.js"></script>
@@ -238,9 +209,9 @@
 <script>
     function show_processing(obj,show){
         if(typeof show === 'undefined'||show===true){
-            $('.dataTable').parent().find('#datatable-editable_processing').show();
+            $('#datatable-editable').parent().find('#datatable-editable_processing').show();
         }else if(show===false){
-            $('.dataTable').parent().find('#datatable-editable_processing').hide();
+            $('#datatable-editable').parent().find('#datatable-editable_processing').hide();
         }
     }
     function show_edit(obj,show){
@@ -273,8 +244,7 @@
         if(typeof obj==='object' && $(obj).closest('[data-id]').length){
             id = $(obj).closest('[data-id]').attr('data-id');
         }
-        
-        if((is_custom && typeof type === 'string') || $('.dataTable').is('.custom_form')){
+        if((is_custom && typeof type === 'string') || $('#datatable-editable').is('.custom_form')){
             show_processing(obj);
             var post_data = {};
             post_data['method'] = 'custom_form';
@@ -345,7 +315,6 @@
                         if(has_ajax){
                             ajax_change_update(has_ajax,true);
                         }
-                        set_calculation(container);
                     }else if(typeof data.message === 'string' && data.message.length>0){
                         show_notification(data.message,'Notification','error');
                     }
@@ -361,11 +330,11 @@
                 console.log(e);
             }
         }else{
-            if($(obj).closest('tr').length){
-                var tr = $(obj).closest('tr');
+            if($('#datatable-editable tr[data-id="'+id+'"]').length){
+                var tr = $('#datatable-editable tr[data-id="'+id+'"]');
                 var clone = tr.clone();
             }else{
-                var size = $('.dataTable').find('.thead-search th').length;
+                var size = $('#datatable-editable').find('.thead-search th').length;
                 var clone = $('<tr></tr>');
                 for(var i = 0; i<size; i++){
                     $('<td></td>').appendTo(clone);
@@ -373,14 +342,15 @@
             }
             if(id>0){
                 clone.addClass('tr-edit');
+                $('.DTFC_RightWrapper tr[data-id="'+id+'"]').addClass('tr-edit');
             }else{
                 clone.addClass('tr-add');
             }
             var count = 0;
             var has_ajax = false;
             clone.find('td').each(function(){
-                if($('.dataTable').find('.thead-search th:eq('+count+').editable .column_filter').length){
-                    var filter = $('.dataTable').find('.thead-search th:eq('+count+') .column_filter');
+                if($('#datatable-editable').find('.thead-search th:eq('+count+').editable .column_filter').length){
+                    var filter = $('#datatable-editable').find('.thead-search th:eq('+count+') .column_filter');
                     var input = $('<input value="" required />');
                     if(id>0){
                         input.val($(this).attr('data-search'));
@@ -389,7 +359,7 @@
                         input.addClass('.datepicker-autoclose');
                         set_date(input);
                     }else if(filter.is('select')){
-                        var input = $('.dataTable').find('.thead-search th:eq('+count+') select.column_filter').clone().removeClass('column_filter');
+                        var input = $('#datatable-editable').find('.thead-search th:eq('+count+') select.column_filter').clone().removeClass('column_filter');
                         input.find('option[value=""]').remove();
                         if(id>0){
                             input.find('option:contains("'+$(this).html()+'")').attr('selected','selected');
@@ -423,17 +393,13 @@
                 clone.insertAfter(tr);
                 tr.addClass('hidden');
             }else{
-                clone.prependTo($('.dataTable').find('tbody'));
+                clone.prependTo($('#datatable-editable').find('tbody'));
             }
             $('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled)').first().focus();
             if(has_ajax){
                 ajax_change_update(has_ajax,true);
             }
-            set_calculation(clone);
         }
-    }
-    function set_calculation(container){
-    
     }
     function ajax_change_update(obj,reset){
         var id = "";
@@ -463,7 +429,7 @@
             if(data.status=="1"){
                 if(typeof data.data === "object"){
                     for(var i in data.data){
-                        $(obj).closest('.form-container:visible').find('[name="'+data.data[i].name+'"].form-control').each(function(){
+                        $(obj).closest('.form-container').find('[name="'+data.data[i].name+'"].form-control').each(function(){
                             if(typeof data.data[i].option_text === 'object' && $(this).is('select')){
                                 $(this).html('');
                                 for(var j in data.data[i].option_text){
@@ -491,7 +457,7 @@
         });
     }
     function data_save(obj){
-        if($('.dataTable').parent().find('#datatable-editable_processing').is(':visible')){
+        if($('#datatable-editable').parent().find('#datatable-editable_processing').is(':visible')){
             return false;
         }
         if($('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled)').length==0){
@@ -510,6 +476,7 @@
         show_processing(obj);
         if($(obj).closest('.form-container:visible[data-id]').length){
             id = $(obj).closest('.form-container:visible[data-id]').attr('data-id');
+            $('#datatable-editable').data('selected_data_id',$('#datatable-editable').parent().scrollTop());
         }
         if($(obj).closest('.modal').length){
             $(obj).closest('.modal').find('.form-field:not(.default) .form-control:not(.disabled,:disabled)').each(function(){
@@ -517,7 +484,7 @@
             });
             post_data['method'] = 'custom_form_save';
         }else{
-            var obj = $('.dataTable').find('tr.tr-edit,tr.tr-add').first();
+            var obj = $('#datatable-editable').find('tr.tr-edit,tr.tr-add').first();
             var count = 0;
             $(obj).closest('tr').find('.form-field:not(.default) .form-control:not(.disabled,:disabled)').each(function(){
                 value_list[count] = $(this).val();
@@ -545,11 +512,15 @@
             }else{
                 show_processing(obj,false);
                 if($(obj).closest('tr.tr-add').length){
-                    $('.dataTable').DataTable().ajax.reload(function(){data_edit()},false);
+                    $('#datatable-editable').DataTable().ajax.reload(function(){data_edit()},false);
                     return false;
                 }
             }
-            $('.dataTable').DataTable().ajax.reload(null,false);
+            $('#datatable-editable').DataTable().ajax.reload(function(){
+                if(typeof $('#datatable-editable').data("selected_data_id") !== 'undefined'){
+                    $('#datatable-editable').parent().scrollTop($('#datatable-editable').data("selected_data_id"));
+                }
+            },false);
         });
     }
     function data_validate(obj){
@@ -570,8 +541,8 @@
         return false;
     }
     function data_delete(){
-        var obj = $('.dataTable tr[data-id] td:visible').first();
-        var list = obj.closest('.dataTable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
+        var obj = $('#datatable-editable tr[data-id] td:visible').first();
+        var list = obj.closest('#datatable-editable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
         if(list.length==0){
             alert("Please select data to delete.");
             return false;
@@ -594,7 +565,7 @@
             })
             .always(function(){
                 show_processing(obj,false);
-                $('.dataTable').DataTable().ajax.reload(null,false);
+                $('#datatable-editable').DataTable().ajax.reload(null,false);
             });
         }
     }
@@ -602,14 +573,13 @@
         show_edit(obj,false);
         $('#custom_form_modal .form-container[data-id]').removeAttr('data-id');
         $('#custom_form_modal').modal('hide');
-        $('.dataTable').find('tr.tr-edit,tr.tr-add').each(function(){
-            $('.dataTable').find('tr.hidden[data-id="'+$(this).attr('data-id')+'"]').removeClass('hidden');
-            $(this).remove();
-        });
+        $('#datatable-editable').find('tr.tr-edit,tr.tr-add').remove();
+        $('tr.hidden[data-id]').removeClass('hidden');
+        $('.DTFC_RightWrapper tr.tr-edit').removeClass('tr-edit tr-add');
     }
     function extra_btn(obj){
         var url = $(obj).attr('data-goto');
-        var list = $('.dataTable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
+        var list = $('#datatable-editable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
         if(window.confirm("Please click the button to continue the \""+$(obj).text()+"\".")){
             var post_data = {};
             post_data['selection'] = list;
@@ -619,36 +589,85 @@
 </script>
 
 <script>
+    //horizontal scroll by dragging
+    var clicked = false, clickX, clickY;
+    var dataTableMouseMoveOverlay = $('<div class="dataTableMouseMoveOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;display:none;cursor:move;"></div>');
+    dataTableMouseMoveOverlay.on({
+        'mousemove': function(e) {
+            if(clicked){
+                var temp = 0;
+                temp = clickX - e.pageX;
+                $('#datatable-editable').parent().scrollLeft($('#datatable-editable').parent().scrollLeft() + temp);
+                temp = clickY - e.pageY;
+                $('#datatable-editable').parent().scrollTop($('#datatable-editable').parent().scrollTop() + temp);
+                clickY = e.pageY;
+                clickX = e.pageX;
+            }
+        },
+        'mouseup': function() {
+            clicked = false;
+            $(this).hide();
+        },
+        'mouseout': function() {
+            clicked = false;
+            $(this).hide();
+        }
+    }).appendTo($('body'));
     jQuery(function ($) {
         $('#custom_form_modal').on('shown.bs.modal', function () {
             $('#custom_form_modal input:visible').not('.disabled,.hidden').first().focus();
         });
 
-        $('.dataTable').each(function () {
+        $('#datatable-editable').each(function () {
             var filter_sorting = [[ 1, "asc" ]];
             var obj = $(this);
+            var thead_search = obj.find('.thead-search');
 
-            if(obj.find('.thead-search th .column_filter[filter-sorting]').length){
-                var t = obj.find('.thead-search th .column_filter[filter-sorting]');
+            if(thead_search.find('th .column_filter[filter-sorting]').length){
+                var t = thead_search.find('th .column_filter[filter-sorting]');
                 filter_sorting = [[ t.attr('data-column'), t.attr('filter-sorting') ]];
             }
-
-            var table = obj.on( 'init.dt', function () {
-                    
-                } ).DataTable({
-                //"stateSave": true,
-                "fixedHeader": {"header":true,"footer":true},
-                //"responsive": true,
-                //"select": true,
-                <?php if(false && $this->cpage->template_data['freezePane']>0){ ?>
-                "scrollX": true,
-                "scrollCollapse": true,
+            
+            var table = obj.on('init.dt',function(){
+                $('#datatable-editable').parent().on({
+                    'mousedown': function(e) {
+                        clicked = true;
+                        clickY = e.pageY;
+                        clickX = e.pageX;
+                        $(this).on({
+                            'mousemove': function(e) {
+                                if(clicked && (Math.abs(clickX - e.pageX)>0 || Math.abs(clickY - e.pageY)>0)){
+                                    $(this).off('mousemove');
+                                    dataTableMouseMoveOverlay.show();
+                                    
+                                }
+                            }
+                        });
+                    },
+                    'mouseup': function() {
+                        clicked = false;
+                        dataTableMouseMoveOverlay.hide();
+                        $(this).off('mousemove');
+                    }
+                });
+            }).DataTable({
+                paging: true,
+                "stateSave": true,
+                //scroller: true,//{boundaryScale: 0, displayBuffer: 20},
+                deferRender:    true,
+                scrollY:        500,
+                scrollX:        true,
+                scrollCollapse: true,
+                <?php if($this->cpage->template_data['freezePane']>0){ ?>
                 "fixedColumns": {
+                    <?php if($editable){ ?>
                     "rightColumns": 1,
+                    <?php } ?>
                     "leftColumns": <?php echo $this->cpage->template_data['freezePane']; ?>
                 },
                 <?php } ?>
                 "iDisplayLength": <?php echo $this->cpage->template_data['default_length']; ?>,
+                "lengthMenu": [[50, 100, 200], [50, 100, 200]],
                 "order": filter_sorting,
                 "processing": true,
                 "serverSide": true,
@@ -661,23 +680,23 @@
                     $(row).attr('data-id',data[1]);
                     for(var i=0; i<data.length; i++){
                         var val = data[i];
-                        if(obj.find('.thead-search th:eq('+i+')[data-goto]').length){
-                            $(row).find('td:eq('+i+')').html('<a href="'+obj.find('.thead-search th:eq('+i+')[data-goto]').attr('data-goto')+'?id='+data[1]+'">'+val+'</a>');
-                        }else if(obj.find('.thead-search th:eq('+i+')[custom-col]').length){
-                            $(row).find('td:eq('+i+')').html('<a href="javascript:void(0)" onclick="data_edit(this,\''+obj.find('.thead-search th:eq('+i+')[custom-col]').attr('custom-col')+'\',true)">'+val+'</a>');
+                        if(thead_search.find('th:eq('+i+')[data-goto]').length){
+                            $(row).find('td:eq('+i+')').html('<a href="'+thead_search.find('th:eq('+i+')[data-goto]').attr('data-goto')+'?id='+data[1]+'">'+val+'</a>');
+                        }else if(thead_search.find('th:eq('+i+')[custom-col]').length){
+                            $(row).find('td:eq('+i+')').html('<a href="javascript:void(0)" onclick="data_edit(this,\''+thead_search.find('th:eq('+i+')[custom-col]').attr('custom-col')+'\',true)">'+val+'</a>');
                         }
                         $(row).find('td:eq('+i+')').attr('data-search',val).attr('data-order',val);
-                        if(obj.find('.thead-search th:eq('+i+') select.column_filter option[value="'+val+'"]').length){
-                            $(row).find('td:eq('+i+')').html(obj.find('.thead-search th:eq('+i+') select.column_filter option[value="'+val+'"]').text());
+                        if(thead_search.find('th:eq('+i+') select.column_filter option[value="'+val+'"]').length){
+                            $(row).find('td:eq('+i+')').html(thead_search.find('th:eq('+i+') select.column_filter option[value="'+val+'"]').text());
                         }
                     }
-                    
+                    <?php if($editable){ ?>
                     <?php if($this->cpage->template_data['delete_btn'] || sizeof($this->cpage->template_data['extra_btn'])>0){ ?>
                             $(row).find('td').not(':last').on('click',function(){$(this).closest('tr').toggleClass('selected');});
                     <?php } ?>
-                    
                     $(row).find('td').not(':last').on('dblclick',function(){data_edit($(this).closest('tr').find('td.actions .edit-row'));});
-                    $(row).find('td').last().addClass('actions').html('<a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a>');
+                    $(row).find('td').last().addClass('actions').html('<a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a>');
+                    <?php } ?>
                 },
                 "columnDefs": [
                     {
@@ -692,15 +711,17 @@
                         "orderable": <?php echo ((isset($header['noorder']))?"false":"true"); ?>
                     },
                 <?php $count+=1;} ?>
+                <?php if($editable){ ?>
                     {
                         "targets": [ -1 ],
                         "searchable": false,
                         "orderable": false
                     }
+                <?php } ?>
                 ],
             });
             
-            $('.dataTable').find('select.column_filter').each(function(){
+            $('#datatable-editable').find('select.column_filter').each(function(){
                 if($(this).val().length && $(this).val()!=='0'){
                     table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
                 }else if(table.column($(this).attr('data-column')).search().length){
@@ -710,7 +731,7 @@
                     table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
                 });
             });
-            $('.dataTable').find('input.column_filter').each(function(){
+            $('#datatable-editable').find('input.column_filter').each(function(){
                 if($(this).val().length && $(this).val()!=='0'){
                     table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
                 }else if(table.column($(this).attr('data-column')).search().length){
@@ -736,9 +757,9 @@
                 })($(this));
             });
             
-            $('.dataTable').find('.resetFilter').on('click',function(){
-                $('.dataTable').find('input.column_filter').val("");
-                $('.dataTable').find('select.column_filter').val("");
+            $('#datatable-editable').find('.resetFilter').on('click',function(){
+                $('#datatable-editable').find('input.column_filter').val("");
+                $('#datatable-editable').find('select.column_filter').val("");
                 table.search( '' ).columns().search( '' ).draw();
                 table.rows().deselect();
             });

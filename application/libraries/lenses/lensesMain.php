@@ -17,7 +17,7 @@ class lensesMain{
     var $recordsFiltered = 0;
     var $freezePane = 0;
     var $data = array();
-    var $default_length = 10;
+    var $default_length = 50;
     var $custom_form = false;
     var $ajax_url = "";
     var $add_btn = true;
@@ -716,6 +716,18 @@ select w.id,a.id,c.id item_id,0,concat(a.code,"-",c.code) skucode from warehouse
                 and a.warehouse_item_id=c.id 
                 and d.product_id=c.product_id and d.item_id=c.item_id and d.warehouse_id=b.warehouse_id
                 and a.warehouse_item_id<>d.id';
+        $this->CI->db->query($sql);
+    }
+    
+    function maintain_transaction_cache(){
+        $sql = 'update transactions a,store_item_bk b,stores c,warehouse_item d,warehouse_item e,store_item f
+                set a.store_item_id=f.id
+                where a.store_item_id=b.id 
+                and b.store_id=c.id
+                and b.warehouse_item_id=d.id
+                and e.warehouse_id=c.warehouse_id and e.product_id=d.product_id and e.item_id=d.item_id
+                and f.store_id=c.id and f.warehouse_item_id=e.id
+                and a.store_item_id<>f.id';
         $this->CI->db->query($sql);
     }
 }

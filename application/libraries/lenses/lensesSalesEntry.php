@@ -17,7 +17,7 @@ class lensesSalesEntry extends lensesMain{
         $this->table = "transactions_cache";
         $this->title = "Sales Entry";
         $this->selected_menu = "sales_entry";
-        $this->freezePane = 4;
+        $this->freezePane = 5;
         $this->is_required = false;
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Save Transactions','url'=>base_url('ajax/sales_entry?method=save_transactions'));
@@ -26,9 +26,9 @@ class lensesSalesEntry extends lensesMain{
         $this->search_query = 'select * from (select a.id
             , b.name account_name
             , g.name store_name
+            , c.store_skucode
             , d.name product_name
             , e.name option_name
-            , c.store_skucode
             , a.buyer_id, a.buyer_name, a.buyer_country, a.tracking_number, a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
@@ -77,9 +77,9 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'id','name'=>'ID'),
             array('id'=>'account_id','name'=>'Account','is_ajax'=>'1','option_text'=>$supp_list),
             array('id'=>'store_name','name'=>'Store','is_ajax'=>'stores'),
+            array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame','is_ajax'=>'products'),
             array('id'=>'store_item_id','name'=>'Color','is_ajax'=>'option_item'),
-            array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'buyer_id','name'=>'Buyer ID','editable'=>true),
             array('id'=>'buyer_name','name'=>'Buyer Name','editable'=>true),
             array('id'=>'buyer_country','name'=>'Buyer Country','editable'=>true),
@@ -135,20 +135,24 @@ class lensesSalesEntry extends lensesMain{
         //check available store_item_id
         $store_item_id = $this->CI->input->post('value[store_item_id]',true);
         $quantity = $this->CI->input->post('value[quantity]',true);
-        $temp = $this->get_available_quantity($store_item_id);
         if($id>0 && ($result = $this->CI->db->query('select quantity from transactions_cache where id=? limit 1',$id)) && ($row = $result->row_array())){
             $quantity -= $row['quantity'];
         }
+        /*
+        $temp = $this->get_available_quantity($store_item_id);
         if($quantity>$temp){
             $return['message'] = 'Insufficient quantity.';
             return $return;
         }
-        
+        */
         $col_list = array();
         $value = $this->CI->input->post('value',true);
         
         //check duplicate id
-        if(($result = $this->CI->db->query('select quantity from transactions where store_item_id=? AND sales_id=? limit 1',array($value['store_item_id'],$value['sales_id']))) && ($row = $result->row_array())){
+        if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
+            union distinct 
+            select id from transactions where store_item_id=? AND sales_id=?
+            limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))) && ($row = $result->row_array()) && ($row['id']!=$id)){
             $return['message'] = 'Sales exists!';
             return $return;
         }
