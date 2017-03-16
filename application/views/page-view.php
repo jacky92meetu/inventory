@@ -59,7 +59,7 @@ $editable = false;
                         
                         <thead>
                             <tr class="thead-search">
-                                <th width="10"></th>
+                                <th width="10" class="dataTables_length_container"></th>
                                 <?php $count=1;
                                     foreach ($this->cpage->template_data['view_header'] as $header) {
                                         $goto_url = "";
@@ -590,6 +590,7 @@ $editable = false;
 
 <script>
     //horizontal scroll by dragging
+    var table;
     var clicked = false, clickX, clickY;
     var dataTableMouseMoveOverlay = $('<div class="dataTableMouseMoveOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;display:none;cursor:move;"></div>');
     dataTableMouseMoveOverlay.on({
@@ -628,7 +629,7 @@ $editable = false;
                 filter_sorting = [[ t.attr('data-column'), t.attr('filter-sorting') ]];
             }
             
-            var table = obj.on('init.dt',function(){
+            table = obj.on('init.dt',function(){
                 $('#datatable-editable').parent().on({
                     'mousedown': function(e) {
                         clicked = true;
@@ -650,9 +651,57 @@ $editable = false;
                         $(this).off('mousemove');
                     }
                 });
+                setTimeout(function(){
+                    $('#datatable-editable_length').each(function(){
+                        var clone = $(this).find('select[name="datatable-editable_length"]').clone(true);
+                        $('.dataTables_length_container').append(clone);
+                        $(this).hide();
+                    });
+                    $('select.column_filter').each(function(){
+                        if($(this).val().length && $(this).val()!=='0'){
+                            table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
+                        }else if(table.column($(this).attr('data-column')).search().length){
+                            $(this).val(table.column($(this).attr('data-column')).search());
+                        }
+                        $(this).on('change', function(){
+                            table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
+                        });
+                    });
+                    $('input.column_filter').each(function(){
+                        if($(this).val().length && $(this).val()!=='0'){
+                            table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
+                        }else if(table.column($(this).attr('data-column')).search().length){
+                            $(this).val(table.column($(this).attr('data-column')).search());
+                        }
+                        (function(obj){
+                            var active = 0;
+                            setInterval(function(){
+                                if(active>0){
+                                    active = active + 1;
+                                }
+                                if(active>3){
+                                    active = 0;
+                                    table.column($(obj).attr('data-column')).search($(obj).val(),true,true).draw();
+                                }
+                            },100);
+                            obj.unbind()
+                            .bind('keyup', function(e){
+                                if(table.column($(obj).attr('data-column')).search()==$(obj).val()) return;
+                                if($(obj).val().length > 0 && $(obj).val().length < 1 && e.keyCode != 13) return;
+                                if(e.keyCode != 13){active = 1;}else{active = 100;}
+                            });
+                        })($(this));
+                    });
+                    $('.resetFilter').on('click',function(){
+                        $('input.column_filter').val("");
+                        $('select.column_filter').val("");
+                        table.search( '' ).columns().search( '' ).draw();
+                        table.rows().deselect();
+                    });
+                },100);
             }).DataTable({
                 paging: true,
-                "stateSave": true,
+                //"stateSave": true,
                 //scroller: true,//{boundaryScale: 0, displayBuffer: 20},
                 deferRender:    true,
                 scrollY:        500,
@@ -720,54 +769,13 @@ $editable = false;
                 <?php } ?>
                 ],
             });
-            
-            $('#datatable-editable').find('select.column_filter').each(function(){
-                if($(this).val().length && $(this).val()!=='0'){
-                    table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
-                }else if(table.column($(this).attr('data-column')).search().length){
-                    $(this).val(table.column($(this).attr('data-column')).search());
-                }
-                $(this).on('change', function(){
-                    table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
-                });
-            });
-            $('#datatable-editable').find('input.column_filter').each(function(){
-                if($(this).val().length && $(this).val()!=='0'){
-                    table.column($(this).attr('data-column')).search($(this).val(),true,true).draw();
-                }else if(table.column($(this).attr('data-column')).search().length){
-                    $(this).val(table.column($(this).attr('data-column')).search());
-                }
-                (function(obj){
-                    var active = 0;
-                    setInterval(function(){
-                        if(active>0){
-                            active = active + 1;
-                        }
-                        if(active>5){
-                            active = 0;
-                            table.column($(obj).attr('data-column')).search($(obj).val(),true,true).draw();
-                        }
-                    },100);
-                    obj.unbind()
-                    .bind('keyup', function(e){
-                        if(table.column($(obj).attr('data-column')).search()==$(obj).val()) return;
-                        if($(obj).val().length > 0 && $(obj).val().length < 1 && e.keyCode != 13) return;
-                        if(e.keyCode != 13){active = 1;}else{active = 100;}
-                    });
-                })($(this));
-            });
-            
-            $('#datatable-editable').find('.resetFilter').on('click',function(){
-                $('#datatable-editable').find('input.column_filter').val("");
-                $('#datatable-editable').find('select.column_filter').val("");
-                table.search( '' ).columns().search( '' ).draw();
-                table.rows().deselect();
-            });
+            /*
             table.on( 'order.dt search.dt', function () {
                 table.column(0, {search:'applied', order:'applied'}).nodes().each( function (cell, i) {
                     //cell.innerHTML = i+1;
                 } );
             } ).draw();
+            */
         });
     });
 </script>
