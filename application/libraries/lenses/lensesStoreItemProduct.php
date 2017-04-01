@@ -30,7 +30,7 @@ class lensesStoreItemProduct extends lensesMain{
         $this->delete_btn = false;
         $this->ajax_url = base_url('ajax/store_item_product?id='.$id);
         $this->search_query = sprintf('SELECT * FROM (select a.id,c.name
-            ,a.marketplace_item_id,a.marketplace_item_name,a.marketplace_variation_order
+            ,a.marketplace_item_id,a.marketplace_item_name,a.marketplace_variation_order,a.marketplace_item_label
             ,a.store_id,b.product_id
             from store_item a
             join warehouse_item b on a.warehouse_item_id=b.id
@@ -38,7 +38,7 @@ class lensesStoreItemProduct extends lensesMain{
             where a.store_id=%s group by b.product_id) a',$this->CI->db->escape($id));
         $this->parent_id = array('key'=>'store_id','value'=>$id);
         
-        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Frame Model'),array('id'=>'marketplace_item_id','name'=>'Item ID','editable'=>true),array('id'=>'marketplace_item_name','name'=>'Item Name','editable'=>true),array('id'=>'marketplace_variation_order','name'=>'Ebay Variation Order','editable'=>true));
+        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Frame Model'),array('id'=>'marketplace_item_id','name'=>'Item ID','editable'=>true),array('id'=>'marketplace_item_name','name'=>'Item Name','editable'=>true),array('id'=>'marketplace_variation_order','name'=>'Ebay Variation Order','editable'=>true),array('id'=>'marketplace_item_label','name'=>'Ebay Item Label','editable'=>true));
     }
     
     function ajax_custom_form(){
@@ -52,6 +52,7 @@ class lensesStoreItemProduct extends lensesMain{
             $data['marketplace_item_id'] = ['id'=>'marketplace_item_id','name'=>'Item ID','value'=>''];
             $data['marketplace_item_name'] = ['id'=>'marketplace_item_name','name'=>'Item Name','value'=>''];
             $data['marketplace_variation_order'] = ['id'=>'marketplace_variation_order','name'=>'Ebay Variation Order','value'=>''];
+            $data['marketplace_item_label'] = ['id'=>'marketplace_item_label','name'=>'Ebay Item Label','value'=>''];
         }
         $return = parent::ajax_custom_form($data);
         
@@ -71,7 +72,7 @@ class lensesStoreItemProduct extends lensesMain{
                     $temp[$r['id']] = $r['id'];
                 }
                 if(sizeof($temp)>0){
-                    if($this->CI->db->query('UPDATE store_item SET marketplace_item_id=?,marketplace_item_name=?,marketplace_variation_order=? WHERE id in ('.implode(',', $temp).')',array($_POST['value']['marketplace_item_id'],$_POST['value']['marketplace_item_name'],$_POST['value']['marketplace_variation_order']))){
+                    if($this->CI->db->query('UPDATE store_item SET marketplace_item_id=?,marketplace_item_name=?,marketplace_variation_order=?,marketplace_item_label=? WHERE id in ('.implode(',', $temp).')',array($_POST['value']['marketplace_item_id'],$_POST['value']['marketplace_item_name'],$_POST['value']['marketplace_variation_order'],$_POST['value']['marketplace_item_label']))){
                         $return = array("status"=>"1","message"=>"");    
                     }
                 }

@@ -54,4 +54,6 @@ $route['404_override'] = 'home/index';
 $route['translate_uri_dashes'] = FALSE;
 
 $route['ajax/(:any)'] = 'ajax/func/$1';
+
+$route['live_update'] = 'home/live_update';
 $route['(:any)'] = 'home/view/$1';

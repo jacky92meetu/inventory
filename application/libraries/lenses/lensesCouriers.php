@@ -18,6 +18,8 @@ class lensesCouriers extends lensesMain{
         $this->title = "Couriers";
         $this->selected_menu = "couriers";
         $this->custom_form = false;
+        
+        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Name','editable'=>true),array('id'=>'export_template','name'=>'Template','readonly'=>'1'));
     }
     
     function ajax_delete(){

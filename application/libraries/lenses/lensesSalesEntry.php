@@ -20,6 +20,7 @@ class lensesSalesEntry extends lensesMain{
         $this->freezePane = 5;
         $this->is_required = false;
         $this->extra_btn = array();
+        $this->extra_btn[] = array('name'=>'Sales Import','custom_form'=>'sales_import');
         $this->extra_btn[] = array('name'=>'Save Transactions','url'=>base_url('ajax/sales_entry?method=save_transactions'));
         $this->custom_form = true;
         $this->ajax_url = base_url('ajax/sales_entry');
@@ -29,7 +30,8 @@ class lensesSalesEntry extends lensesMain{
             , c.store_skucode
             , d.name product_name
             , e.name option_name
-            , a.buyer_id, a.buyer_name, a.buyer_country, a.tracking_number, a.selling_currency, a.quantity
+            , a.buyer_id, a.buyer_name, a.buyer_address, a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
+            , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
             , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed
@@ -40,7 +42,7 @@ class lensesSalesEntry extends lensesMain{
             join warehouse_item wi on c.warehouse_item_id=wi.id
             join products d on wi.product_id=d.id
             join option_item e on wi.item_id=e.id
-            join couriers f on a.courier_id=f.id
+            left join couriers f on a.courier_id=f.id
             join stores g on c.store_id=g.id) a';
         
         $supp_list = array();
@@ -79,10 +81,16 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'store_name','name'=>'Store','is_ajax'=>'stores'),
             array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame','is_ajax'=>'products'),
-            array('id'=>'store_item_id','name'=>'Color','is_ajax'=>'option_item'),
+            array('id'=>'option_name','name'=>'Color','is_ajax'=>'option_item'),
             array('id'=>'buyer_id','name'=>'Buyer ID','editable'=>true),
             array('id'=>'buyer_name','name'=>'Buyer Name','editable'=>true),
+            array('id'=>'buyer_address','name'=>'Buyer Address','editable'=>true),
+            array('id'=>'buyer_city','name'=>'Buyer City','editable'=>true),
+            array('id'=>'buyer_state','name'=>'Buyer State','editable'=>true),
+            array('id'=>'buyer_postcode','name'=>'Buyer Postcode','editable'=>true),
             array('id'=>'buyer_country','name'=>'Buyer Country','editable'=>true),
+            array('id'=>'buyer_contact','name'=>'Buyer Contact','editable'=>true),
+            array('id'=>'buyer_email','name'=>'Buyer Email','editable'=>true),
             array('id'=>'tracking_number','name'=>'Tracking','editable'=>true),
             array('id'=>'selling_currency','name'=>'Currency','option_text'=>$currency_list,'editable'=>true),
             array('id'=>'quantity','name'=>'Quantity','option_text'=>$quantity_list,'editable'=>true),
@@ -109,7 +117,13 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'store_skucode','name'=>'SKU','editable'=>true),
             array('id'=>'buyer_id','name'=>'Buyer ID','editable'=>true),
             array('id'=>'buyer_name','name'=>'Buyer Name','editable'=>true),
+            array('id'=>'buyer_address','name'=>'Buyer Address','editable'=>true),
+            array('id'=>'buyer_city','name'=>'Buyer City','editable'=>true),
+            array('id'=>'buyer_state','name'=>'Buyer State','editable'=>true),
+            array('id'=>'buyer_postcode','name'=>'Buyer Postcode','editable'=>true),
             array('id'=>'buyer_country','name'=>'Buyer Country','editable'=>true),
+            array('id'=>'buyer_contact','name'=>'Buyer Contact','editable'=>true),
+            array('id'=>'buyer_email','name'=>'Buyer Email','editable'=>true),
             array('id'=>'tracking_number','name'=>'Tracking','editable'=>true),
             array('id'=>'selling_currency','name'=>'Currency','option_text'=>$currency_list,'editable'=>true),
             array('id'=>'quantity','name'=>'Quantity','option_text'=>$quantity_list,'editable'=>true),
@@ -126,55 +140,89 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
         );
+        
+        $this->sales_import_header = array(
+            array('id'=>'id','name'=>'ID','hidden'=>'1'),
+            array('id'=>'type','name'=>'type','value'=>'sales_import','hidden'=>'1'),
+            array('id'=>'account_id','name'=>'Account','is_ajax'=>'1','option_text'=>$supp_list,'editable'=>true),
+            array('id'=>'marketplace_template','name'=>'MarketPlace','is_ajax'=>'1','option_text'=>array(),'editable'=>true),
+            array('id'=>'file','name'=>'file','is_file'=>'1')
+        );
+    }
+    
+    function ajax_custom_form(){
+        if($_REQUEST['type']=="sales_import"){
+            $data = $this->sales_import_header;
+            return parent::ajax_custom_form($data);
+        }else{
+            return parent::ajax_custom_form();
+        }
     }
     
     function ajax_custom_form_save(){
         $return = array("status"=>"0","message"=>"");
         $id = $this->CI->input->post('id',true);
         
-        //check available store_item_id
-        $store_item_id = $this->CI->input->post('value[store_item_id]',true);
-        $quantity = $this->CI->input->post('value[quantity]',true);
-        if($id>0 && ($result = $this->CI->db->query('select quantity from transactions_cache where id=? limit 1',$id)) && ($row = $result->row_array())){
-            $quantity -= $row['quantity'];
-        }
-        /*
-        $temp = $this->get_available_quantity($store_item_id);
-        if($quantity>$temp){
-            $return['message'] = 'Insufficient quantity.';
-            return $return;
-        }
-        */
         $col_list = array();
         $value = $this->CI->input->post('value',true);
         
-        //check duplicate id
-        if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
-            union distinct 
-            select id from transactions where store_item_id=? AND sales_id=?
-            limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))) && ($row = $result->row_array()) && ($row['id']!=$id)){
-            $return['message'] = 'Sales exists!';
-            return $return;
-        }
-        
-        if(($temp = explode('/', $value['payment_date'])) && sizeof($temp)==3){
-            $value['payment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
-        }
-        if(($temp = explode('/', $value['shipment_date'])) && sizeof($temp)==3){
-            $value['shipment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
-        }
-        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','tracking_number','buyer_country','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
-        foreach($field_list as $field){
-            if(isset($value[$field])){
-                $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
+        if(!empty($value['type']) && $value['type']=='sales_import'){
+            $return = array("status"=>"0","message"=>"");
+            
+            if(!empty($value['file'])){
+                include_once(APPPATH.'libraries/classes/importClass.php');
+                $class = new importClass;
+                $file = tempnam(sys_get_temp_dir(), 'sales_import_');
+                $data = $value['file'];
+                $data = base64_decode($data);
+                file_put_contents($file, $data);
+                $return = $class->sales_import($value['account_id'],$value['marketplace_template'], $file);
+                unlink($file);
             }
-        }
-        if($id>0){
-            $this->update_query = sprintf('UPDATE transactions_cache SET %s WHERE id="%s"',implode(',',$col_list),$id);
+            return $return;
         }else{
-            $this->update_query = sprintf('INSERT INTO transactions_cache SET %s',implode(',',$col_list));
+            //check available store_item_id
+            $store_item_id = $this->CI->input->post('value[store_item_id]',true);
+            $quantity = $this->CI->input->post('value[quantity]',true);
+            if($id>0 && ($result = $this->CI->db->query('select quantity from transactions_cache where id=? limit 1',$id)) && ($row = $result->row_array())){
+                $quantity -= $row['quantity'];
+            }
+            /*
+            $temp = $this->get_available_quantity($store_item_id);
+            if($quantity>$temp){
+                $return['message'] = 'Insufficient quantity.';
+                return $return;
+            }
+            */
+            
+            //check duplicate id
+            if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
+                union distinct 
+                select id from transactions where store_item_id=? AND sales_id=?
+                limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))) && ($row = $result->row_array()) && ($row['id']!=$id)){
+                $return['message'] = 'Sales exists!';
+                return $return;
+            }
+
+            if(($temp = explode('/', $value['payment_date'])) && sizeof($temp)==3){
+                $value['payment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
+            }
+            if(($temp = explode('/', $value['shipment_date'])) && sizeof($temp)==3){
+                $value['shipment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
+            }
+            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
+            foreach($field_list as $field){
+                if(isset($value[$field])){
+                    $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
+                }
+            }
+            if($id>0){
+                $this->update_query = sprintf('UPDATE transactions_cache SET %s WHERE id="%s"',implode(',',$col_list),$id);
+            }else{
+                $this->update_query = sprintf('INSERT INTO transactions_cache SET %s',implode(',',$col_list));
+            }
+            $return = parent::ajax_custom_form_save();
         }
-        $return = parent::ajax_custom_form_save();
         
         return $return;
     }
@@ -198,6 +246,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $filter_list[] = ['name'=>'sales_fees_fixed','query'=>'SELECT a.sales_fees_fixed id, a.sales_fees_fixed name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
         $filter_list[] = ['name'=>'paypal_fees_pect','query'=>'SELECT a.paypal_fees_pect id, a.paypal_fees_pect name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
         $filter_list[] = ['name'=>'paypal_fees_fixed','query'=>'SELECT a.paypal_fees_fixed id, a.paypal_fees_fixed name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
+        $filter_list[] = ['name'=>'marketplace_template','query'=>'SELECT b.import_template id,b.import_template name FROM stores a,marketplaces b WHERE a.marketplace_id=b.id AND a.account_id=? GROUP BY b.import_template ORDER BY length(b.import_template),b.import_template','id'=>'account_id'];
         
         $return = parent::ajax_change_update($filter_list);
         $quantity_list = array('0'=>'0');

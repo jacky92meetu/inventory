@@ -36,16 +36,20 @@ $editable = false;
                 </span>
                 <?php } ?>
             </div>
-            <div class="col-xs-6">
+            <div class="col-xs-6 text-right">
                 <?php if(sizeof($this->cpage->template_data['extra_btn'])>0){ 
                     foreach($this->cpage->template_data['extra_btn'] as $temp){ 
                         $class = "btn-default";
                         if(isset($temp['class'])){
                             $class = $temp['class'];
                         }
+                        $custom_form = "";
+                        if(isset($temp['custom_form'])){
+                            $custom_form = 'custom_form="'.$temp['custom_form'].'"';
+                        }
                 ?>
-                <span class=" pull-right">
-                    <button class="btn <?php echo $class; ?> waves-effect waves-light" onclick="extra_btn(this)" data-goto="<?php echo $temp['url']; ?>"><?php echo $temp['name']; ?></button>
+                <span>
+                    <button class="btn <?php echo $class; ?> waves-effect waves-light" onclick="extra_btn(this)" <?php echo $custom_form; ?> data-goto="<?php echo $temp['url']; ?>"><?php echo $temp['name']; ?></button>
                 </span>
                 <?php }} ?>
             </div>
@@ -173,11 +177,22 @@ $editable = false;
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-12 form-field default file-default hidden">
+                        <div class="form-group">
+                            <label class="control-label">Fieldname</label>
+                            <input type="file">
+                            <input type="hidden" class="form-control">
+                            <div class="loading_status">Upload file here</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary waves-effect waves-light" onclick="data_save(this)">Save</button>
+            </div>
+            <div class="modal-footer-loading">
+                Loading...
             </div>
         </div>
     </div>
@@ -207,6 +222,7 @@ $editable = false;
 <script src="<?php echo base_url('/assets/default'); ?>/js/action.js"></script>
 
 <script>
+    var max_size = (1000 * 1000 * 5);
     function show_processing(obj,show){
         if(typeof show === 'undefined'||show===true){
             $('#datatable-editable').parent().find('#datatable-editable_processing').show();
@@ -253,6 +269,7 @@ $editable = false;
             try{
                 $.post('<?php echo $this->cpage->template_data['view_ajax_url']; ?>',post_data,function(data){
                     if(typeof data.data === 'object'){
+                        $('#custom_form_modal .form-container.form-loading').removeClass('form-loading');
                         var container = $('#custom_form_modal .modal-body > .row');
                         container.find('.form-field').not('.default').remove();
                         var has_ajax = false;
@@ -275,6 +292,32 @@ $editable = false;
                                 c.find('label').html(data.data[i].name);
                                 c.find('input').attr('name',data.data[i].id).val(data.data[i].value);
                                 set_date(c.find('input'));
+                            }else if(typeof data.data[i].is_file === 'string'){
+                                var c = container.find('.form-field.file-default.default.hidden').clone();
+                                c.removeClass('default hidden').appendTo(container);
+                                c.find('label').html(data.data[i].name);
+                                var temp = c.find('input[type="hidden"]');
+                                temp.attr('name',data.data[i].id);
+                                c.find('input[type="file"]').change(function(){
+                                    temp.parent().find('.loading_status').html('Uploading...');
+                                    if($(this)[0].files.length){
+                                        var uploaded_file = $(this)[0].files[0];
+                                        if(uploaded_file.size > max_size){
+                                            temp.val('');
+                                            temp.parent().find('.loading_status').html('<span class="text-danger">File size limit exceed.(Max: '+(max_size/(1000*1000)).toFixed(4)+' MB)</span>');
+                                        }else{
+                                            var FR= new FileReader();
+                                            FR.addEventListener("load", function(e) {
+                                                temp.val(e.target.result.match(/,(.*)$/)[1]);
+                                                temp.parent().find('.loading_status').html('<span class="text-success">Type: '+uploaded_file.type+' ('+(uploaded_file.size/(1000*1000)).toFixed(4)+' MB)</span>');
+                                            });
+                                            FR.readAsDataURL( uploaded_file );
+                                        }
+                                    }else{
+                                        temp.val('');
+                                        temp.parent().find('.loading_status').html('Fail to upload.');
+                                    }
+                                });
                             }else if(typeof data.data[i].option_text === 'object'){
                                 var c = container.find('.form-field.select-default.default.hidden').clone();
                                 c.removeClass('default hidden').appendTo(container);
@@ -315,10 +358,15 @@ $editable = false;
                         if(has_ajax){
                             ajax_change_update(has_ajax,true);
                         }
-                    }else if(typeof data.message === 'string' && data.message.length>0){
-                        show_notification(data.message,'Notification','error');
                     }
-                    if(typeof data.func === 'function'){data.func(obj);}
+                    if(typeof data.message === 'string' && data.message.length>0){
+                        if(typeof data.status=='1'){
+                            show_notification(data.message,'Notification','error');
+                        }else{
+                            show_notification(data.message,'Notification');
+                        }
+                    }
+                    if(typeof data.func === 'function'){data.func(obj);}else if(typeof data.func === 'string' && data.func.indexOf("function(")==0){eval('('+data.func+')')();}
                 }, 'json')
                 .error(function(){
                     show_notification('Submission to server error!','Notification','error');
@@ -444,10 +492,15 @@ $editable = false;
                         });
                     }
                 }
-            }else if(data.message.length>0){
-                show_notification(data.message,'Notification','error');
             }
-            if(typeof data.func === 'function'){data.func(obj);}
+            if(typeof data.message === 'string' && data.message.length>0){
+                if(typeof data.status=='1'){
+                    show_notification(data.message,'Notification','error');
+                }else{
+                    show_notification(data.message,'Notification');
+                }
+            }
+            if(typeof data.func === 'function'){data.func(obj);}else if(typeof data.func === 'string' && data.func.indexOf("function(")==0){eval('('+data.func+')')();}
         }, 'json')
         .error(function(){
             show_notification('Submission to server error!','Notification','error');
@@ -479,7 +532,8 @@ $editable = false;
             $('#datatable-editable').data('selected_data_id',$('#datatable-editable').parent().scrollTop());
         }
         if($(obj).closest('.modal').length){
-            $(obj).closest('.modal').find('.form-field:not(.default) .form-control:not(.disabled,:disabled)').each(function(){
+            $(obj).closest('.form-container').addClass('form-loading');
+            $(obj).closest('.modal').find('.form-field:not(.default) .form-control:not(.disabled,:disabled,[type="file"])').each(function(){
                 value_list[$(this).attr('name')] = $(this).val();
             });
             post_data['method'] = 'custom_form_save';
@@ -498,10 +552,15 @@ $editable = false;
         $.post('<?php echo $this->cpage->template_data['view_ajax_url']; ?>',post_data,function(data){
             if(data.status=="1"){
                 show_notification('Data save successfuly.','Notification','success');
-            }else if(data.message.length>0){
-                show_notification(data.message,'Notification','error');
             }
-            if(typeof data.func === 'function'){data.func(obj);}
+            if(typeof data.message === 'string' && data.message.length>0){
+                if(typeof data.status=='1'){
+                    show_notification(data.message,'Notification','error');
+                }else{
+                    show_notification(data.message,'Notification');
+                }
+            }
+            if(typeof data.func === 'function'){data.func(obj);}else if(typeof data.func === 'string' && data.func.indexOf("function(")==0){eval('('+data.func+')')();}
         }, 'json')
         .error(function(){
             show_notification('Submission to server error!','Notification','error');
@@ -555,10 +614,15 @@ $editable = false;
             $.post('<?php echo $this->cpage->template_data['view_ajax_url']; ?>',post_data,function(data){
                 if(data.status=="1"){
                     show_notification('Data delete successfuly.','Notification','success');
-                }else if(data.message.length>0){
-                    show_notification(data.message,'Notification','error');
                 }
-                if(typeof data.func === 'function'){data.func(obj);}
+                if(typeof data.message === 'string' && data.message.length>0){
+                    if(typeof data.status=='1'){
+                        show_notification(data.message,'Notification','error');
+                    }else{
+                        show_notification(data.message,'Notification');
+                    }
+                }
+                if(typeof data.func === 'function'){data.func(obj);}else if(typeof data.func === 'string' && data.func.indexOf("function(")==0){eval('('+data.func+')')();}
             }, 'json')
             .error(function(){
                 show_notification('Submission to server error!','Notification','error');
@@ -578,6 +642,9 @@ $editable = false;
         $('.DTFC_RightWrapper tr.tr-edit').removeClass('tr-edit tr-add');
     }
     function extra_btn(obj){
+        if($(obj).is('[custom_form]')){
+            return data_edit(obj,$(obj).attr('custom_form'),true);
+        }
         var url = $(obj).attr('data-goto');
         var list = $('#datatable-editable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
         if(window.confirm("Please click the button to continue the \""+$(obj).text()+"\".")){
@@ -630,7 +697,7 @@ $editable = false;
             }
             
             table = obj.on('init.dt',function(){
-                $('#datatable-editable').parent().on({
+                $('#datatable-editable').parent().parent().parent().on({
                     'mousedown': function(e) {
                         clicked = true;
                         clickY = e.pageY;
@@ -698,6 +765,9 @@ $editable = false;
                         table.search( '' ).columns().search( '' ).draw();
                         table.rows().deselect();
                     });
+                    <?php if($editable){ ?>
+                    
+                    <?php } ?>
                 },100);
             }).DataTable({
                 paging: true,
@@ -741,9 +811,9 @@ $editable = false;
                     }
                     <?php if($editable){ ?>
                     <?php if($this->cpage->template_data['delete_btn'] || sizeof($this->cpage->template_data['extra_btn'])>0){ ?>
-                            $(row).find('td').not(':last').on('click',function(){$(this).closest('tr').toggleClass('selected');});
+                        $(row).find('td').not('.actions').on('click',function(){ $('tr[data-id="'+$(this).closest('tr[data-id]').attr('data-id')+'"]').toggleClass('selected'); });
                     <?php } ?>
-                    $(row).find('td').not(':last').on('dblclick',function(){data_edit($(this).closest('tr').find('td.actions .edit-row'));});
+                    $(row).find('td').not('.actions').on('dblclick',function(){data_edit($(this).closest('tr').find('td.actions .edit-row'));});
                     $(row).find('td').last().addClass('actions').html('<a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a>');
                     <?php } ?>
                 },

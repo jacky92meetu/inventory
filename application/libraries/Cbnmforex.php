@@ -50,7 +50,7 @@ class Cbnmforex{
             $spos = 0;
             $element = $xpath->query('.//tr', $container->item(0));
             foreach ($element as $e) {
-                if($e->attributes->getNamedItem('class')->nodeValue=="TblHdr"){
+                if(!empty($e->attributes->getNamedItem('class')) && $e->attributes->getNamedItem('class')->nodeValue=="TblHdr"){
                     $count1 = $spos;
                     $count2 = $count1;
                     $element2 = $xpath->query('.//th', $e);
@@ -72,9 +72,13 @@ class Cbnmforex{
                         $temp = trim($e2->nodeValue);
                         if($count3==0){
                             $temp = explode('/',$temp);
-                            $temp2 = date("Y-m-d",strtotime($temp[2]."-".$temp[1]."-".$temp[0]));
+                            if(sizeof($temp)==3){
+                                $temp2 = date("Y-m-d",strtotime($temp[2]."-".$temp[1]."-".$temp[0]));
+                            }
                         }else{
-                            $record[$count2]['data'][$temp2] = preg_replace('#[^0-9\.]#iu', '', $temp);
+                            if(isset($record[$count2]['data'])){
+                                $record[$count2]['data'][$temp2] = preg_replace('#[^0-9\.]#iu', '', $temp);
+                            }
                             $count2++;
                         }
                         $count3++;
@@ -82,6 +86,7 @@ class Cbnmforex{
                 }
             }
         }
+        
         return $record;
     }
     

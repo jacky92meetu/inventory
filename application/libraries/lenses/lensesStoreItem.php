@@ -32,7 +32,7 @@ class lensesStoreItem extends lensesMain{
         $this->extra_btn[] = array('name'=>'Show Products Only','url'=>base_url('/store_item_product?id='.$id));
         $this->ajax_url = base_url('ajax/'.$this->table.'?id='.$id);
         $this->search_query = sprintf('SELECT * FROM (select a.id,c.name,d.name option_name,a.store_skucode,a.selling_price
-            ,a.marketplace_item_id,a.marketplace_variation,a.item_status,a.marketplace_item_name,a.marketplace_variation_order
+            ,a.marketplace_item_id,a.marketplace_variation,a.item_status,a.marketplace_item_name,a.marketplace_variation_order,a.marketplace_item_label
             ,a.discount_price,a.expire_date from store_item a
             join warehouse_item b on a.warehouse_item_id=b.id
             join products c on b.product_id=c.id
@@ -52,6 +52,7 @@ class lensesStoreItem extends lensesMain{
             $data['marketplace_item_id'] = ['id'=>'marketplace_item_id','name'=>'Item ID','value'=>''];
             $data['marketplace_item_name'] = ['id'=>'marketplace_item_name','name'=>'Item Name','value'=>''];
             $data['marketplace_variation_order'] = ['id'=>'marketplace_variation_order','name'=>'Ebay Variation Order','value'=>''];
+            $data['marketplace_item_label'] = ['id'=>'marketplace_item_label','name'=>'Ebay Item Label','value'=>''];
         }
         $return = parent::ajax_custom_form($data);
         
@@ -72,7 +73,7 @@ class lensesStoreItem extends lensesMain{
                     $temp[$r['id']] = $r['id'];
                 }
                 if(sizeof($temp)>0){
-                    if($this->CI->db->query('UPDATE store_item SET marketplace_item_id=?,marketplace_item_name=?,marketplace_variation_order=? WHERE id in ('.implode(',', $temp).')',array($_POST['value']['marketplace_item_id'],$_POST['value']['marketplace_item_name'],$_POST['value']['marketplace_variation_order']))){
+                    if($this->CI->db->query('UPDATE store_item SET marketplace_item_id=?,marketplace_item_name=?,marketplace_variation_order=?,marketplace_item_label=? WHERE id in ('.implode(',', $temp).')',array($_POST['value']['marketplace_item_id'],$_POST['value']['marketplace_item_name'],$_POST['value']['marketplace_variation_order'],$_POST['value']['marketplace_item_label']))){
                         $return = array("status"=>"1","message"=>"");    
                     }
                 }

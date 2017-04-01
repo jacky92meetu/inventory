@@ -60,3 +60,11 @@ table.dataTable tbody tr.selected{
 .DTFC_LeftWrapper th, .DTFC_LeftWrapper td, .DTFC_RightWrapper th, .DTFC_RightWrapper td{
     background-color: #f5f5f5;
 }
+
+table.dataTable tbody>tr.selected td{background-color:#B0BED9;}
+
+.form-container{}
+.form-container .modal-footer{}
+.form-container .modal-footer-loading{float:right;display:none;}
+.form-container.form-loading .modal-footer{display:none;}
+.form-container.form-loading .modal-footer-loading{display:block;}

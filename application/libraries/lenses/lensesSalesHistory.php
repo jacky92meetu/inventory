@@ -28,7 +28,8 @@ class lensesSalesHistory extends lensesMain{
             , c.store_skucode
             , d.name product_name
             , e.name option_name
-            , a.buyer_id, a.buyer_name, a.buyer_country, a.tracking_number, a.selling_currency, a.quantity
+            , a.buyer_id, a.buyer_name, a.buyer_address, a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
+            , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
             , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed
@@ -39,7 +40,7 @@ class lensesSalesHistory extends lensesMain{
             join warehouse_item wi on c.warehouse_item_id=wi.id
             join products d on wi.product_id=d.id
             join option_item e on wi.item_id=e.id
-            join couriers f on a.courier_id=f.id
+            left join couriers f on a.courier_id=f.id
             join stores g on c.store_id=g.id) a';
         
         $supp_list = array();
@@ -78,10 +79,16 @@ class lensesSalesHistory extends lensesMain{
             array('id'=>'store_name','name'=>'Store'),
             array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame'),
-            array('id'=>'store_item_id','name'=>'Color'),
+            array('id'=>'option_name','name'=>'Color'),
             array('id'=>'buyer_id','name'=>'Buyer ID','editable'=>true),
             array('id'=>'buyer_name','name'=>'Buyer Name','editable'=>true),
+            array('id'=>'buyer_address','name'=>'Buyer Address','editable'=>true),
+            array('id'=>'buyer_city','name'=>'Buyer City','editable'=>true),
+            array('id'=>'buyer_state','name'=>'Buyer State','editable'=>true),
+            array('id'=>'buyer_postcode','name'=>'Buyer Postcode','editable'=>true),
             array('id'=>'buyer_country','name'=>'Buyer Country','editable'=>true),
+            array('id'=>'buyer_contact','name'=>'Buyer Contact','editable'=>true),
+            array('id'=>'buyer_email','name'=>'Buyer Email','editable'=>true),
             array('id'=>'tracking_number','name'=>'Tracking','editable'=>true),
             array('id'=>'selling_currency','name'=>'Currency','option_text'=>$currency_list,'editable'=>true),
             array('id'=>'quantity','name'=>'Quantity','option_text'=>$quantity_list,'editable'=>true),
@@ -108,7 +115,13 @@ class lensesSalesHistory extends lensesMain{
             array('id'=>'store_skucode','name'=>'SKU','editable'=>true),
             array('id'=>'buyer_id','name'=>'Buyer ID','editable'=>true),
             array('id'=>'buyer_name','name'=>'Buyer Name','editable'=>true),
+            array('id'=>'buyer_address','name'=>'Buyer Address','editable'=>true),
+            array('id'=>'buyer_city','name'=>'Buyer City','editable'=>true),
+            array('id'=>'buyer_state','name'=>'Buyer State','editable'=>true),
+            array('id'=>'buyer_postcode','name'=>'Buyer Postcode','editable'=>true),
             array('id'=>'buyer_country','name'=>'Buyer Country','editable'=>true),
+            array('id'=>'buyer_contact','name'=>'Buyer Contact','editable'=>true),
+            array('id'=>'buyer_email','name'=>'Buyer Email','editable'=>true),
             array('id'=>'tracking_number','name'=>'Tracking','editable'=>true),
             array('id'=>'selling_currency','name'=>'Currency','option_text'=>$currency_list,'editable'=>true),
             array('id'=>'quantity','name'=>'Quantity','option_text'=>$quantity_list,'editable'=>true),
@@ -181,7 +194,7 @@ class lensesSalesHistory extends lensesMain{
         if(($temp = explode('/', $value['shipment_date'])) && sizeof($temp)==3){
             $value['shipment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
         }
-        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','tracking_number','buyer_country','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
+        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
         foreach($field_list as $field){
             if(isset($value[$field])){
                 $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);

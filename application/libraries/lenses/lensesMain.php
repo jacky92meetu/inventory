@@ -15,7 +15,7 @@ class lensesMain{
     var $is_required = true;
     var $recordsTotal = 0;
     var $recordsFiltered = 0;
-    var $freezePane = 0;
+    var $freezePane = 2;
     var $data = array();
     var $default_length = 50;
     var $custom_form = false;
@@ -184,7 +184,11 @@ class lensesMain{
                     }
                     */
                     if(isset($this->header[$count]['is_date'])){
-                        $c = date('d/m/Y',strtotime($c));
+                        if(strtotime($c)>0 && date("Y-m-d",strtotime($c))!="1970-01-01"){
+                            $c = date('d/m/Y',strtotime($c));
+                        }else{
+                            $c = "";
+                        }
                     }
                     $temp2[] = $c;
                     $count += 1;
@@ -249,6 +253,12 @@ class lensesMain{
                         if(!isset($col['editable'])){
                             $temp['readonly'] = '1';
                         }
+                        if(isset($col['is_file'])){
+                            $temp['is_file'] = '1';
+                        }
+                        if(isset($col['value'])){
+                            $temp['value'] = $col['value'];
+                        }
                         $data[$key] = $temp;
                         break;
                     }
@@ -258,7 +268,9 @@ class lensesMain{
         $temp = array();
         foreach($data as $d){
             if($d['is_date']=='1' && empty($d['value'])){
-                $d['value'] = date("d/m/Y");
+                if(empty($d['value']) || strtotime($d['value'])<=0 || date("Y-m-d",strtotime($d['value']))=="1970-01-01"){
+                    $d['value'] = date("d/m/Y");
+                }
             }
             if(!isset($d['value'])){
                 $d['value'] = '';
@@ -279,7 +291,11 @@ class lensesMain{
                         if(isset($data[$key])){
                             $data[$key]['value'] = $value;
                             if(isset($data[$key]['is_date'])){
-                                $data[$key]['value'] = date('d/m/Y',strtotime($data[$key]['value']));
+                                if(strtotime($data[$key]['value'])>0 && date("Y-m-d",strtotime($data[$key]['value']))!="1970-01-01"){
+                                    $data[$key]['value'] = date('d/m/Y',strtotime($data[$key]['value']));
+                                }else{
+                                    $data[$key]['value'] = "";
+                                }
                             }
                         }
                     }

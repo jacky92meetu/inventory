@@ -60,6 +60,14 @@ class Home extends CI_Controller {
             $this->load->view('page-login');
         }
         
+        public function live_update(){
+            //forex update
+            $this->load->library('cbnmforex');
+            $this->cbnmforex->update();
+            print_r("Forex update done!");
+            exit;
+        }
+        
         public function logout(){
             try{
                 if(isset($_SESSION['user'])){
