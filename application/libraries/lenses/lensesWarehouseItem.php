@@ -34,6 +34,7 @@ class lensesWarehouseItem extends lensesMain{
 ,a.min_qty min_qty
 ,a.stop_qty stop_qty
 ,if(if(a.stop_qty>0,a.stop_qty,s2.value)>=(a.quantity+a.quantity2) and wih.id is not null,"stop",if(if(a.min_qty>0,a.min_qty,s1.value)>=(a.quantity+a.quantity2) and wih.id is not null,"warning",if(wih.id is null,"new","normal"))) qstatus
+,a.product_id,a.item_id
 from warehouse_item a
 join products b on a.product_id=b.id
 join option_item c on a.item_id=c.id and c.type="1"
@@ -70,6 +71,8 @@ where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
             $data['cur_warehouse_id'] = ['id'=>'cur_warehouse_id','name'=>'cur_warehouse_id','value'=>$cur_warehouse_id,'hidden'=>'1'];
             $data['type'] = ['id'=>'type','name'=>'Type','value'=>$temp,'hidden'=>'1'];
             $data['id'] = ['id'=>'id','name'=>'ID','value'=>'','hidden'=>'1'];
+            $data['product_id'] = ['id'=>'product_id','name'=>'product_id','value'=>'','hidden'=>'1'];
+            $data['item_id'] = ['id'=>'item_id','name'=>'item_id','value'=>'','hidden'=>'1'];
             $data['product_name'] = ['id'=>'product_name','name'=>'Frame Model','value'=>'','readonly'=>'1'];
             $data['option_name'] = ['id'=>'option_name','name'=>'Color','value'=>'','readonly'=>'1'];
             $data['quantity'] = ['id'=>'quantity','name'=>'Current Quantity','value'=>'','readonly'=>'1'];
@@ -94,6 +97,23 @@ where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
                 $id = intval($this->CI->input->post('id',true));
                 if($this->adjust_quantity($id, $quantity1, $quantity2)){
                     $return = array("status"=>"1","message"=>"");
+                }
+            }
+            /*transfer*/
+            $transfer_warehouse = intval($this->CI->input->post('value[transfer_warehouse]',true));
+            $product_id = intval($this->CI->input->post('value[product_id]',true));
+            $item_id = intval($this->CI->input->post('value[item_id]',true));
+            $quantity1 = intval($this->CI->input->post('value[transfer_quantity]',true));
+            $quantity2 = intval($this->CI->input->post('value[transfer_quantity2]',true));
+            if(!empty($quantity1) || !empty($quantity2)){
+                $id = intval($this->CI->input->post('id',true));
+                if($this->adjust_quantity($id, ($quantity1*-1), ($quantity2*-1))){
+                    if(($result = $this->CI->db->query('SELECT id FROM warehouse_item WHERE warehouse_id=? AND product_id=? AND item_id=? LIMIT 1',array($transfer_warehouse,$product_id,$item_id))) && $result->num_rows() && ($row = $result->row_array())){
+                        $id = intval($row['id']);
+                        if($this->adjust_quantity($id, $quantity1, $quantity2)){
+                            $return = array("status"=>"1","message"=>"");
+                        }
+                    }
                 }
             }
         }
