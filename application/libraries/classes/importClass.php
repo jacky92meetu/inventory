@@ -306,10 +306,24 @@ class importClass{
         $return = "";
         if(isset($this->excel_data[$row])){
             if($col==""){
-                return $this->excel_data[$row];
+                $temp = array();
+                foreach($this->excel_cols as $col => $pos){
+                    if(isset($this->excel_data[$row][$this->excel_cols[$col]])){
+                        $temp[$col] = $this->excel_data[$row][$this->excel_cols[$col]];
+                    }
+                }
+                return $temp;
             }else if(strlen($col)>0 && isset($this->excel_cols[$col]) && isset($this->excel_data[$row][$this->excel_cols[$col]])){
                 $return = $this->excel_data[$row][$this->excel_cols[$col]];
             }
+        }
+        return $return;
+    }
+    
+    public function excel_set($row = 0,$col = '',$val = ''){
+        $return = "";
+        if(isset($this->excel_data[$row]) && strlen($col)>0 && isset($this->excel_cols[$col]) && isset($this->excel_data[$row][$this->excel_cols[$col]])){
+            $return = $this->excel_data[$row][$this->excel_cols[$col]] = $val;
         }
         return $return;
     }
@@ -318,15 +332,27 @@ class importClass{
     function sales_import_ebay($file){
         $return = array("status"=>"0","message"=>"");
         
-        $cols = array('buyer_id'=>'User Id','buyer_name'=>'Buyer Fullname','buyer_contact'=>'Buyer Phone Number','buyer_email'=>'Buyer Email','buyer_addr1'=>'Buyer Address 1','buyer_addr2'=>'Buyer Address 2','buyer_city'=>'Buyer City','buyer_state'=>'Buyer State','buyer_postcode'=>'Buyer Zip','buyer_country'=>'Buyer Country','quantity'=>'Quantity','item_id'=>'Item ID','sales_id'=>'Transaction ID','selling_price'=>'Sale Price','shipping_price'=>'Shipping And Handling','total_price'=>'Total Price','paypal_trans_id'=>'PayPal Transaction ID','paid_date'=>'Paid on Date','buyer_reference'=>'Notes to Yourself','priv_notes'=>'Private Notes','item_sku'=>'Custom Label','variation_order'=>'Variation Details');
+        $cols = array('buyer_id'=>'User Id','buyer_name'=>'Buyer Fullname','buyer_contact'=>'Buyer Phone Number','buyer_email'=>'Buyer Email','buyer_addr1'=>'Buyer Address 1','buyer_addr2'=>'Buyer Address 2','buyer_city'=>'Buyer City','buyer_state'=>'Buyer State','buyer_postcode'=>'Buyer Zip','buyer_country'=>'Buyer Country','quantity'=>'Quantity','item_id'=>'Item ID','sales_id'=>'Transaction ID','selling_price'=>'Sale Price','shipping_price'=>'Shipping And Handling','paypal_trans_id'=>'PayPal Transaction ID','paid_date'=>'Paid on Date','buyer_reference'=>'Notes to Yourself','priv_notes'=>'Private Notes','item_sku'=>'Custom Label','variation_order'=>'Variation Details','sales_record_number'=>'Sales Record Number');
         
         if(($temp_records = $this->excel_read($file, $cols))){
             $temp_list = array();
             $row_count = 0;
             $missing = array();
+            $parent_record = array();
             for($row_count=0; $row_count<sizeof($temp_records); $row_count++){
                 if($row_count==0 || trim(implode("",$this->excel_get($row_count)))==""){
                     continue;
+                }
+                $temp = $this->excel_get($row_count, 'sales_record_number');
+                if($this->excel_get($row_count, 'quantity')>1 && $this->excel_get($row_count, 'item_id')==""){
+                    $parent_record[$temp] = $row_count;
+                    continue;
+                }else if(isset($parent_record[$temp]) && $this->excel_get($row_count, 'buyer_id')==""){
+                    foreach($this->excel_get($parent_record[$temp]) as $key => $value){
+                        if(strlen($value)>0 && $this->excel_get($row_count, $key)==""){
+                            $this->excel_set($row_count, $key, $value);
+                        }
+                    }
                 }
                 $cur_siteid = "";
                 if(!empty($this->excel_get($row_count, 'selling_price'))){
@@ -345,13 +371,12 @@ class importClass{
                 
                 if(($row = $this->search_store_item($this->account_id, "ebay", 0, $cur_siteid, $this->excel_get($row_count, 'item_sku'), $this->excel_get($row_count, 'item_id'), str_ireplace(array('[',']',':'), array('','','='), $this->excel_get($row_count, 'variation_order'))))){
                     $selling_price = preg_replace('#[^0-9\.]#iu', '', $this->excel_get($row_count, 'selling_price'));
-                    $total_price = preg_replace('#[^0-9\.]#iu', '', $this->excel_get($row_count, 'total_price'));
                     $shipping_charges = preg_replace('#[^0-9\.]#iu', '', $this->excel_get($row_count, 'shipping_price'));
                     $temp3 = array('account_id'=>$row['account_id'],'store_item_id'=>$row['store_item_id'],'buyer_reference'=>$this->excel_get($row_count, 'buyer_reference').$this->excel_get($row_count, 'priv_notes'),'buyer_id'=>$this->excel_get($row_count, 'buyer_id'),'buyer_name'=>$this->excel_get($row_count, 'buyer_name'),'buyer_contact'=>$this->excel_get($row_count, 'buyer_contact'),'buyer_email'=>$this->excel_get($row_count, 'buyer_email'),'buyer_address'=>$this->excel_get($row_count, 'buyer_addr1').(strlen($this->excel_get($row_count, 'buyer_addr2'))>0?', '.$this->excel_get($row_count, 'buyer_addr2'):''),'buyer_city'=>$this->excel_get($row_count, 'buyer_city'),'buyer_state'=>$this->excel_get($row_count, 'buyer_state'),'buyer_postcode'=>$this->excel_get($row_count, 'buyer_postcode'),'buyer_country'=>$this->excel_get($row_count, 'buyer_country'),'tracking_number'=>'','quantity'=>$this->excel_get($row_count, 'quantity'),'selling_currency'=>$cur_siteid,'selling_price'=>$selling_price,'shipping_charges_received'=>$shipping_charges,'payment_date'=>date("Y-m-d H:i:s",strtotime($this->excel_get($row_count, 'paid_date'))),'shipment_date'=>'','courier_id'=>'','shipping_charges_paid'=>'','sales_id'=>$this->excel_get($row_count, 'sales_id'),'sales_fees_pect'=>$row['sales_fees_pect'],'sales_fees_fixed'=>$row['sales_fees_fixed'],'paypal_trans_id'=>$this->excel_get($row_count, 'paypal_trans_id'),'paypal_fees_pect'=>$row['paypal_fees_pect'],'paypal_fees_fixed'=>$row['paypal_fees_fixed']);
                     $temp_id = $row['store_item_id']."_".$this->excel_get($row_count, 'sales_id');
                     $temp_list[$temp_id] = $temp3;
                 }else{
-                    $missing[] = "row no. ".$row_count.": SKU no found. Transaction ID:".$this->excel_get($row_count, 'sales_id');
+                    $missing[] = "row no. ".($row_count + 1).": SKU no found. Transaction ID:".$this->excel_get($row_count, 'sales_id');
                 }
             }
             return $this->get_return($temp_list, $missing, 'sales');
@@ -379,7 +404,7 @@ class importClass{
                         $temp3['store_item_id'] = $row['store_item_id'];
                         $temp_list[$cur_siteid][$cur_product_id]['variation'][$this->excel_get($row_count,'variation_order')] = $temp3;
                     }else{
-                        $missing[] = "row no. ".$row_count.": SKU no found. CustomLabel:".$this->excel_get($row_count,'item_sku');
+                        $missing[] = "row no. ".($row_count + 1).": SKU no found. CustomLabel:".$this->excel_get($row_count,'item_sku');
                     }
                 }else{
                     if(!empty($this->excel_get($row_count, 'currency')) && ($cur_siteid=="" || $cur_siteid!=$this->excel_get($row_count, 'currency'))){
@@ -447,7 +472,7 @@ class importClass{
                     $temp_id = $row['store_item_id']."_".$sales_id;
                     $temp_list[$temp_id] = $temp3;
                 }else{
-                    $missing[] = "row no. ".$row_count.": SKU no found. order-id:".$sales_id;
+                    $missing[] = "row no. ".($row_count + 1).": SKU no found. order-id:".$sales_id;
                 }
             }
             return $this->get_return($temp_list, $missing, 'sales');
@@ -486,7 +511,7 @@ class importClass{
                     }
                     $temp_list[$cur_siteid][$this->excel_get($row_count,'item_product')]['variation'][$this->excel_get($row_count,'item_sku')] = $temp3;
                 }else{
-                    $missing[] = "row no. ".$row_count.": SKU no found. seller-sku:".$this->excel_get($row_count,'item_sku');
+                    $missing[] = "row no. ".($row_count + 1).": SKU no found. seller-sku:".$this->excel_get($row_count,'item_sku');
                 }
             }
             return $this->get_return($temp_list, $missing, 'item');

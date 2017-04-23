@@ -89,7 +89,7 @@ where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
     }
     
     function ajax_custom_form_save(){
-        $return = false;
+        $return = array("status"=>"0","message"=>"No record to be save.");
         if($this->CI->input->post('value[type]',true)=="adj_quantity"){
             $quantity1 = intval($this->CI->input->post('value[adj_quantity]',true));
             $quantity2 = intval($this->CI->input->post('value[adj_quantity2]',true));
