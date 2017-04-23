@@ -24,6 +24,7 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
         <link href="<?php echo base_url('/assets/default'); ?>/css/pages.css" rel="stylesheet" type="text/css" />
         <link href="<?php echo base_url('/assets/default'); ?>/css/menu.css" rel="stylesheet" type="text/css" />
         <link href="<?php echo base_url('/assets/default'); ?>/css/responsive.css" rel="stylesheet" type="text/css" />
+        <link href="<?php echo base_url('/assets/default'); ?>/plugins/sweetalert/dist/sweetalert.css" rel="stylesheet" type="text/css" />
         <link href="<?php echo base_url('/assets/default'); ?>/css/default.css" rel="stylesheet" type="text/css" />
         
         <script>
@@ -52,6 +53,7 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
         <script src="<?php echo base_url('/assets/default'); ?>/plugins/notifyjs/dist/notify.min.js"></script>
         <script src="<?php echo base_url('/assets/default'); ?>/plugins/notifications/notify-metro.js"></script>
         <script type="text/javascript" src="<?php echo base_url('/assets/default'); ?>/plugins/parsleyjs/dist/parsley.min.js"></script>
+        <script src="<?php echo base_url('/assets/default'); ?>/plugins/sweetalert/dist/sweetalert.min.js"></script>
         <script src="<?php echo base_url('/assets/default'); ?>/js/default.js"></script>
 
         <module type="head" />

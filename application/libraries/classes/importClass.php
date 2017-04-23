@@ -200,6 +200,7 @@ class importClass{
     
     function get_return($temp_list,$missing = array(),$type = 'item'){
         $return = array("status"=>"0","message"=>"");
+        $func = "";
         if(is_array($temp_list) && sizeof($temp_list)>0){
             switch($type){
                 case "item":
@@ -210,18 +211,24 @@ class importClass{
                     break;
             }
             $return['status'] = "1";
+            $return['message'] .= "<div class='alert alert-success'><strong>".sizeof($temp_list)."</strong> item(s) import successfully.</div>";
         }
         if(sizeof($missing)>0){
-            $return['message'] = sizeof($missing)." item(s) fail to import!";
-            $temp = array();
-            foreach($missing as $a){
-                $temp[] = $a;
-            }
-            $temp = implode(", ",$temp);
-            $return['message'] .= " Fail list:".$temp;
-            $return['func'] = 'function(){console.log("Fail List: '.$return['message'].'")}';
+            $return['message'] .= "<div class='alert alert-danger'><strong>".sizeof($missing)."</strong> item(s) fail to import!</div>";
+            $temp = implode("<br/>",$missing);
+            $return['message'] .= "<pre style='text-align:left;'>Fail list:\\n".$temp."</pre>";
         }else{
             $return['status'] = "1";
+        }
+        $func .= 'swal({
+                title: "Submission Result",
+                text: "<pre style=\'text-align:left;\'>'.$return['message'].'</pre>",
+                type: "",
+                html: true
+            });';
+        $return['message'] = "";
+        if(sizeof($func)>0){
+            $return['func'] = 'function(){'.$func.'}';
         }
         return $return;
     }
@@ -344,7 +351,7 @@ class importClass{
                     $temp_id = $row['store_item_id']."_".$this->excel_get($row_count, 'sales_id');
                     $temp_list[$temp_id] = $temp3;
                 }else{
-                    $missing[] = $this->excel_get($row_count, 'sales_id');
+                    $missing[] = "row no. ".$row_count.": SKU no found. Transaction ID:".$this->excel_get($row_count, 'sales_id');
                 }
             }
             return $this->get_return($temp_list, $missing, 'sales');
@@ -372,7 +379,7 @@ class importClass{
                         $temp3['store_item_id'] = $row['store_item_id'];
                         $temp_list[$cur_siteid][$cur_product_id]['variation'][$this->excel_get($row_count,'variation_order')] = $temp3;
                     }else{
-                        $missing[] = $this->excel_get($row_count,'item_sku');
+                        $missing[] = "row no. ".$row_count.": SKU no found. CustomLabel:".$this->excel_get($row_count,'item_sku');
                     }
                 }else{
                     if(!empty($this->excel_get($row_count, 'currency')) && ($cur_siteid=="" || $cur_siteid!=$this->excel_get($row_count, 'currency'))){
@@ -440,7 +447,7 @@ class importClass{
                     $temp_id = $row['store_item_id']."_".$sales_id;
                     $temp_list[$temp_id] = $temp3;
                 }else{
-                    $missing[] = $sales_id;
+                    $missing[] = "row no. ".$row_count.": SKU no found. order-id:".$sales_id;
                 }
             }
             return $this->get_return($temp_list, $missing, 'sales');
@@ -479,7 +486,7 @@ class importClass{
                     }
                     $temp_list[$cur_siteid][$this->excel_get($row_count,'item_product')]['variation'][$this->excel_get($row_count,'item_sku')] = $temp3;
                 }else{
-                    $missing[] = $this->excel_get($row_count,'item_sku');
+                    $missing[] = "row no. ".$row_count.": SKU no found. seller-sku:".$this->excel_get($row_count,'item_sku');
                 }
             }
             return $this->get_return($temp_list, $missing, 'item');

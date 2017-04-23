@@ -129,7 +129,7 @@ class lensesStores extends lensesMain{
     function ajax_change_update(){
         $filter_list = array();
         $filter_list[] = ['name'=>'account_id'];
-        $filter_list[] = ['name'=>'marketplace_template','query'=>'SELECT b.import_template id,b.import_template name FROM stores a,marketplaces b WHERE a.marketplace_id=b.id AND a.account_id=? GROUP BY b.import_template ORDER BY length(b.import_template),b.import_template','id'=>'account_id'];
+        $filter_list[] = ['name'=>'marketplace_template','query'=>'SELECT b.import_template id,b.import_template name FROM stores a,marketplaces b WHERE a.marketplace_id=b.id AND a.account_id=? AND b.import_template<>"" GROUP BY b.import_template ORDER BY length(b.import_template),b.import_template','id'=>'account_id'];
         
         $return = parent::ajax_change_update($filter_list);
         

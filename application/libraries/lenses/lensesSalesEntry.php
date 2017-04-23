@@ -246,7 +246,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $filter_list[] = ['name'=>'sales_fees_fixed','query'=>'SELECT a.sales_fees_fixed id, a.sales_fees_fixed name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
         $filter_list[] = ['name'=>'paypal_fees_pect','query'=>'SELECT a.paypal_fees_pect id, a.paypal_fees_pect name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
         $filter_list[] = ['name'=>'paypal_fees_fixed','query'=>'SELECT a.paypal_fees_fixed id, a.paypal_fees_fixed name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
-        $filter_list[] = ['name'=>'marketplace_template','query'=>'SELECT b.sales_template id,b.sales_template name FROM stores a,marketplaces b WHERE a.marketplace_id=b.id AND a.account_id=? GROUP BY b.sales_template ORDER BY length(b.sales_template),b.sales_template','id'=>'account_id'];
+        $filter_list[] = ['name'=>'marketplace_template','query'=>'SELECT b.sales_template id,b.sales_template name FROM stores a,marketplaces b WHERE a.marketplace_id=b.id AND a.account_id=? AND b.sales_template<>"" GROUP BY b.sales_template ORDER BY length(b.sales_template),b.sales_template','id'=>'account_id'];
         
         $return = parent::ajax_change_update($filter_list);
         $quantity_list = array('0'=>'0');
