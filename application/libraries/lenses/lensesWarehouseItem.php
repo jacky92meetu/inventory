@@ -59,13 +59,26 @@ where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
     function ajax_custom_form(){
         $data = array();
         if(strlen($temp = $this->CI->input->post('type',true))>0 && $temp=="adj_quantity"){
+            $warehouse_list = array();
+            $cur_warehouse_id = $this->CI->input->get('id',0);
+            if(($result = $this->CI->db->query('SELECT id,name FROM warehouses WHERE id<>? ORDER BY name',array($cur_warehouse_id)))){
+                foreach($result->result_array() as $value){
+                    $warehouse_list[$value['id']] = $value['name'];
+                }
+            }
+            
+            $data['cur_warehouse_id'] = ['id'=>'cur_warehouse_id','name'=>'cur_warehouse_id','value'=>$cur_warehouse_id,'hidden'=>'1'];
             $data['type'] = ['id'=>'type','name'=>'Type','value'=>$temp,'hidden'=>'1'];
             $data['id'] = ['id'=>'id','name'=>'ID','value'=>'','hidden'=>'1'];
             $data['product_name'] = ['id'=>'product_name','name'=>'Frame Model','value'=>'','readonly'=>'1'];
             $data['option_name'] = ['id'=>'option_name','name'=>'Color','value'=>'','readonly'=>'1'];
             $data['quantity'] = ['id'=>'quantity','name'=>'Current Quantity','value'=>'','readonly'=>'1'];
+            $data['quantity2'] = ['id'=>'quantity2','name'=>'Defected Quantity','value'=>'','readonly'=>'1'];
             $data['adj_quantity'] = ['id'=>'adj_quantity','name'=>'Quantity Adjustment','value'=>'','optional'=>'1'];
             $data['adj_quantity2'] = ['id'=>'adj_quantity2','name'=>'Defected Quantity Adjustment','value'=>'','optional'=>'1'];
+            $data['transfer_warehouse'] = ['id'=>'transfer_warehouse','name'=>'Warehouse Transfer','option_text'=>$warehouse_list,'value'=>'','optional'=>'1'];
+            $data['transfer_quantity'] = ['id'=>'transfer_quantity','name'=>'Quantity Transfer','value'=>'','optional'=>'1'];
+            $data['transfer_quantity2'] = ['id'=>'transfer_quantity2','name'=>'Defected Quantity Transfer','value'=>'','optional'=>'1'];
         }
         $return = parent::ajax_custom_form($data);
         
