@@ -71,8 +71,8 @@ class importClass{
         $selected_product = false;
         foreach($search_array as $str){
             $temp = preg_replace('#[^0-9a-z\s][^0-9a-z]+[^0-9a-z\s]?#iu', '', $str);
-            $temp = "-".trim(preg_replace('#[\s]+#iu', "-", $temp),"-")."-";
             $temp_str2 = trim(preg_replace('#[\s]+#iu', "", $temp));
+            $temp = "-".trim(preg_replace('#[\s]+#iu', "-", $temp),"-")."-";
             foreach(array_reverse($instances['product_list']) as $p){
                 $temp2 = explode(" ",trim($p['name']));
                 $count = 0;
@@ -395,7 +395,7 @@ class importClass{
     function sales_import_amazon($file){
         $return = array("status"=>"0","message"=>"");
         
-        $cols = array('buyer_name'=>'recipient-name','buyer_contact'=>'buyer-phone-number','buyer_email'=>'buyer-email','buyer_addr1'=>'ship-address-1','buyer_addr2'=>'ship-address-2','buyer_addr3'=>'ship-address-3','buyer_city'=>'ship-city','buyer_state'=>'ship-state','buyer_postcode'=>'ship-postal-code','buyer_country'=>'ship-country','quantity'=>'quantity-purchased','item_id'=>'order-item-id','sales_id'=>'order-id','selling_price'=>'item-price','shipping_charges_paid'=>'shipping-price','paid_date'=>'payments-date','buyer_reference'=>'delivery-Instructions','item_sku'=>'sku','amazon-order-id'=>'amazon-order-id','amazon-order-item-id'=>'amazon-order-item-id','tracking_number'=>'tracking-number','shipment_date'=>'shipment-date','courier_id'=>'carrier','ship-promotion-discount'=>'ship-promotion-discount','currency'=>'currency','item_name'=>'product-name');
+        $cols = array('buyer_name'=>'recipient-name','buyer_contact'=>'buyer-phone-number','buyer_email'=>'buyer-email','buyer_addr1'=>'ship-address-1','buyer_addr2'=>'ship-address-2','buyer_addr3'=>'ship-address-3','buyer_city'=>'ship-city','buyer_state'=>'ship-state','buyer_postcode'=>'ship-postal-code','buyer_country'=>'ship-country','quantity'=>'quantity-purchased','item_id'=>'order-item-id','sales_id'=>'order-id','selling_price'=>'item-price','shipping_charges_paid'=>'shipping-price','paid_date'=>'payments-date','buyer_reference'=>'delivery-Instructions','item_sku'=>'sku','amazon-order-id'=>'amazon-order-id','amazon-order-item-id'=>'amazon-order-item-id','tracking_number'=>'tracking-number','shipment_date'=>'shipment-date','courier_id'=>'carrier','ship-promotion-discount'=>'ship-promotion-discount','currency'=>'currency','item_name'=>'product-name','quantity-shipped'=>'quantity-shipped');
         
         if(($temp_records = $this->excel_read($file, $cols))){
             $temp_list = array();
@@ -419,12 +419,14 @@ class importClass{
                 $courier_id = "";
                 $sales_id = $this->excel_get($row_count, 'sales_id');
                 $temp_sku = $this->excel_get($row_count,'item_sku');
+                $quantity = $this->excel_get($row_count, 'quantity');
                 if($this->excel_get($row_count, 'amazon-order-id')!=""){
                     $is_fba = 1;
                     $tracking_number = $this->excel_get($row_count, 'courier_id')." ".$this->excel_get($row_count, 'tracking_number');
                     $courier_id = $courier_sys_id;
                     $sales_id = $this->excel_get($row_count, 'amazon-order-id');
                     $temp_sku = str_ireplace('.fba', '', $this->excel_get($row_count,'item_sku'));
+                    $quantity = $this->excel_get($row_count, 'quantity-shipped');
                     /*
                     $shipping_charges_discount = preg_replace('#[^0-9\.]#iu', '', $this->excel_get($row_count, 'ship-promotion-discount'));
                     if(is_numeric($shipping_charges_discount) && $shipping_charges_discount>0){
@@ -434,7 +436,7 @@ class importClass{
                 }
                 
                 if(($row = $this->search_store_item($this->account_id, "amazon_".$cur_siteid, $is_fba, $cur_siteid, $this->excel_get($row_count, 'item_sku')))){
-                    $temp3 = array('account_id'=>$row['account_id'],'store_item_id'=>$row['store_item_id'],'buyer_reference'=>$this->excel_get($row_count, 'buyer_reference'),'buyer_id'=>$this->excel_get($row_count, 'buyer_email'),'buyer_name'=>$this->excel_get($row_count, 'buyer_name'),'buyer_contact'=>$this->excel_get($row_count, 'buyer_contact'),'buyer_email'=>$this->excel_get($row_count, 'buyer_email'),'buyer_address'=>$this->excel_get($row_count, 'buyer_addr1').(strlen($this->excel_get($row_count, 'buyer_addr2'))>0?', '.$this->excel_get($row_count, 'buyer_addr2'):'').(strlen($this->excel_get($row_count, 'buyer_addr3'))>0?', '.$this->excel_get($row_count, 'buyer_addr3'):''),'buyer_city'=>$this->excel_get($row_count, 'buyer_city'),'buyer_state'=>$this->excel_get($row_count, 'buyer_state'),'buyer_postcode'=>$this->excel_get($row_count, 'buyer_postcode'),'buyer_country'=>$this->excel_get($row_count, 'buyer_country'),'tracking_number'=>$tracking_number,'quantity'=>$this->excel_get($row_count, 'quantity'),'selling_currency'=>$cur_siteid,'selling_price'=>$selling_price,'shipping_charges_received'=>'','payment_date'=>date("Y-m-d H:i:s",strtotime($this->excel_get($row_count, 'paid_date'))),'shipment_date'=>$this->excel_get($row_count, 'shipment_date'),'courier_id'=>$courier_id,'shipping_charges_paid'=>$shipping_charges,'sales_id'=>$sales_id,'sales_fees_pect'=>$row['sales_fees_pect'],'sales_fees_fixed'=>$row['sales_fees_fixed'],'paypal_trans_id'=>$this->excel_get($row_count, 'paypal_trans_id'),'paypal_fees_pect'=>$row['paypal_fees_pect'],'paypal_fees_fixed'=>$row['paypal_fees_fixed']);
+                    $temp3 = array('account_id'=>$row['account_id'],'store_item_id'=>$row['store_item_id'],'buyer_reference'=>$this->excel_get($row_count, 'buyer_reference'),'buyer_id'=>$this->excel_get($row_count, 'buyer_email'),'buyer_name'=>$this->excel_get($row_count, 'buyer_name'),'buyer_contact'=>$this->excel_get($row_count, 'buyer_contact'),'buyer_email'=>$this->excel_get($row_count, 'buyer_email'),'buyer_address'=>$this->excel_get($row_count, 'buyer_addr1').(strlen($this->excel_get($row_count, 'buyer_addr2'))>0?', '.$this->excel_get($row_count, 'buyer_addr2'):'').(strlen($this->excel_get($row_count, 'buyer_addr3'))>0?', '.$this->excel_get($row_count, 'buyer_addr3'):''),'buyer_city'=>$this->excel_get($row_count, 'buyer_city'),'buyer_state'=>$this->excel_get($row_count, 'buyer_state'),'buyer_postcode'=>$this->excel_get($row_count, 'buyer_postcode'),'buyer_country'=>$this->excel_get($row_count, 'buyer_country'),'tracking_number'=>$tracking_number,'quantity'=>$quantity,'selling_currency'=>$cur_siteid,'selling_price'=>$selling_price,'shipping_charges_received'=>'','payment_date'=>date("Y-m-d H:i:s",strtotime($this->excel_get($row_count, 'paid_date'))),'shipment_date'=>$this->excel_get($row_count, 'shipment_date'),'courier_id'=>$courier_id,'shipping_charges_paid'=>$shipping_charges,'sales_id'=>$sales_id,'sales_fees_pect'=>$row['sales_fees_pect'],'sales_fees_fixed'=>$row['sales_fees_fixed'],'paypal_trans_id'=>$this->excel_get($row_count, 'paypal_trans_id'),'paypal_fees_pect'=>$row['paypal_fees_pect'],'paypal_fees_fixed'=>$row['paypal_fees_fixed']);
                     $temp_id = $row['store_item_id']."_".$sales_id;
                     $temp_list[$temp_id] = $temp3;
                 }else{
