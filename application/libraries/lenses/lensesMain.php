@@ -420,7 +420,10 @@ class lensesMain{
         $return = array("status"=>"0","message"=>"");
         $selection = $this->CI->input->post('selection',true);
         
-        if(strlen($this->delete_query)==0){
+        if($selection=="ALL"){
+            $sql = 'DELETE FROM '.$this->table;
+            $this->delete_query = $sql;
+        }else if(strlen($this->delete_query)==0){
             $sql = 'DELETE FROM '.$this->table.' WHERE id IN ?';
             $this->delete_query = $sql;
         }

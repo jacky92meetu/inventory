@@ -32,7 +32,7 @@ $editable = false;
                 <?php } ?>
                 <?php if($this->cpage->template_data['delete_btn']){ ?>
                 <span class="">
-                    <button id="deleteFromTable" class="btn btn-danger waves-effect waves-light" onclick="data_delete()">Delete selected <i class="fa fa-lg fa-trash-o"></i></button>
+                    <button id="deleteFromTable" class="btn btn-danger waves-effect waves-light" onclick="data_delete()">Delete record <i class="fa fa-lg fa-trash-o"></i></button>
                 </span>
                 <?php } ?>
             </div>
@@ -602,11 +602,16 @@ $editable = false;
     function data_delete(){
         var obj = $('#datatable-editable tr[data-id] td:visible').first();
         var list = obj.closest('#datatable-editable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
+        var confirm = false;
         if(list.length==0){
-            alert("Please select data to delete.");
-            return false;
+            confirm = window.confirm("Once delete the data cannot be rollback. Are you sure you want to delete all record(s)?");
+            if(confirm){
+                list = "ALL";
+            }
+        }else{
+            confirm = window.confirm("Once delete the data cannot be rollback. Are you sure you want to delete "+list.length+" record(s)?");
         }
-        if(window.confirm("Once delete the data cannot be rollback. Are you sure you want to delete "+list.length+" record(s)?")){
+        if(confirm){
             show_processing(obj);
             var post_data = {};
             post_data['method'] = 'delete';
@@ -632,6 +637,7 @@ $editable = false;
                 $('#datatable-editable').DataTable().ajax.reload(null,false);
             });
         }
+        return false;
     }
     function data_cancel(obj){
         show_edit(obj,false);
