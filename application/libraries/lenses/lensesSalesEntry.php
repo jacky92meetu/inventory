@@ -20,7 +20,7 @@ class lensesSalesEntry extends lensesMain{
         $this->freezePane = 5;
         $this->is_required = false;
         $this->extra_btn = array();
-        $this->extra_btn[] = array('name'=>'Sales Import','custom_form'=>'sales_import');
+        $this->extra_btn[] = array('name'=>'Sales/Payment Import','custom_form'=>'sales_import');
         $this->extra_btn[] = array('name'=>'Save Transactions','url'=>base_url('ajax/sales_entry?method=save_transactions'));
         $this->custom_form = true;
         $this->ajax_url = base_url('ajax/sales_entry');
@@ -146,7 +146,8 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'type','name'=>'type','value'=>'sales_import','hidden'=>'1'),
             array('id'=>'account_id','name'=>'Account','is_ajax'=>'1','option_text'=>$supp_list,'editable'=>true),
             array('id'=>'marketplace_template','name'=>'MarketPlace','is_ajax'=>'1','option_text'=>array(),'editable'=>true),
-            array('id'=>'file','name'=>'file','is_file'=>'1')
+            array('id'=>'import_type','name'=>'Type','option_text'=>array('sales'=>'Sales Report','payment'=>'Payment Report')),
+            array('id'=>'file','name'=>'File','is_file'=>'1')
         );
     }
     
@@ -165,6 +166,7 @@ class lensesSalesEntry extends lensesMain{
         
         $col_list = array();
         $value = $this->CI->input->post('value',true);
+        $import_type = $value['import_type'];
         
         if(!empty($value['type']) && $value['type']=='sales_import'){
             $return = array("status"=>"0","message"=>"");
@@ -176,7 +178,11 @@ class lensesSalesEntry extends lensesMain{
                 $data = $value['file'];
                 $data = base64_decode($data);
                 file_put_contents($file, $data);
-                $return = $class->sales_import($value['account_id'],$value['marketplace_template'], $file);
+                if($import_type=="sales"){
+                    $return = $class->sales_import($value['account_id'],$value['marketplace_template'], $file);
+                }else if($import_type=="payment"){
+                    $return = $class->payment_import($value['account_id'],$value['marketplace_template'], $file);
+                }
                 unlink($file);
             }
             return $return;

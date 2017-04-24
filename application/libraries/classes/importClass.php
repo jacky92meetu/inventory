@@ -11,6 +11,19 @@ class importClass{
         $this->CI->load->database();
     }
     
+    function payment_import($account_id,$type,$file){
+        $this->account_id = $account_id;
+        $temp = explode("_",$type);
+        $return = array("status"=>"0","message"=>"");
+        switch ($temp[0]){
+            case 'amazon':
+                $return = $this->payment_import_amazon($file);
+                break;
+        }
+        
+        return $return;
+    }
+    
     function sales_import($account_id,$type,$file){
         $this->account_id = $account_id;
         $temp = explode("_",$type);
@@ -198,6 +211,20 @@ class importClass{
         }
     }
     
+    function transactions_sales_update($data = array()){
+        foreach($data as $row){
+            $col_list = array();
+            $data_list = array();
+            foreach($row['data'] as $key => $value){
+                $col_list[] = "`".$key."`=?";
+                $data_list[] = $value;
+            }
+            $data_list[] = $row['query_id'];
+            $sql = 'UPDATE '.$row['query_table'].' SET '.implode(",",$col_list).' WHERE id=?';
+            $this->CI->db->query($sql,$data_list);
+        }
+    }
+    
     function get_return($temp_list,$missing = array(),$type = 'item'){
         $return = array("status"=>"0","message"=>"");
         $func = "";
@@ -209,6 +236,9 @@ class importClass{
                 case "sales":
                     $this->transactions_cache_insert($temp_list);
                     break;
+                case "payment":
+                    $this->transactions_sales_update($temp_list);
+                    break;
             }
             $return['status'] = "1";
             $return['message'] .= "<div class='alert alert-success'><strong>".sizeof($temp_list)."</strong> item(s) import successfully.</div>";
@@ -216,7 +246,7 @@ class importClass{
         if(sizeof($missing)>0){
             $return['message'] .= "<div class='alert alert-danger'><strong>".sizeof($missing)."</strong> item(s) fail to import!</div>";
             $temp = implode("<br/>",$missing);
-            $return['message'] .= "<pre style='text-align:left;'>Fail list:\\n".$temp."</pre>";
+            $return['message'] .= "<pre style='text-align:left;height:300px;overflow-y:auto;'>Fail list:\\n".$temp."</pre>";
         }else{
             $return['status'] = "1";
         }
@@ -233,7 +263,7 @@ class importClass{
         return $return;
     }
     
-    public function excel_read($file,$cols = array()){
+    public function excel_read($file,$cols = array(),$header_line = 0){
         $return = false;
         if(file_exists($file)){
             $data = false;
@@ -277,7 +307,7 @@ class importClass{
             $this->excel_cols = array();
             $this->excel_data = array();
             if($data && is_array($data) && sizeof($data)>0){
-                $header = $data[0];
+                $header = $data[$header_line];
                 $temp = array();
                 $count = 0;
                 foreach($header as $c){
@@ -309,12 +339,12 @@ class importClass{
                 $temp = array();
                 foreach($this->excel_cols as $col => $pos){
                     if(isset($this->excel_data[$row][$this->excel_cols[$col]])){
-                        $temp[$col] = $this->excel_data[$row][$this->excel_cols[$col]];
+                        $temp[$col] = trim($this->excel_data[$row][$this->excel_cols[$col]]);
                     }
                 }
                 return $temp;
             }else if(strlen($col)>0 && isset($this->excel_cols[$col]) && isset($this->excel_data[$row][$this->excel_cols[$col]])){
-                $return = $this->excel_data[$row][$this->excel_cols[$col]];
+                $return = trim($this->excel_data[$row][$this->excel_cols[$col]]);
             }
         }
         return $return;
@@ -336,10 +366,9 @@ class importClass{
         
         if(($temp_records = $this->excel_read($file, $cols))){
             $temp_list = array();
-            $row_count = 0;
             $missing = array();
             $parent_record = array();
-            for($row_count=0; $row_count<sizeof($temp_records); $row_count++){
+            for($row_count=1; $row_count<sizeof($temp_records); $row_count++){
                 if($row_count==0 || trim(implode("",$this->excel_get($row_count)))==""){
                     continue;
                 }
@@ -394,7 +423,7 @@ class importClass{
             $cur_siteid = "";
             $cur_product_id = "";
             $missing = array();
-            for($row_count=0; $row_count<sizeof($temp_records); $row_count++){
+            for($row_count=1; $row_count<sizeof($temp_records); $row_count++){
                 if($row_count==0 || trim(implode("",$this->excel_get($row_count)))==""){
                     continue;
                 }
@@ -431,7 +460,6 @@ class importClass{
         
         if(($temp_records = $this->excel_read($file, $cols))){
             $temp_list = array();
-            $row_count = 0;
             $missing = array();
             
             $courier_sys_id = "3";
@@ -439,7 +467,7 @@ class importClass{
                 $courier_sys_id = $row['id'];
             }
             
-            for($row_count=0; $row_count<sizeof($temp_records); $row_count++){
+            for($row_count=1; $row_count<sizeof($temp_records); $row_count++){
                 if($row_count==0 || trim(implode("",$this->excel_get($row_count)))==""){
                     continue;
                 }
@@ -485,18 +513,17 @@ class importClass{
         if($cur_siteid==""){
             return $return;
         }
+        $cur_siteid = strtoupper($cur_siteid);
         
         $cols = array('item_sku'=>'seller-sku','item_product'=>'Frame Model','item_option'=>'Color / combo');
         
         if(($temp_records = $this->excel_read($file, $cols))){
             $temp_list = array();
-            $cur_siteid = strtoupper($cur_siteid);
             $missing = array();
-            for($row_count=0; $row_count<sizeof($temp_records); $row_count++){
+            for($row_count=1; $row_count<sizeof($temp_records); $row_count++){
                 if($row_count==0 || trim(implode("",$this->excel_get($row_count)))==""){
                     continue;
                 }
-                
                 $temp_sku = $this->excel_get($row_count,'item_sku');
                 $is_fba = 0;
                 if(stristr($this->excel_get($row_count, 'item_sku'),'.fba')!==FALSE){
@@ -515,6 +542,55 @@ class importClass{
                 }
             }
             return $this->get_return($temp_list, $missing, 'item');
+        }
+        return $return;
+    }
+    
+    function payment_import_amazon($file){
+        $return = array("status"=>"0","message"=>"");
+        
+        $cols = array('sales_id'=>'Order ID','payment_amount'=>'Amount','item_sku'=>'SKU','transaction_type'=>'Transaction type','payment_type'=>'Payment Type','payment_detail'=>'Payment Detail');
+        
+        if(($temp_records = $this->excel_read($file, $cols, 3))){
+            $temp_list = array();
+            $missing = array();
+            
+            for($row_count=4; $row_count<sizeof($temp_records); $row_count++){
+                if($row_count==0 || trim(implode("",$this->excel_get($row_count)))=="" || $this->excel_get($row_count,'sales_id')=="" || $this->excel_get($row_count,'item_sku')==""){
+                    continue;
+                }
+                $temp = $this->excel_get($row_count,'sales_id')."_".$this->excel_get($row_count,'item_sku');
+                if(!isset($temp_list[$temp])){
+                    if(($result = $this->CI->db->query('select a.id store_item_id from store_item a 
+                        join stores b on a.store_id=b.id
+                        join marketplaces c on b.marketplace_id=c.id
+                        where c.sales_template="amazon" AND b.account_id=? AND a.store_skucode=? LIMIT 1',array($this->account_id,$this->excel_get($row_count,'item_sku')))) && ($row = $result->row_array())){
+                        $store_item_id = $row['store_item_id'];
+                        foreach(array('transactions','transactions_cache') as $table){
+                            if(($result = $this->CI->db->query('SELECT id,0 as shipping_charges_received,0 as shipping_charges_paid,0 as sales_fees_pect,0 as sales_fees_fixed FROM '.$table.' WHERE store_item_id=? AND sales_id=? LIMIT 1',array($store_item_id,$this->excel_get($row_count, 'sales_id')))) && ($row = $result->row_array())){
+                                $temp_list[$temp] = array('data'=>$row,'query_table'=>$table,'query_id'=>$row['id']);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(!isset($temp_list[$temp])){
+                    if(!isset($missing[$temp])){
+                        $missing[$temp] = "row no. ".($row_count + 1).": SKU no found. Order ID:".$this->excel_get($row_count, 'sales_id');
+                    }
+                    continue;
+                }
+                
+                if(array_search($this->excel_get($row_count, 'transaction_type'),array('Order Payment','Refund'))!==FALSE && array_search($this->excel_get($row_count, 'payment_type'),array('Amazon fees','Other','Promo rebates'))!==FALSE){
+                    if($this->excel_get($row_count, 'transaction_type')=="Refund"){
+                        $temp_list[$temp]['data']['selling_price'] = 0;
+                        $temp_list[$temp]['data']['transaction_status'] = '1';
+                    }
+                    $payment_amount = (float)preg_replace('#[^0-9\.-]#iu', '', $this->excel_get($row_count, 'payment_amount')) * -1;
+                    $temp_list[$temp]['data']['sales_fees_fixed'] = (float)$temp_list[$temp]['data']['sales_fees_fixed'] + $payment_amount;
+                }
+            }
+            return $this->get_return($temp_list, $missing, 'payment');
         }
         return $return;
     }
