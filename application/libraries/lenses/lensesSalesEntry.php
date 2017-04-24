@@ -202,10 +202,10 @@ class lensesSalesEntry extends lensesMain{
             */
             
             //check duplicate id
-            if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
+            if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=? AND id<>?
                 union distinct 
-                select id from transactions where store_item_id=? AND sales_id=?
-                limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))) && ($row = $result->row_array()) && ($row['id']!=$id)){
+                select id from transactions where store_item_id=? AND sales_id=? AND id<>?
+                limit 1',array($value['store_item_id'],$value['sales_id'],$id,$value['store_item_id'],$value['sales_id'],$id)))){
                 $return['message'] = 'Sales exists!';
                 return $return;
             }
@@ -276,30 +276,41 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         
         if(($result = $this->CI->db->query('select * from transactions_cache a')) && $result->num_rows()){
             foreach($result->result_array() as $row){
-                //check available store_item_id
-                $store_item_id = $row['store_item_id'];
-                $quantity = $row['quantity'];
-                /*
-                $temp = $this->get_available_quantity($store_item_id,true);
-                if($quantity>$temp){
-                    $this->CI->cmessage->set_message_url('Row no. '.$row['id'].' - Insufficient quantity.','error','/sales_entry');
-                    continue;
-                }
-                */
-                $col_list = array();
-                foreach($row as $field => $v){
-                    if(strtolower($field)!='id' && isset($row[$field])){
-                        $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($row[$field]);
+                if(($result2 = $this->CI->db->query('select id from transactions where store_item_id=? and sales_id=? limit 1',array($row['store_item_id'],$row['sales_id']))) && ($row2 = $result2->row_array())){
+                    $col_list = array();
+                    $data_list = array();
+                    foreach(array('selling_price','shipping_charges_received','shipping_charges_paid','sales_fees_pect','sales_fees_fixed') as $k){
+                        $col_list[] = "`".$k."`=?";
+                        $data_list[] = $row[$k];
                     }
-                }
-                if($this->CI->db->query(sprintf('INSERT INTO transactions SET %s',implode(',',$col_list)))){
-                    $trans_id = $this->CI->db->insert_id();
+                    $data_list[] = $row2['id'];
+                    $sql = 'UPDATE transactions SET '.implode(",",$col_list).' WHERE id=?';
+                    $this->CI->db->query($sql,$data_list);
                     $this->CI->db->query('delete from transactions_cache where id=?',array($row['id']));
-                    $this->adjust_quantity(0, ($row['quantity'] * -1), 0, $trans_id);
+                }else{
+                    /*
+                    //check available store_item_id
+                    $temp = $this->get_available_quantity($row['store_item_id'],true);
+                    if($row['quantity']>$temp){
+                        $this->CI->cmessage->set_message_url('Row no. '.$row['id'].' - Insufficient quantity.','error','/sales_entry');
+                        continue;
+                    }
+                    */
+                    $col_list = array();
+                    foreach($row as $field => $v){
+                        if(strtolower($field)!='id' && isset($row[$field])){
+                            $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($row[$field]);
+                        }
+                    }
+                    if($this->CI->db->query(sprintf('INSERT INTO transactions SET %s',implode(',',$col_list)))){
+                        $trans_id = $this->CI->db->insert_id();
+                        $this->CI->db->query('delete from transactions_cache where id=?',array($row['id']));
+                        $this->adjust_quantity(0, ($row['quantity'] * -1), 0, $trans_id);
+                    }
                 }
             }
         }
-        
+        $this->CI->db->query('truncate table transactions_cache');
         $this->CI->cmessage->set_message_url('Transactions save.','success','/sales_entry');
     }
     

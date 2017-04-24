@@ -184,10 +184,10 @@ class importClass{
     
     function transactions_cache_insert($data = array()){
         foreach($data as $value){
-            if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
+            if($this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
                 union distinct 
                 select id from transactions where store_item_id=? AND sales_id=?
-                limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))) && ($row = $result->row_array()) && ($row['id']!=$id)){
+                limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))){
                 continue;
             }
             
@@ -213,9 +213,26 @@ class importClass{
     
     function transactions_sales_update($data = array()){
         foreach($data as $row){
+            if($row['query_table']=="transactions"){
+                $trans_id = 0;
+                if(($result2 = $this->CI->db->query('select * from transactions where id=? limit 1',array($row['query_id']))) && ($row2 = $result2->row_array())){
+                    unset($row2['id']);
+                    $value_list = array();
+                    foreach($row2 as $k => $v){
+                        $value_list[] = '`'.$k.'`="'.$v.'"';
+                    }
+                    $sql = 'INSERT INTO transactions_cache SET '.implode(",", $value_list);
+                    $this->CI->db->query($sql);
+                    $trans_id = $this->CI->db->insert_id();
+                }
+                $row['query_id'] = $trans_id;
+                $row['query_table'] = "transactions_cache";
+            }
+            
             $col_list = array();
             $data_list = array();
             foreach($row['data'] as $key => $value){
+                if($key=="id"){continue;}
                 $col_list[] = "`".$key."`=?";
                 $data_list[] = $value;
             }
@@ -566,7 +583,7 @@ class importClass{
                         join marketplaces c on b.marketplace_id=c.id
                         where c.sales_template="amazon" AND b.account_id=? AND a.store_skucode=? LIMIT 1',array($this->account_id,$this->excel_get($row_count,'item_sku')))) && ($row = $result->row_array())){
                         $store_item_id = $row['store_item_id'];
-                        foreach(array('transactions','transactions_cache') as $table){
+                        foreach(array('transactions_cache','transactions') as $table){
                             if(($result = $this->CI->db->query('SELECT id,0 as shipping_charges_received,0 as shipping_charges_paid,0 as sales_fees_pect,0 as sales_fees_fixed FROM '.$table.' WHERE store_item_id=? AND sales_id=? LIMIT 1',array($store_item_id,$this->excel_get($row_count, 'sales_id')))) && ($row = $result->row_array())){
                                 $temp_list[$temp] = array('data'=>$row,'query_table'=>$table,'query_id'=>$row['id']);
                                 break;
