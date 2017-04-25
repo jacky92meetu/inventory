@@ -184,10 +184,10 @@ class importClass{
     
     function transactions_cache_insert($data = array()){
         foreach($data as $value){
-            if($this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
+            if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
                 union distinct 
                 select id from transactions where store_item_id=? AND sales_id=?
-                limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))){
+                limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))) && $result->num_rows()){
                 continue;
             }
             

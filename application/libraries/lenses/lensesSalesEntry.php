@@ -205,7 +205,7 @@ class lensesSalesEntry extends lensesMain{
             if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=? AND id<>?
                 union distinct 
                 select id from transactions where store_item_id=? AND sales_id=? AND id<>?
-                limit 1',array($value['store_item_id'],$value['sales_id'],$id,$value['store_item_id'],$value['sales_id'],$id)))){
+                limit 1',array($value['store_item_id'],$value['sales_id'],$id,$value['store_item_id'],$value['sales_id'],$id))) && $result->num_rows()){
                 $return['message'] = 'Sales exists!';
                 return $return;
             }

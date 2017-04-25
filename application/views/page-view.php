@@ -606,7 +606,14 @@ $editable = false;
         if(list.length==0){
             confirm = window.confirm("Once delete the data cannot be rollback. Are you sure you want to delete all record(s)?");
             if(confirm){
-                list = "ALL";
+                confirm = false;
+                var temp = window.prompt("Please key in \"YES\" to delete all records.");
+                if(temp=="YES"){
+                    confirm = true;
+                    list = "ALL";
+                }else{
+                    swal({title:"",type:"warning",text:"Wrong Passphrase!"});
+                }
             }
         }else{
             confirm = window.confirm("Once delete the data cannot be rollback. Are you sure you want to delete "+list.length+" record(s)?");
