@@ -44,7 +44,7 @@ left join warehouse_item_history wih on wih.warehouse_item_id=a.id
 where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
         $this->parent_id = array('key'=>'warehouse_id','value'=>$id);
         
-        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'product_name','name'=>'Frame Model'),array('id'=>'option_name','name'=>'Color'),array('id'=>'skucode','name'=>'SKU Code','editable'=>true),array('id'=>'quantity','name'=>'Available Quantity','editable'=>true,'custom_col'=>'adj_quantity'),array('id'=>'quantity2','name'=>'Defected Qty','editable'=>true),array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),array('id'=>'selling_price','name'=>'Selling Price','editable'=>true),array('id'=>'min_qty','name'=>'Min Qty','editable'=>true),array('id'=>'stop_qty','name'=>'Stop Qty','editable'=>true),array('id'=>'qstatus','name'=>'Quantity Status','option_text'=>array('stop'=>'Stop','warning'=>'Warning','new'=>'New','normal'=>'Normal')));
+        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'product_name','name'=>'Frame Model'),array('id'=>'option_name','name'=>'Color'),array('id'=>'skucode','name'=>'SKU Code','editable'=>true),array('id'=>'quantity','name'=>'Storage A Qty','editable'=>true,'custom_col'=>'adj_quantity'),array('id'=>'quantity2','name'=>'Storage B Qty','editable'=>true),array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),array('id'=>'selling_price','name'=>'Selling Price','editable'=>true),array('id'=>'min_qty','name'=>'Min Qty','editable'=>true),array('id'=>'stop_qty','name'=>'Stop Qty','editable'=>true),array('id'=>'qstatus','name'=>'Quantity Status','option_text'=>array('stop'=>'Stop','warning'=>'Warning','new'=>'New','normal'=>'Normal')));
     }
     
     function ajax_save(){
@@ -75,13 +75,13 @@ where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
             $data['item_id'] = ['id'=>'item_id','name'=>'item_id','value'=>'','hidden'=>'1'];
             $data['product_name'] = ['id'=>'product_name','name'=>'Frame Model','value'=>'','readonly'=>'1'];
             $data['option_name'] = ['id'=>'option_name','name'=>'Color','value'=>'','readonly'=>'1'];
-            $data['quantity'] = ['id'=>'quantity','name'=>'Current Quantity','value'=>'','readonly'=>'1'];
-            $data['quantity2'] = ['id'=>'quantity2','name'=>'Defected Quantity','value'=>'','readonly'=>'1'];
-            $data['adj_quantity'] = ['id'=>'adj_quantity','name'=>'Quantity Adjustment','value'=>'','optional'=>'1'];
-            $data['adj_quantity2'] = ['id'=>'adj_quantity2','name'=>'Defected Quantity Adjustment','value'=>'','optional'=>'1'];
+            $data['quantity'] = ['id'=>'quantity','name'=>'Storage A Quantity','value'=>'','readonly'=>'1'];
+            $data['quantity2'] = ['id'=>'quantity2','name'=>'Storage B Quantity','value'=>'','readonly'=>'1'];
+            $data['adj_quantity'] = ['id'=>'adj_quantity','name'=>'Storage A Quantity Adjustment','value'=>'','optional'=>'1'];
+            $data['adj_quantity2'] = ['id'=>'adj_quantity2','name'=>'Storage B Quantity Adjustment','value'=>'','optional'=>'1'];
             $data['transfer_warehouse'] = ['id'=>'transfer_warehouse','name'=>'Warehouse Transfer','option_text'=>$warehouse_list,'value'=>'','optional'=>'1'];
-            $data['transfer_quantity'] = ['id'=>'transfer_quantity','name'=>'Quantity Transfer','value'=>'','optional'=>'1'];
-            $data['transfer_quantity2'] = ['id'=>'transfer_quantity2','name'=>'Defected Quantity Transfer','value'=>'','optional'=>'1'];
+            $data['transfer_quantity'] = ['id'=>'transfer_quantity','name'=>'Storage A Quantity Transfer','value'=>'','optional'=>'1'];
+            $data['transfer_quantity2'] = ['id'=>'transfer_quantity2','name'=>'Storage B Quantity Transfer','value'=>'','optional'=>'1'];
         }
         $return = parent::ajax_custom_form($data);
         

@@ -183,11 +183,13 @@ class importClass{
     }
     
     function transactions_cache_insert($data = array()){
+        $return = array('exists'=>array());
         foreach($data as $value){
             if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
                 union distinct 
                 select id from transactions where store_item_id=? AND sales_id=?
                 limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))) && $result->num_rows()){
+                $return['exists'][] = $value['sales_id'];
                 continue;
             }
             
@@ -198,6 +200,7 @@ class importClass{
             $sql = 'INSERT INTO transactions_cache SET '.implode(",", $value_list);
             $this->CI->db->query($sql);
         }
+        return $return;
     }
     
     function store_item_update($data = array()){
@@ -213,6 +216,7 @@ class importClass{
     
     function transactions_sales_update($data = array()){
         foreach($data as $row){
+            /*
             if($row['query_table']=="transactions"){
                 $trans_id = 0;
                 if(($result2 = $this->CI->db->query('select * from transactions where id=? limit 1',array($row['query_id']))) && ($row2 = $result2->row_array())){
@@ -228,7 +232,7 @@ class importClass{
                 $row['query_id'] = $trans_id;
                 $row['query_table'] = "transactions_cache";
             }
-            
+            */
             $col_list = array();
             $data_list = array();
             foreach($row['data'] as $key => $value){
@@ -245,20 +249,26 @@ class importClass{
     function get_return($temp_list,$missing = array(),$type = 'item'){
         $return = array("status"=>"0","message"=>"");
         $func = "";
+        $call_return = false;
         if(is_array($temp_list) && sizeof($temp_list)>0){
             switch($type){
                 case "item":
-                    $this->store_item_update($temp_list);
+                    $call_return = $this->store_item_update($temp_list);
                     break;
                 case "sales":
-                    $this->transactions_cache_insert($temp_list);
+                    $call_return = $this->transactions_cache_insert($temp_list);
                     break;
                 case "payment":
-                    $this->transactions_sales_update($temp_list);
+                    $call_return = $this->transactions_sales_update($temp_list);
                     break;
             }
             $return['status'] = "1";
             $return['message'] .= "<div class='alert alert-success'><strong>".sizeof($temp_list)."</strong> item(s) import successfully.</div>";
+        }
+        if($call_return && isset($call_return['exists']) && sizeof($call_return['exists'])>0){
+            $return['message'] .= "<div class='alert alert-warning'><strong>".sizeof($call_return['exists'])."</strong> item(s) exists!</div>";
+            $temp = implode("<br/>",$call_return['exists']);
+            $return['message'] .= "<pre style='text-align:left;height:300px;overflow-y:auto;'>Exists list:\\n".$temp."</pre>";
         }
         if(sizeof($missing)>0){
             $return['message'] .= "<div class='alert alert-danger'><strong>".sizeof($missing)."</strong> item(s) fail to import!</div>";
@@ -604,7 +614,11 @@ class importClass{
                         $temp_list[$temp]['data']['transaction_status'] = '1';
                     }
                     $payment_amount = (float)preg_replace('#[^0-9\.-]#iu', '', $this->excel_get($row_count, 'payment_amount')) * -1;
-                    $temp_list[$temp]['data']['sales_fees_fixed'] = (float)$temp_list[$temp]['data']['sales_fees_fixed'] + $payment_amount;
+                    if(stristr($this->excel_get($row_count, 'payment_detail'),"Pick & Pack")!==FALSE){
+                        $temp_list[$temp]['data']['shipping_charges_paid'] = (float)$temp_list[$temp]['data']['shipping_charges_paid'] + $payment_amount;
+                    }else{
+                        $temp_list[$temp]['data']['sales_fees_fixed'] = (float)$temp_list[$temp]['data']['sales_fees_fixed'] + $payment_amount;
+                    }
                 }
             }
             return $this->get_return($temp_list, $missing, 'payment');

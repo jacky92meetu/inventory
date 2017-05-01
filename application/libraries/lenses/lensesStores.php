@@ -52,7 +52,7 @@ class lensesStores extends lensesMain{
             }
         }
         
-        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Name','editable'=>true,'goto'=>base_url('/store_item')),array('id'=>'account_id','name'=>'Account','editable'=>true,'option_text'=>$account_list),array('id'=>'marketplace_id','name'=>'Market Place','editable'=>true,'option_text'=>$market_list),array('id'=>'warehouse_id','name'=>'Warehouse','editable'=>true,'option_text'=>$warehouse_list),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Normal','1'=>'Defected')));
+        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Name','editable'=>true,'goto'=>base_url('/store_item')),array('id'=>'account_id','name'=>'Account','editable'=>true,'option_text'=>$account_list),array('id'=>'marketplace_id','name'=>'Market Place','editable'=>true,'option_text'=>$market_list),array('id'=>'warehouse_id','name'=>'Warehouse','editable'=>true,'option_text'=>$warehouse_list),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Storage A','1'=>'Storage B')));
         
         $this->item_import_header = array(
             array('id'=>'id','name'=>'ID','hidden'=>'1'),
@@ -69,7 +69,7 @@ class lensesStores extends lensesMain{
             return parent::ajax_custom_form($data);
         }else{
             if(strlen($this->CI->input->post('id',true))>0 && $this->CI->input->post('id',true)>0){
-                $data = array(array('id'=>'id','name'=>'ID','readonly'=>'1'),array('id'=>'name','name'=>'Name'),array('id'=>'account_name','name'=>'Account','readonly'=>'1'),array('id'=>'marketplace_name','name'=>'Market Place','readonly'=>'1'),array('id'=>'warehouse_name','name'=>'Warehouse','readonly'=>'1'),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Normal','1'=>'Defected')));
+                $data = array(array('id'=>'id','name'=>'ID','readonly'=>'1'),array('id'=>'name','name'=>'Name'),array('id'=>'account_name','name'=>'Account','readonly'=>'1'),array('id'=>'marketplace_name','name'=>'Market Place','readonly'=>'1'),array('id'=>'warehouse_name','name'=>'Warehouse','readonly'=>'1'),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Storage A','1'=>'Storage B')));
                 return parent::ajax_custom_form($data);
             }
             return parent::ajax_custom_form();
@@ -103,6 +103,16 @@ class lensesStores extends lensesMain{
                 if(($result2 = $this->CI->db->query('SELECT a.id FROM stores a WHERE a.account_id=? and a.marketplace_id=? LIMIT 1',array($account_id,$marketplace_id))) && ($row = $result2->row_array())){
                     return array("status"=>"0","message"=>"Marketplace exists!");
                 }
+            }else{
+                $id = $this->CI->input->post('id',true);
+                $col_list = array();
+                $field_list = array('name','sales_fees_pect','sales_fees_fixed','paypal_fees_pect','paypal_fees_fixed','default_qty_deduct');
+                foreach($field_list as $field){
+                    if(isset($value[$field])){
+                        $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
+                    }
+                }
+                $this->update_query = sprintf('UPDATE stores SET %s WHERE id="%s"',implode(',',$col_list),$id);
             }
             $result = parent::ajax_custom_form_save();
             if($result['status']=='1' && isset($result['record_id'])){

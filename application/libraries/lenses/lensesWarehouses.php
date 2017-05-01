@@ -17,7 +17,9 @@ class lensesWarehouses extends lensesMain{
         $this->table = "warehouses";
         $this->title = "Warehouses";
         $this->selected_menu = "warehouses";
-        $this->custom_form = false;
+        $this->extra_btn = array();
+        $this->extra_btn[] = array('name'=>'Item Transfer','custom_form'=>'item_transfer');
+        $this->custom_form = true;
         
         $supp_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM suppliers ORDER BY name'))){
@@ -33,7 +35,30 @@ class lensesWarehouses extends lensesMain{
             }
         }
         
+        $warehouse_list = array();
+        if(($result = $this->CI->db->query('SELECT id,name FROM warehouses ORDER BY name'))){
+            foreach($result->result_array() as $value){
+                $warehouse_list[$value['id']] = $value['name'];
+            }
+        }
+        
+        $quantity_list = array('0'=>'0');
+        for($i=1; $i<=100; $i++){
+            $quantity_list[$i] = $i;
+        }
+        
         $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Frame Model','editable'=>true,'goto'=>base_url('/warehouse_item')));
+        
+        $this->item_transfer_header = array(
+            array('id'=>'type','name'=>'type','hidden'=>'1','value'=>'item_transfer'),
+            array('id'=>'from_warehouse','name'=>'From Warehouse','is_ajax'=>'1','option_text'=>$warehouse_list,'editable'=>true),
+            array('id'=>'from_product','name'=>'From Frame','is_ajax'=>'1','option_text'=>array(),'editable'=>true),
+            array('id'=>'from_item','name'=>'From Color','is_ajax'=>'1','option_text'=>array(),'editable'=>true),
+            array('id'=>'from_skucode','name'=>'From SKU Code','readonly'=>'1'),
+            array('id'=>'to_warehouse','name'=>'To Warehouse','option_text'=>$warehouse_list,'editable'=>true),
+            array('id'=>'transfer_quantity','name'=>'Storage A Quantity Transfer','option_text'=>$quantity_list,'editable'=>true),
+            array('id'=>'transfer_quantity2','name'=>'Storage B Quantity Transfer','option_text'=>$quantity_list,'editable'=>true),
+        );
     }
     
     function ajax_save(){
@@ -48,6 +73,57 @@ class lensesWarehouses extends lensesMain{
             $this->CI->db->query($sql);
         }
         return $result;
+    }
+    
+    function ajax_custom_form(){
+        $data = array();
+        if(strlen($temp = $this->CI->input->post('type',true))>0 && $temp=="item_transfer"){
+            $data = $this->item_transfer_header;
+        }
+        $return = parent::ajax_custom_form($data);
+        
+        return $return;
+    }
+    
+    function ajax_custom_form_save(){
+        $return = array("status"=>"0","message"=>"No record to be save.");
+        if($this->CI->input->post('value[type]',true)=="item_transfer"){
+            /*transfer*/
+            $from_warehouse = intval($this->CI->input->post('value[from_warehouse]',true));
+            $product_id = intval($this->CI->input->post('value[from_product]',true));
+            $item_id = intval($this->CI->input->post('value[from_item]',true));
+            $to_warehouse = intval($this->CI->input->post('value[to_warehouse]',true));
+            $quantity1 = intval($this->CI->input->post('value[transfer_quantity]',true));
+            $quantity2 = intval($this->CI->input->post('value[transfer_quantity2]',true));
+            if(!empty($quantity1) || !empty($quantity2)){
+                $result = $this->CI->db->query('SELECT id FROM warehouse_item WHERE warehouse_id=? AND product_id=? AND item_id=? LIMIT 1',array($from_warehouse,$product_id,$item_id));
+                $result2 = $this->CI->db->query('SELECT id FROM warehouse_item WHERE warehouse_id=? AND product_id=? AND item_id=? LIMIT 1',array($to_warehouse,$product_id,$item_id));
+                if($result && $result->num_rows() && ($row = $result->row_array())){
+                    if($result2 && $result2->num_rows() && ($row2 = $result2->row_array())){
+                        if($this->adjust_quantity($row['id'], ($quantity1*-1), ($quantity2*-1))){
+                            if($this->adjust_quantity($row2['id'], $quantity1, $quantity2)){
+                                $return = array("status"=>"1","message"=>"");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return $return;
+    }
+    
+    function ajax_change_update(){
+        $filter_list = array();
+        $filter_list[] = ['name'=>'from_warehouse'];
+        $filter_list[] = ['name'=>'from_product','query'=>'SELECT b.id,b.name FROM warehouse_item a join products b on b.id=a.product_id WHERE a.warehouse_id=? ORDER BY name','id'=>'from_warehouse'];
+        $filter_list[] = ['name'=>'from_item','query'=>'SELECT b.id,b.name FROM warehouse_item a join option_item b on b.id=a.item_id WHERE a.warehouse_id=? and a.product_id=? ORDER BY name','id'=>['from_warehouse','from_product']];
+        $filter_list[] = ['name'=>'from_skucode','query'=>'SELECT a.skucode id, a.skucode name FROM warehouse_item a WHERE a.warehouse_id=? and a.product_id=? and a.item_id=? Limit 1','id'=>['from_warehouse','from_product','from_item']];
+        $filter_list[] = ['name'=>'to_warehouse','query'=>'SELECT a.id,a.name FROM warehouses a WHERE a.id<>? ORDER BY name','id'=>'from_warehouse'];
+        
+        $return = parent::ajax_change_update($filter_list);
+        
+        return $return;
     }
     
     function ajax_delete(){

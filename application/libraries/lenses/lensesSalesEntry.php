@@ -255,6 +255,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $filter_list[] = ['name'=>'marketplace_template','query'=>'SELECT b.sales_template id,b.sales_template name FROM stores a,marketplaces b WHERE a.marketplace_id=b.id AND a.account_id=? AND b.sales_template<>"" GROUP BY b.sales_template ORDER BY length(b.sales_template),b.sales_template','id'=>'account_id'];
         
         $return = parent::ajax_change_update($filter_list);
+        /*
         $quantity_list = array('0'=>'0');
         if($return['status']=='1' && !empty($return['data']['store_item_id']['value'])){
             //$temp = $this->get_available_quantity($return['data']['store_item_id']['value']);
@@ -267,7 +268,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
             }
         }
         $return['data']['quantity'] = ['name'=>'quantity','option_text'=>$quantity_list,'value'=>array_shift($quantity_list)];
-        
+        */
         return $return;
     }
     

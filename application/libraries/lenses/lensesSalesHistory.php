@@ -75,7 +75,7 @@ class lensesSalesHistory extends lensesMain{
         
         $this->header = array(
             array('id'=>'id','name'=>'ID'),
-            array('id'=>'account_id','name'=>'Account'),
+            array('id'=>'account_id','name'=>'Account','is_ajax'=>'1','option_text'=>$supp_list),
             array('id'=>'store_name','name'=>'Store'),
             array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame'),
@@ -230,6 +230,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $filter_list[] = ['name'=>'paypal_fees_fixed','query'=>'SELECT a.paypal_fees_fixed id, a.paypal_fees_fixed name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
         
         $return = parent::ajax_change_update($filter_list);
+        /*
         $quantity_list = array('0'=>'0');
         if($return['status']=='1' && !empty($return['data']['store_item_id']['value'])){
             //$temp = $this->get_available_quantity($return['data']['store_item_id']['value']);
@@ -242,7 +243,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
             }
         }
         $return['data']['quantity'] = ['name'=>'quantity','option_text'=>$quantity_list,'value'=>array_shift($quantity_list)];
-        
+        */
         return $return;
     }
     
@@ -252,7 +253,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $selection = $this->CI->input->post('selection',true);
         if(($result = $this->CI->db->query('select * from transactions a where id in ?',array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
-                $this->adjust_quantity(0, $row['quantity'], 0, $row['id']);
+                $this->sales_cancel($row['id']);
             }
         }
         

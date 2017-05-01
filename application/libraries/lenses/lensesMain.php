@@ -599,61 +599,127 @@ class lensesMain{
     
     function get_available_quantity($store_item_id=0, $exclude_cache = false){
         $return = 0;
-        $sql = '';
-        if($exclude_cache){
-            $sql = 'select min(ifnull(b.quantity,0)+ifnull(b.quantity2,0)+ifnull(d.quantity,0)+ifnull(d.quantity2,0)) quantity from store_item a
-                join warehouse_item b on a.warehouse_item_id=b.id
-                left join option_item_combo c on b.item_id=c.item_id
-                left join warehouse_item d on b.warehouse_id=d.warehouse_id and b.product_id=d.product_id and c.combo_id=d.item_id
-                where a.id=?';
-        }else{
-            $sql = 'select min(ifnull(b.quantity,0)+ifnull(b.quantity2,0)+ifnull(d.quantity,0)+ifnull(d.quantity2,0)) - sum(ifnull(tc.quantity,0)) quantity from store_item a
-                join warehouse_item b on a.warehouse_item_id=b.id
-                left join option_item_combo c on b.item_id=c.item_id
-                left join warehouse_item d on b.warehouse_id=d.warehouse_id and b.product_id=d.product_id and c.combo_id=d.item_id
-                left join transactions_cache tc on tc.store_item_id=a.id
-                where a.id=?';
-        }
+        $sql = 'select min(ifnull(b.quantity,0)+ifnull(b.quantity2,0)+ifnull(d.quantity,0)+ifnull(d.quantity2,0)) quantity from store_item a
+            join warehouse_item b on a.warehouse_item_id=b.id
+            left join option_item_combo c on b.item_id=c.item_id
+            left join warehouse_item d on b.warehouse_id=d.warehouse_id and b.product_id=d.product_id and c.combo_id=d.item_id
+            where a.id=?';
         if(($result = $this->CI->db->query($sql,array($store_item_id))) && ($row = $result->row_array()) && $row['quantity']>0){
             $return = $row['quantity'];
+            if(!$exclude_cache){
+                $sql = 'select sum(a.quantity) quantity
+                    from transactions_cache a
+                    where a.store_item_id=?';
+                if(($result = $this->CI->db->query($sql,array($store_item_id))) && ($row = $result->row_array()) && $row['quantity']>0){
+                    $return -= $row['quantity'];
+                }
+            }
+        }
+        return $return;
+    }
+    
+    function get_available_quantity_from_id($id=0, $exclude_cache = false){
+        $return = 0;
+        $sql = 'select min(ifnull(b.quantity,0)+ifnull(b.quantity2,0)+ifnull(d.quantity,0)+ifnull(d.quantity2,0)) quantity 
+            from warehouse_item b
+            left join option_item_combo c on b.item_id=c.item_id
+            left join warehouse_item d on b.warehouse_id=d.warehouse_id and b.product_id=d.product_id and c.combo_id=d.item_id
+            where b.id=?';
+        if(($result = $this->CI->db->query($sql,array($id))) && ($row = $result->row_array()) && $row['quantity']>0){
+            $return = $row['quantity'];
+            if(!$exclude_cache){
+                $sql = 'select sum(a.quantity) quantity
+                    from transactions_cache a
+                    left join store_item b on a.store_item_id=b.id
+                    left join warehouse_item c on b.warehouse_item_id=c.id
+                    where c.id=?';
+                if(($result = $this->CI->db->query($sql,array($id))) && ($row = $result->row_array()) && $row['quantity']>0){
+                    $return -= $row['quantity'];
+                }
+            }
         }
         return $return;
     }
     
     function get_combo_list($store_item_id=0){
         $return = 0;
-        if(($result = $this->CI->db->query('select ifnull(d.id,b.id) warehouse_item_id, ifnull(d.item_id,b.item_id) item_id from store_item a
-        join warehouse_item b on a.warehouse_item_id=b.id
-        left join option_item_combo c on b.item_id=c.item_id
-        left join warehouse_item d on b.warehouse_id=d.warehouse_id and b.product_id=d.product_id and c.combo_id=d.item_id
-        where a.id=?',array($store_item_id))) && $result->num_rows()){
+        if(($result = $this->CI->db->query('select ifnull(d.id,b.id) warehouse_item_id, ifnull(d.item_id,b.item_id) item_id 
+            ,ifnull(b.quantity,0)+ifnull(d.quantity,0) quantity1
+            ,ifnull(b.quantity2,0)+ifnull(d.quantity2,0) quantity2
+            from store_item a
+            join warehouse_item b on a.warehouse_item_id=b.id
+            left join option_item_combo c on b.item_id=c.item_id
+            left join warehouse_item d on b.warehouse_id=d.warehouse_id and b.product_id=d.product_id and c.combo_id=d.item_id
+            where a.id=?',array($store_item_id))) && $result->num_rows()){
             $return = array();
             foreach($result->result_array() as $r){
-                $return[$r['warehouse_item_id']] = ['warehouse_item_id'=>$r['warehouse_item_id'],'item_id'=>$r['item_id']];
+                $return[$r['warehouse_item_id']] = $r;
             }
         }
         return $return;
+    }
+    
+    function get_combo_list_from_id($id=0){
+        $return = 0;
+        if(($result = $this->CI->db->query('select ifnull(d.id,b.id) warehouse_item_id, ifnull(d.item_id,b.item_id) item_id
+            ,ifnull(b.quantity,0)+ifnull(d.quantity,0) quantity1
+            ,ifnull(b.quantity2,0)+ifnull(d.quantity2,0) quantity2
+            from warehouse_item b
+            left join option_item_combo c on b.item_id=c.item_id
+            left join warehouse_item d on b.warehouse_id=d.warehouse_id and b.product_id=d.product_id and c.combo_id=d.item_id
+            where b.id=?',array($id))) && $result->num_rows()){
+            $return = array();
+            foreach($result->result_array() as $r){
+                $return[$r['warehouse_item_id']] = $r;
+            }
+        }
+        return $return;
+    }
+    
+    function sales_cancel($trans_id=0){
+        if(($result = $this->CI->db->query('select warehouse_item_id,sum(adj_quantity) adj_quantity,sum(adj_quantity2) adj_quantity2 from warehouse_item_history a where trans_id=? GROUP BY warehouse_item_id',array($trans_id))) && $result->num_rows()){
+            foreach($result->result_array() as $row){
+                $this->adjust_quantity($row['warehouse_item_id'], ($row['adj_quantity'] * -1), ($row['adj_quantity2'] * -1));
+            }
+            $this->CI->db->query('DELETE FROM warehouse_item_history WHERE trans_id=?',array($trans_id));
+        }
     }
     
     function adjust_quantity($warehouse_item_id=0,$quantity1=0,$quantity2=0,$trans_id=0){
         if($quantity1==0 && $quantity2==0){
             return true;
         }
-        $item_list = array($warehouse_item_id);
+        $item_list = array();
         $sql = 'select store_item_id,c.default_qty_deduct from transactions a
             join store_item b on a.store_item_id=b.id
             join stores c on b.store_id=c.id
             where a.id=? limit 1';
+        $default_qty_deduct = '0';
+        $total_quantity = $quantity1 + $quantity2;
         if($trans_id>0 && ($result = $this->CI->db->query($sql,$trans_id)) && $result->num_rows() && ($row = $result->row_array())){
-            if($row['default_qty_deduct']=='1' && $quantity1<>0 && $quantity2==0){
-                $quantity2 = $quantity1;
-                $quantity1 = 0;
-            }
-            $item_list = array_keys($this->get_combo_list($row['store_item_id']));
+            $default_qty_deduct = $row['default_qty_deduct'];
+            $item_list = $this->get_combo_list($row['store_item_id']);
+        }else{
+            $item_list = $this->get_combo_list_from_id($warehouse_item_id);
         }
         
         $count = 0;
-        foreach($item_list as $wid){
+        foreach($item_list as $wid => $wid_data){
+            if($trans_id>0){
+                $quantity1 = 0;
+                $quantity2 = 0;
+                if($default_qty_deduct=="1"){
+                    $quantity2 = (((float)$total_quantity<0)?(min(max(0,$wid_data['quantity2']),abs($total_quantity)) * -1):$total_quantity);
+                    $quantity1 = (((float)$total_quantity<0)?(min(max(0,$wid_data['quantity1']),abs($total_quantity - $quantity2)) * -1):$total_quantity - $quantity2);
+                }else{
+                    $quantity1 = (((float)$total_quantity<0)?(min(max(0,$wid_data['quantity1']),abs($total_quantity)) * -1):$total_quantity);
+                    $quantity2 = (((float)$total_quantity<0)?(min(max(0,$wid_data['quantity2']),abs($total_quantity - $quantity1)) * -1):$total_quantity - $quantity1);
+                }
+                $temp = (float)$total_quantity - ($quantity1 + $quantity2);
+                if($temp<>0){
+                    $quantity1 += $temp;
+                }
+            }
             $sql = sprintf('UPDATE warehouse_item SET quantity=quantity+%d,quantity2=quantity2+%d WHERE id=%d',$this->CI->db->escape($quantity1),$this->CI->db->escape($quantity2),$this->CI->db->escape($wid));
             if($this->CI->db->query($sql)){
                 $sql = 'INSERT INTO warehouse_item_history(warehouse_item_id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3,adj_quantity,adj_quantity2,trans_id) 
