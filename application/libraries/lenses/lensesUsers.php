@@ -27,6 +27,24 @@ class lensesUsers extends lensesMain{
         }
         
         $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'username','name'=>'Username','editable'=>true),array('id'=>'name','name'=>'Name','editable'=>true),array('id'=>'user_type','name'=>'Type','noorder'=>false,'option_text'=>$user_group,'editable'=>true));
+        
+        $this->custom_header = array(
+            array('id'=>'id','name'=>'ID')
+            ,array('id'=>'username','name'=>'Username','editable'=>true)
+            ,array('id'=>'new_password','name'=>'New Password Here','editable'=>true)
+            ,array('id'=>'name','name'=>'Name','editable'=>true)
+            ,array('id'=>'user_type','name'=>'Type','noorder'=>false,'option_text'=>$user_group,'editable'=>true)
+        );
     }
     
+    function ajax_custom_form_save(){
+        $value = $this->CI->input->post('value',true);
+        $return = parent::ajax_custom_form_save();
+        
+        if($return['status']=="1" && isset($value['id']) && $value['id']>0 && isset($value['new_password']) && strlen($value['new_password'])>0){
+            $this->CI->db->query('UPDATE users SET credential=? WHERE id=?',array($value['new_password'],$value['id']));
+        }
+        
+        return $return;
+    }
 }
