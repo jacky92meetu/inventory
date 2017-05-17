@@ -19,7 +19,7 @@ class lensesStores extends lensesMain{
         $this->selected_menu = "stores";
         $this->is_required = false;
         $this->extra_btn = array();
-        $this->extra_btn[] = array('name'=>'Item Import','custom_form'=>'item_import');
+        $this->extra_btn[] = array('name'=>'Item Import/Export','custom_form'=>'item_import');
         $this->custom_form = true;
         $this->ajax_url = base_url('ajax/stores');
         $this->search_query = 'select * from (select a.id,a.name,a.account_id,a.marketplace_id,a.warehouse_id
@@ -54,11 +54,14 @@ class lensesStores extends lensesMain{
         
         $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Name','editable'=>true,'goto'=>base_url('/store_item')),array('id'=>'account_id','name'=>'Account','editable'=>true,'option_text'=>$account_list),array('id'=>'marketplace_id','name'=>'Market Place','editable'=>true,'option_text'=>$market_list),array('id'=>'warehouse_id','name'=>'Warehouse','editable'=>true,'option_text'=>$warehouse_list),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Storage A','1'=>'Storage B')));
         
+        $this->custom_form_header = array(array('id'=>'id','name'=>'ID','readonly'=>'1'),array('id'=>'name','name'=>'Name'),array('id'=>'account_name','name'=>'Account','readonly'=>'1'),array('id'=>'marketplace_name','name'=>'Market Place','readonly'=>'1'),array('id'=>'warehouse_id','name'=>'Warehouse','editable'=>true,'option_text'=>$warehouse_list),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Storage A','1'=>'Storage B')));
+        
         $this->item_import_header = array(
             array('id'=>'id','name'=>'ID','hidden'=>'1'),
             array('id'=>'type','name'=>'type','value'=>'item_import','hidden'=>'1'),
             array('id'=>'account_id','name'=>'Account','is_ajax'=>'1','option_text'=>$account_list,'editable'=>true),
             array('id'=>'marketplace_template','name'=>'MarketPlace','is_ajax'=>'1','option_text'=>array(),'editable'=>true),
+            array('id'=>'form_type','name'=>'Form Type','option_text'=>array('import'=>'Import Item','import2'=>'Erase All & Import Item','export'=>'Export Item'),'value'=>'import','editable'=>true),
             array('id'=>'file','name'=>'file','is_file'=>'1')
         );
     }
@@ -69,7 +72,7 @@ class lensesStores extends lensesMain{
             return parent::ajax_custom_form($data);
         }else{
             if(strlen($this->CI->input->post('id',true))>0 && $this->CI->input->post('id',true)>0){
-                $data = array(array('id'=>'id','name'=>'ID','readonly'=>'1'),array('id'=>'name','name'=>'Name'),array('id'=>'account_name','name'=>'Account','readonly'=>'1'),array('id'=>'marketplace_name','name'=>'Market Place','readonly'=>'1'),array('id'=>'warehouse_name','name'=>'Warehouse','readonly'=>'1'),array('id'=>'sales_fees_pect','name'=>'Sales Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'sales_fees_fixed','name'=>'Sales Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_pect','name'=>'Paypal Fees(%)','editable'=>true,'value'=>'0.00'),array('id'=>'paypal_fees_fixed','name'=>'Paypal Fees(Amount)','editable'=>true,'value'=>'0.00'),array('id'=>'default_qty_deduct','name'=>'Default Deduction','editable'=>true,'option_text'=>array('0'=>'Storage A','1'=>'Storage B')));
+                $data = $this->custom_form_header;
                 return parent::ajax_custom_form($data);
             }
             return parent::ajax_custom_form();
@@ -81,21 +84,44 @@ class lensesStores extends lensesMain{
         
         $value = $this->CI->input->post('value',true);
         
-        if(!empty($value['type']) && $value['type']=='item_import'){
+        if(!empty($value['form_type']) && $value['form_type']=='export'){
+            if(empty($value['account_id']) || empty($value['marketplace_template'])){
+                $return['message'] = "Please select account and marketplace.";
+                return $return;
+            }
+            $func .= 'window.open("'.base_url('ajax/stores?method=export&account_id='.$value['account_id'].'&type='.$value['marketplace_template']).'","_blank");';
+            $return['message'] = "";
+            if(sizeof($func)>0){
+                $return['func'] = 'function(){'.$func.'}';
+            }
+            return $return;
+        }else if(!empty($value['type']) && $value['type']=='item_import'){
             $return = array("status"=>"0","message"=>"");
             
             if(!empty($value['file'])){
-                include_once(APPPATH.'libraries/classes/importClass.php');
-                $class = new importClass;
+                if(!empty($value['form_type']) && $value['form_type']=='import2'){
+                    $sql = 'update store_item a,stores b, marketplaces c,warehouse_item d
+                        set a.store_skucode=d.skucode,a.selling_price=0,a.discount_price=0,a.expire_date="",a.item_status=0
+                        ,a.marketplace_item_id="",a.marketplace_item_name="",a.marketplace_variation="",a.marketplace_variation_order=""
+                        ,a.marketplace_item_label=""
+                        where a.store_id=b.id and b.marketplace_id=c.id and b.warehouse_id=d.warehouse_id and a.warehouse_item_id=d.id
+                        and b.account_id=? and c.import_template=?';
+                    $this->CI->db->query($sql,array($value['account_d'],$value['marketplace_template']));
+                }
+                include_once(APPPATH.'libraries/classes/ImportHelper.php');
+                $class = new ImportHelper;
                 $file = tempnam(sys_get_temp_dir(), 'item_import_');
                 $data = $value['file'];
                 $data = base64_decode($data);
                 file_put_contents($file, $data);
                 $return = $class->item_import($value['account_id'],$value['marketplace_template'], $file);
                 unlink($file);
+            }else{
+                $return['message'] = "Invalid files!";
             }
             return $return;
         }else{
+            $is_update = false;
             if(empty($this->CI->input->post('id',true))){
                 //check existing account & marketplace
                 $account_id = $this->CI->input->post('value[account_id]',true);
@@ -104,9 +130,10 @@ class lensesStores extends lensesMain{
                     return array("status"=>"0","message"=>"Marketplace exists!");
                 }
             }else{
+                $is_update = true;
                 $id = $this->CI->input->post('id',true);
                 $col_list = array();
-                $field_list = array('name','sales_fees_pect','sales_fees_fixed','paypal_fees_pect','paypal_fees_fixed','default_qty_deduct');
+                $field_list = array('name','warehouse_id','sales_fees_pect','sales_fees_fixed','paypal_fees_pect','paypal_fees_fixed','default_qty_deduct');
                 foreach($field_list as $field){
                     if(isset($value[$field])){
                         $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
@@ -114,26 +141,30 @@ class lensesStores extends lensesMain{
                 }
                 $this->update_query = sprintf('UPDATE stores SET %s WHERE id="%s"',implode(',',$col_list),$id);
             }
-            $result = parent::ajax_custom_form_save();
-            if($result['status']=='1' && isset($result['record_id'])){
-                $rate = 1;
-                $warehouse_id = 0;
-                if(($result2 = $this->CI->db->query('SELECT a.warehouse_id,b.currency FROM stores a, marketplaces b WHERE a.id="'.$result['record_id'].'" and a.marketplace_id=b.id LIMIT 1')) && ($row = $result2->row_array())){
-                    $rate = $this->get_rate($row['currency']);
-                    $warehouse_id = $row['warehouse_id'];
+            $return = parent::ajax_custom_form_save();
+            if($return['status']=='1'){
+                if($is_update){
+                    $this->maintain_store();
+                }else if(isset($return['record_id'])){
+                    $rate = 1;
+                    $warehouse_id = 0;
+                    if(($result2 = $this->CI->db->query('SELECT a.warehouse_id,b.currency FROM stores a, marketplaces b WHERE a.id="'.$return['record_id'].'" and a.marketplace_id=b.id LIMIT 1')) && ($row = $result2->row_array())){
+                        $rate = $this->get_rate($row['currency']);
+                        $warehouse_id = $row['warehouse_id'];
+                    }
+                    $sql = 'insert into store_item(store_id,warehouse_item_id,store_skucode,selling_price,expire_date)
+                        select "'.$return['record_id'].'",d.id,concat(a.code,"-",c.code) skucode,(ifnull(d.selling_price,0) * '.$rate.'),ifnull(d.expire_date,"0000-00-00") from products a
+                        join options b on a.option_id=b.id
+                        join option_item c on a.option_id=c.option_id
+                        join warehouse_item d on d.product_id=a.id and item_id=c.id and d.warehouse_id="'.$warehouse_id.'"
+                        left join store_item e on d.id=e.warehouse_item_id and e.store_id="'.$return['record_id'].'"
+                        where e.id is null ORDER BY a.id,c.id';
+                    $this->CI->db->query($sql);
                 }
-                $sql = 'insert into store_item(store_id,warehouse_item_id,store_skucode,selling_price,expire_date)
-                    select "'.$result['record_id'].'",d.id,concat(a.code,"-",c.code) skucode,(ifnull(d.selling_price,0) * '.$rate.'),ifnull(d.expire_date,"0000-00-00") from products a
-                    join options b on a.option_id=b.id
-                    join option_item c on a.option_id=c.option_id
-                    join warehouse_item d on d.product_id=a.id and item_id=c.id and d.warehouse_id="'.$warehouse_id.'"
-                    left join store_item e on d.id=e.warehouse_item_id and e.store_id="'.$result['record_id'].'"
-                    where e.id is null ORDER BY a.id,c.id';
-                $this->CI->db->query($sql);
             }    
         }
         
-        return $result;
+        return $return;
     }
     
     function ajax_change_update(){
@@ -163,6 +194,15 @@ class lensesStores extends lensesMain{
             }
         }
         return $return;
+    }
+    
+    function ajax_export(){
+        $account_id = $this->CI->input->post_get('account_id',true);
+        $type = $this->CI->input->post_get('type',true);
+        include_once(APPPATH.'libraries/classes/ImportHelper.php');
+        $class = new ImportHelper;
+        $class->item_export($account_id,$type);
+        exit;
     }
     
 }

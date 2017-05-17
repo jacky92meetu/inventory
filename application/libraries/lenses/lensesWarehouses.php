@@ -47,7 +47,7 @@ class lensesWarehouses extends lensesMain{
             $quantity_list[$i] = $i;
         }
         
-        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Frame Model','editable'=>true,'goto'=>base_url('/warehouse_item')));
+        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Warehouse Name','editable'=>true,'goto'=>base_url('/warehouse_item')));
         
         $this->item_transfer_header = array(
             array('id'=>'type','name'=>'type','hidden'=>'1','value'=>'item_transfer'),
@@ -107,6 +107,11 @@ class lensesWarehouses extends lensesMain{
                         }
                     }
                 }
+            }
+        }else{
+            $return = parent::ajax_custom_form_save();
+            if($return['status']=='1'){
+                $this->update_store();
             }
         }
         

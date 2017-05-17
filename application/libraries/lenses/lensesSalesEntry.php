@@ -172,8 +172,8 @@ class lensesSalesEntry extends lensesMain{
             $return = array("status"=>"0","message"=>"");
             
             if(!empty($value['file'])){
-                include_once(APPPATH.'libraries/classes/importClass.php');
-                $class = new importClass;
+                include_once(APPPATH.'libraries/classes/ImportHelper.php');
+                $class = new ImportHelper;
                 $file = tempnam(sys_get_temp_dir(), 'sales_import_');
                 $data = $value['file'];
                 $data = base64_decode($data);
@@ -293,7 +293,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
                     //check available store_item_id
                     $temp = $this->get_available_quantity($row['store_item_id'],true);
                     if($row['quantity']>$temp){
-                        $this->CI->cmessage->set_message_url('Row no. '.$row['id'].' - Insufficient quantity.','error','/sales_entry');
+                        $this->CI->cmessage->set_message_url('Row no. '.$row['id'].' - Insufficient quantity.','error','sales_entry');
                         continue;
                     }
                     */
@@ -312,7 +312,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
             }
         }
         $this->CI->db->query('truncate table transactions_cache');
-        $this->CI->cmessage->set_message_url('Transactions save.','success','/sales_entry');
+        $this->CI->cmessage->set_message_url('Transactions save.','success','sales_entry');
     }
     
 }

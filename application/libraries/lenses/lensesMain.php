@@ -528,14 +528,14 @@ class lensesMain{
         return $instance;
     }
     
-    function tzdate($date = ""){
+    function tzdate($date = "",$tz = 0){
         if($date==""){
             $date = $this->utcdate();
         }
-        if(($tz = $this->get_global_config("timezone")) && (int)$tz!=0){
-            return date("Y-m-d H:i:s",(strtotime($date) + ((int)$tz*3600)));
+        if($tz==0 && ($temp = $this->get_global_config("timezone")) && (int)$temp!=0){
+            $tz = $temp;
         }
-        return $date;
+        return date("Y-m-d H:i:s",(strtotime($date) + ((int)$tz*3600)));
     }
     
     function utcdate($date = ""){
@@ -771,7 +771,7 @@ select w.id,a.id,c.id item_id,0,concat(a.code,"-",c.code) skucode from warehouse
             join options b on a.option_id=b.id
             join option_item c on a.option_id=c.option_id
             left join warehouse_item d on d.product_id=a.id and item_id=c.id and d.warehouse_id=w.id
-            where d.id is null ORDER BY a.id,c.id';
+            where d.id is null ORDER BY d.warehouse_id,a.id,c.id';
         $this->CI->db->query($sql);
 
         //update stores
@@ -788,7 +788,7 @@ select w.id,a.id,c.id item_id,0,concat(a.code,"-",c.code) skucode from warehouse
                     join option_item c on a.option_id=c.option_id
                     join warehouse_item d on d.product_id=a.id and item_id=c.id and d.warehouse_id="'.$warehouse_id.'"
                     left join store_item e on d.id=e.warehouse_item_id and e.store_id="'.$store_id.'"
-                    where e.id is null ORDER BY a.id,c.id';
+                    where e.id is null ORDER BY d.warehouse_id,a.id,c.id';
                 $this->CI->db->query($sql);
             }
         }
