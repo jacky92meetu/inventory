@@ -146,29 +146,29 @@ $editable = false;
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-12 form-field default text-default hidden">
+                    <div class="col-xs-12 form-field default text-default hidden">
                         <div class="form-group">
                             <label class="control-label">Fieldname</label>
                             <input type="text" class="form-control" placeholder="" required>
                         </div>
                     </div>
-                    <div class="col-md-12 form-field default select-default hidden">
+                    <div class="col-xs-12 form-field default select-default hidden">
                         <div class="form-group">
                             <label class="control-label">Fieldname</label>
                             <select class="form-control"></select>
                         </div>
                     </div>
-                    <div class="col-md-12 form-field default readonly-default hidden">
+                    <div class="col-xs-12 form-field default readonly-default hidden">
                         <div class="form-group">
                             <label class="control-label">Fieldname</label>
                             <input type="text" class="form-control disabled" DISABLED>
                             <input type="hidden" class="form-control">
                         </div>
                     </div>
-                    <div class="col-md-12 form-field default hidden-default hidden">
+                    <div class="col-xs-12 form-field default hidden-default hidden">
                         <input type="hidden" class="form-control">
                     </div>
-                    <div class="col-md-12 form-field default date-default hidden">
+                    <div class="col-xs-12 form-field default date-default hidden">
                         <div class="form-group">
                             <label class="control-label">Fieldname</label>
                             <div class="input-group">
@@ -177,7 +177,7 @@ $editable = false;
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-12 form-field default file-default hidden">
+                    <div class="col-xs-12 form-field default file-default hidden">
                         <div class="form-group">
                             <label class="control-label">Fieldname</label>
                             <input type="file">
@@ -348,6 +348,12 @@ $editable = false;
                             }
                             if(typeof data.data[i].optional === 'string'){
                                 c.find('.form-control').addClass('optional');
+                            }
+                            if(typeof data.data[i].form_class === 'string'){
+                                c.addClass(data.data[i].form_class);
+                            }
+                            if(typeof data.data[i].form_divider === 'string'){
+                                $('<hr style="display:inline-block;width:100%;background-color:#e5e5e5;height:2px;" />').insertAfter(c);
                             }
                         }
                         if(id.length>0){

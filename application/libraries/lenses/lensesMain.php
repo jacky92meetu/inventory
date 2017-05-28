@@ -259,6 +259,12 @@ class lensesMain{
                         if(isset($col['value'])){
                             $temp['value'] = $col['value'];
                         }
+                        if(isset($col['form_class'])){
+                            $temp['form_class'] = $col['form_class'];
+                        }
+                        if(isset($col['form_divider'])){
+                            $temp['form_divider'] = '1';
+                        }
                         $data[$key] = $temp;
                         break;
                     }

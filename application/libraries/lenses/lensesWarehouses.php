@@ -51,13 +51,13 @@ class lensesWarehouses extends lensesMain{
         
         $this->item_transfer_header = array(
             array('id'=>'type','name'=>'type','hidden'=>'1','value'=>'item_transfer'),
-            array('id'=>'from_warehouse','name'=>'From Warehouse','is_ajax'=>'1','option_text'=>$warehouse_list,'editable'=>true),
-            array('id'=>'from_product','name'=>'From Frame','is_ajax'=>'1','option_text'=>array(),'editable'=>true),
-            array('id'=>'from_item','name'=>'From Color','is_ajax'=>'1','option_text'=>array(),'editable'=>true),
-            array('id'=>'from_skucode','name'=>'From SKU Code','readonly'=>'1'),
-            array('id'=>'to_warehouse','name'=>'To Warehouse','option_text'=>$warehouse_list,'editable'=>true),
-            array('id'=>'transfer_quantity','name'=>'Storage A Quantity Transfer','option_text'=>$quantity_list,'editable'=>true),
-            array('id'=>'transfer_quantity2','name'=>'Storage B Quantity Transfer','option_text'=>$quantity_list,'editable'=>true),
+            array('id'=>'from_warehouse','name'=>'From Warehouse','is_ajax'=>'1','option_text'=>$warehouse_list,'editable'=>true,'form_class'=>'col-md-6 pull-left'),
+            array('id'=>'to_warehouse','name'=>'To Warehouse','option_text'=>$warehouse_list,'editable'=>true,'form_class'=>'col-md-6 pull-right'),
+            array('id'=>'from_product','name'=>'From Frame','is_ajax'=>'1','option_text'=>array(),'editable'=>true,'form_class'=>'col-md-6 pull-left'),
+            array('id'=>'transfer_quantity','name'=>'Storage A Quantity Transfer','option_text'=>$quantity_list,'editable'=>true,'form_class'=>'col-md-6 pull-right'),
+            array('id'=>'from_item','name'=>'From Color','is_ajax'=>'1','option_text'=>array(),'editable'=>true,'form_class'=>'col-md-6 pull-left'),
+            array('id'=>'transfer_quantity2','name'=>'Storage B Quantity Transfer','option_text'=>$quantity_list,'editable'=>true,'form_class'=>'col-md-6 pull-right'),
+            array('id'=>'from_skucode','name'=>'From SKU Code','readonly'=>'1','form_class'=>'col-md-6 pull-left'),
         );
     }
     
