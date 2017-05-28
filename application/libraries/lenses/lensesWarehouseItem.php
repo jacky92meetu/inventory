@@ -37,11 +37,12 @@ class lensesWarehouseItem extends lensesMain{
 ,a.product_id,a.item_id
 from warehouse_item a
 join products b on a.product_id=b.id
-join option_item c on a.item_id=c.id and c.type="1"
+join option_item c on a.item_id=c.id
 left join settings s1 on s1.code="min_qty" 
 left join settings s2 on s2.code="stop_qty"
 left join warehouse_item_history wih on wih.warehouse_item_id=a.id
-where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
+left join warehouses w on a.warehouse_id=w.id
+where (ifnull(w.allow_combo,"")="Y" or ifnull(c.type,"0")="1") and a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
         $this->parent_id = array('key'=>'warehouse_id','value'=>$id);
         
         $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'product_name','name'=>'Frame Model'),array('id'=>'option_name','name'=>'Color'),array('id'=>'skucode','name'=>'SKU Code','editable'=>true),array('id'=>'quantity','name'=>'Storage A Qty','editable'=>true,'custom_col'=>'adj_quantity'),array('id'=>'quantity2','name'=>'Storage B Qty','editable'=>true),array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),array('id'=>'selling_price','name'=>'Selling Price','editable'=>true),array('id'=>'min_qty','name'=>'Min Qty','editable'=>true),array('id'=>'stop_qty','name'=>'Stop Qty','editable'=>true),array('id'=>'qstatus','name'=>'Quantity Status','option_text'=>array('stop'=>'Stop','warning'=>'Warning','new'=>'New','normal'=>'Normal')));

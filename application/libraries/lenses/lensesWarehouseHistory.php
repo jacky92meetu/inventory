@@ -40,7 +40,7 @@ class lensesWarehouseHistory extends lensesMain{
             left join warehouse_item b2 on a.trans_id=b2.id
             left join warehouses w2 on b2.warehouse_id=w2.id';
         
-        $this->header = array(array('id'=>'id','name'=>'ID','filter-sorting'=>'desc'),array('id'=>'warehouse_name','name'=>'Warehouse'),array('id'=>'skucode','name'=>'SKU Code'),array('id'=>'product_name','name'=>'Frame'),array('id'=>'option_name','name'=>'Color'),array('id'=>'created_date','name'=>'Date','is_date'=>true),array('id'=>'adj_quantity','name'=>'Storage A Quantity'),array('id'=>'adj_quantity2','name'=>'Storage B Quantity'),array('id'=>'movement_type','name'=>'Movement Type','option_text'=>array('A'=>'Adjustment','S'=>'Sales Entry','R'=>'Sales Return','T'=>'Item Transfered','U'=>'Received From')),array('id'=>'movement_message','name'=>'Message'));
+        $this->header = array(array('id'=>'id','name'=>'ID','filter-sorting'=>'desc'),array('id'=>'warehouse_name','name'=>'Warehouse'),array('id'=>'skucode','name'=>'SKU Code'),array('id'=>'product_name','name'=>'Frame'),array('id'=>'option_name','name'=>'Color'),array('id'=>'created_date','name'=>'Date'),array('id'=>'adj_quantity','name'=>'Storage A Quantity'),array('id'=>'adj_quantity2','name'=>'Storage B Quantity'),array('id'=>'movement_type','name'=>'Movement Type','option_text'=>array('A'=>'Adjustment','S'=>'Sales Entry','R'=>'Sales Return','T'=>'Item Transfered','U'=>'Received From')),array('id'=>'movement_message','name'=>'Message'));
     }
     
 }

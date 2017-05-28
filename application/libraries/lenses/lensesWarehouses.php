@@ -19,7 +19,7 @@ class lensesWarehouses extends lensesMain{
         $this->selected_menu = "warehouses";
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Item Transfer','custom_form'=>'item_transfer');
-        $this->custom_form = true;
+        $this->custom_form = false;
         
         $supp_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM suppliers ORDER BY name'))){
@@ -47,7 +47,7 @@ class lensesWarehouses extends lensesMain{
             $quantity_list[$i] = $i;
         }
         
-        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Warehouse Name','editable'=>true,'goto'=>base_url('/warehouse_item')));
+        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Warehouse Name','editable'=>true,'goto'=>base_url('/warehouse_item')),array('id'=>'allow_combo','name'=>'Allow Combo Quantity','option_text'=>array('N'=>'Disable','Y'=>'Enable'),'editable'=>true,'value'=>'N'));
         
         $this->item_transfer_header = array(
             array('id'=>'type','name'=>'type','hidden'=>'1','value'=>'item_transfer'),
