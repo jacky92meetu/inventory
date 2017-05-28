@@ -100,7 +100,7 @@ $editable = false;
                                 ?>
                                 <th class="<?php echo $class; ?>">
                                     <select class="column_filter <?php echo $class2; ?>" data-column="<?php echo $count; ?>" name="<?php echo $header['id']; ?>" <?php echo $sorting; ?>>
-                                        <option value=""><?php echo "Search ".$header['name']; ?></option>
+                                        <option value=""><?php echo "No Filter"; ?></option>
                                         <?php foreach($header['option_text'] as $key => $value){ ?>
                                         <option value="<?php echo $key; ?>" <?php echo (($search_get==$key)?"SELECTED":""); ?>><?php echo $value; ?></option>
                                         <?php } ?>
@@ -350,7 +350,7 @@ $editable = false;
                                 c.find('.form-control').addClass('optional');
                             }
                         }
-                        if(id.length>0 && id>0){
+                        if(id.length>0){
                             $('#custom_form_modal').find('.form-container').attr('data-id',id);
                         }
                         $('#custom_form_modal').modal('show');
@@ -388,7 +388,7 @@ $editable = false;
                     $('<td></td>').appendTo(clone);
                 }
             }
-            if(id>0){
+            if(id.length>0){
                 clone.addClass('tr-edit');
                 $('.DTFC_RightWrapper tr[data-id="'+id+'"]').addClass('tr-edit');
             }else{
@@ -400,7 +400,7 @@ $editable = false;
                 if($('#datatable-editable').find('.thead-search th:eq('+count+').editable .column_filter').length){
                     var filter = $('#datatable-editable').find('.thead-search th:eq('+count+') .column_filter');
                     var input = $('<input value="" required />');
-                    if(id>0){
+                    if(id.length>0){
                         input.val($(this).attr('data-search'));
                     }
                     if(filter.is('.is_date')){
@@ -409,7 +409,7 @@ $editable = false;
                     }else if(filter.is('select')){
                         var input = $('#datatable-editable').find('.thead-search th:eq('+count+') select.column_filter').clone().removeClass('column_filter');
                         input.find('option[value=""]').remove();
-                        if(id>0){
+                        if(id.length>0){
                             input.find('option:contains("'+$(this).html()+'")').attr('selected','selected');
                         }else{
                             input.find('option:first').attr('selected','selected');
@@ -437,7 +437,7 @@ $editable = false;
             });
             clone.addClass('form-container');
             clone.find('td:last').addClass('actions').html('<a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a>');
-            if(id>0){
+            if(id.length>0){
                 clone.insertAfter(tr);
                 tr.addClass('hidden');
             }else{

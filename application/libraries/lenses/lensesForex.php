@@ -17,7 +17,7 @@ class lensesForex extends lensesMain{
         $this->table = "exchange_rate";
         $this->title = "Exchange Rate";
         $this->selected_menu = "forex";
-        $this->custom_form = true;
+        $this->custom_form = false;
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Live update','url'=>base_url('ajax/forex?method=live_update'));
         $this->ajax_url = base_url('ajax/forex');
@@ -33,7 +33,6 @@ class lensesForex extends lensesMain{
         $select_list = array();
         $table_list = array();
         $header_list = array();
-        //$header_list[] = array('id'=>'id','name'=>'ID');
         $header_list[] = array('id'=>'fdate','name'=>'Date','editable'=>true,'is_date'=>true,'filter-sorting'=>'desc');
         $temp = explode(",",$temp);
         foreach($temp as $v){
@@ -49,7 +48,8 @@ class lensesForex extends lensesMain{
         $this->header = $header_list;
     }
     
-    function ajax_custom_form_save(){
+    
+    function ajax_save(){
         $fdate = date("Y-m-d");
         if(strlen($temp = $this->CI->input->post('value[fdate]',true))>0){
             $temp = explode("/",$temp);
@@ -65,7 +65,7 @@ class lensesForex extends lensesMain{
         $sql = 'INSERT INTO exchange_rate(from_code,to_code,created_date,rate) VALUES '.implode(",",$query_list).' ON DUPLICATE KEY UPDATE rate=VALUES(rate)';
         $this->update_query = $sql;
         
-        return parent::ajax_custom_form_save();
+        return parent::ajax_save();
     }
     
     function ajax_delete(){
