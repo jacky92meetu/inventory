@@ -643,14 +643,27 @@ class lensesMain{
     
     function get_combo_list($store_item_id=0){
         $return = 0;
-        if(($result = $this->CI->db->query('select ifnull(d.id,b.id) warehouse_item_id, ifnull(d.item_id,b.item_id) item_id 
+        
+        $result = $result = $this->CI->db->query('select ifnull(b.id,0) warehouse_item_id, ifnull(b.item_id,0) item_id 
+            ,ifnull(b.quantity,0) quantity1
+            ,ifnull(b.quantity2,0) quantity2
+            from store_item a
+            join warehouse_item b on a.warehouse_item_id=b.id
+            join warehouses c on b.warehouse_id=c.id
+            where c.allow_combo="Y" and a.id=? limit 1',array($store_item_id));
+        
+        if(!$result){
+            $result = $this->CI->db->query('select ifnull(d.id,b.id) warehouse_item_id, ifnull(d.item_id,b.item_id) item_id 
             ,ifnull(b.quantity,0)+ifnull(d.quantity,0) quantity1
             ,ifnull(b.quantity2,0)+ifnull(d.quantity2,0) quantity2
             from store_item a
             join warehouse_item b on a.warehouse_item_id=b.id
             left join option_item_combo c on b.item_id=c.item_id
             left join warehouse_item d on b.warehouse_id=d.warehouse_id and b.product_id=d.product_id and c.combo_id=d.item_id
-            where a.id=?',array($store_item_id))) && $result->num_rows()){
+            where a.id=?',array($store_item_id));
+        }
+        
+        if($result && $result->num_rows()){
             $return = array();
             foreach($result->result_array() as $r){
                 $return[$r['warehouse_item_id']] = $r;
@@ -661,7 +674,15 @@ class lensesMain{
     
     function get_combo_list_from_id($id=0){
         $return = 0;
-        if(($result = $this->CI->db->query('select ifnull(d.id,b.id) warehouse_item_id, ifnull(d.item_id,b.item_id) item_id
+        if(($result = $this->CI->db->query('select b.id warehouse_item_id, b.item_id 
+            ,ifnull(b.quantity,0) quantity1
+            ,ifnull(b.quantity2,0) quantity2
+            from warehouse_item b 
+            join warehouses c on b.warehouse_id=c.id
+            where c.allow_combo="Y" and b.id=? limit 1',array($id))) && $result->num_rows() && ($row = $result->row_array())){
+            $return = array();
+            $return[$row['warehouse_item_id']] = $row;
+        }else if(($result = $this->CI->db->query('select ifnull(d.id,b.id) warehouse_item_id, ifnull(d.item_id,b.item_id) item_id
             ,ifnull(b.quantity,0)+ifnull(d.quantity,0) quantity1
             ,ifnull(b.quantity2,0)+ifnull(d.quantity2,0) quantity2
             from warehouse_item b
@@ -720,7 +741,7 @@ class lensesMain{
                     $quantity1 += $temp;
                 }
             }
-            $sql = sprintf('UPDATE warehouse_item SET quantity=quantity+%d,quantity2=quantity2+%d WHERE id=%d',$this->CI->db->escape($quantity1),$this->CI->db->escape($quantity2),$this->CI->db->escape($wid));
+            $sql = sprintf('UPDATE warehouse_item SET quantity=quantity+%d,quantity2=quantity2+%d WHERE id=%d',intval($quantity1),intval($quantity2),$this->CI->db->escape($wid));
             if($this->CI->db->query($sql)){
                 $sql = 'INSERT INTO warehouse_item_history(warehouse_item_id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3,adj_quantity,adj_quantity2,trans_id,movement_type) 
                         SELECT id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3,"'.$quantity1.'","'.$quantity2.'","'.$trans_id.'","'.$movement_type.'" FROM warehouse_item WHERE id = ?';
