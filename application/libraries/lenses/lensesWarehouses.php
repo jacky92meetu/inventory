@@ -100,8 +100,8 @@ class lensesWarehouses extends lensesMain{
                 $result2 = $this->CI->db->query('SELECT id FROM warehouse_item WHERE warehouse_id=? AND product_id=? AND item_id=? LIMIT 1',array($to_warehouse,$product_id,$item_id));
                 if($result && $result->num_rows() && ($row = $result->row_array())){
                     if($result2 && $result2->num_rows() && ($row2 = $result2->row_array())){
-                        if($this->adjust_quantity($row['id'], ($quantity1*-1), ($quantity2*-1))){
-                            if($this->adjust_quantity($row2['id'], $quantity1, $quantity2)){
+                        if($this->adjust_quantity($row['id'], ($quantity1*-1), ($quantity2*-1),$row2['id'],'T')){
+                            if($this->adjust_quantity($row2['id'], $quantity1, $quantity2,$row['id'],'U')){
                                 $return = array("status"=>"1","message"=>"");
                             }
                         }

@@ -50,9 +50,9 @@ where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
     function ajax_save(){
         $return = parent::ajax_save();
         if($return && $return['status']=="1" && isset($return['record_id'])){
-            $sql = 'INSERT INTO warehouse_item_history(warehouse_item_id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3) 
-                    SELECT id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3 FROM warehouse_item WHERE id = ?';
-            $this->CI->db->query($sql,array($return['record_id']));
+            if(($result = $this->CI->db->query('SELECT * FROM warehouse_item WHERE id=? LIMIT 1',array($return['record_id']))) && $result->num_rows() && ($row = $result->row_array())){
+                $this->adjust_quantity($row['id'], $row['quantity'], $row['quantity2'], 0);
+            }
         }
         return $return;
     }
@@ -106,11 +106,11 @@ where a.warehouse_id=%s group by a.id) a',$this->CI->db->escape($id));
             $quantity1 = intval($this->CI->input->post('value[transfer_quantity]',true));
             $quantity2 = intval($this->CI->input->post('value[transfer_quantity2]',true));
             if(!empty($quantity1) || !empty($quantity2)){
-                $id = intval($this->CI->input->post('id',true));
-                if($this->adjust_quantity($id, ($quantity1*-1), ($quantity2*-1))){
-                    if(($result = $this->CI->db->query('SELECT id FROM warehouse_item WHERE warehouse_id=? AND product_id=? AND item_id=? LIMIT 1',array($transfer_warehouse,$product_id,$item_id))) && $result->num_rows() && ($row = $result->row_array())){
-                        $id = intval($row['id']);
-                        if($this->adjust_quantity($id, $quantity1, $quantity2)){
+                if(($result = $this->CI->db->query('SELECT id FROM warehouse_item WHERE warehouse_id=? AND product_id=? AND item_id=? LIMIT 1',array($transfer_warehouse,$product_id,$item_id))) && $result->num_rows() && ($row = $result->row_array())){
+                    $id = intval($this->CI->input->post('id',true));
+                    $id2 = intval($row['id']);
+                    if($this->adjust_quantity($id, ($quantity1*-1), ($quantity2*-1), $id2, 'T')){
+                        if($this->adjust_quantity($id2, $quantity1, $quantity2, 0, 'A')){
                             $return = array("status"=>"1","message"=>"");
                         }
                     }

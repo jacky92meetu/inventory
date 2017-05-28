@@ -306,7 +306,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
                     if($this->CI->db->query(sprintf('INSERT INTO transactions SET %s',implode(',',$col_list)))){
                         $trans_id = $this->CI->db->insert_id();
                         $this->CI->db->query('delete from transactions_cache where id=?',array($row['id']));
-                        $this->adjust_quantity(0, ($row['quantity'] * -1), 0, $trans_id);
+                        $this->adjust_quantity(0, ($row['quantity'] * -1), 0, $trans_id, 'S');
                     }
                 }
             }

@@ -203,7 +203,7 @@ class lensesSalesHistory extends lensesMain{
         $this->update_query = sprintf('UPDATE transactions SET %s WHERE id="%s"',implode(',',$col_list),$id);
         $return = parent::ajax_custom_form_save();
         if($return['status']=='1'){
-            $this->adjust_quantity(0, ($quantity * -1), 0, $id);
+            $this->adjust_quantity(0, ($quantity * -1), 0, $id, 'S');
         }
         
         return $return;

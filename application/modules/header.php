@@ -10,6 +10,7 @@ if (!defined('BASEPATH'))
         <header id="topnav">
             <div class="topbar-main">
                 <div class="container">
+                    <div class="topbar-main-hoverbar" style="position:absolute;top:0;left:0;width:100%;height:100%;background-color:transparent;z-index: 0;"></div>
 
                     <!-- Logo container-->
                     <div class="logo">
@@ -150,6 +151,7 @@ if (!defined('BASEPATH'))
                             <a href="#"><i class="md md-insert-chart"></i>Reports</a>
                             <ul class="submenu">
                                 <li class="<?php echo (($selected_menu=="report_yearly_sales")?"active":""); ?>"><a href="<?php echo base_url("/report_yearly_sales"); ?>">Yearly Sales</a></li>
+                                <li class="<?php echo (($selected_menu=="warehouse_history")?"active":""); ?>"><a href="<?php echo base_url("/warehouse_history"); ?>">Warehouse History</a></li>
                             </ul>
                         </li>
                         

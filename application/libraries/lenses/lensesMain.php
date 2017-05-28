@@ -679,13 +679,13 @@ class lensesMain{
     function sales_cancel($trans_id=0){
         if(($result = $this->CI->db->query('select warehouse_item_id,sum(adj_quantity) adj_quantity,sum(adj_quantity2) adj_quantity2 from warehouse_item_history a where trans_id=? GROUP BY warehouse_item_id',array($trans_id))) && $result->num_rows()){
             foreach($result->result_array() as $row){
-                $this->adjust_quantity($row['warehouse_item_id'], ($row['adj_quantity'] * -1), ($row['adj_quantity2'] * -1));
+                $this->adjust_quantity($row['warehouse_item_id'], ($row['adj_quantity'] * -1), ($row['adj_quantity2'] * -1),0,'C');
             }
-            $this->CI->db->query('DELETE FROM warehouse_item_history WHERE trans_id=?',array($trans_id));
+            $this->CI->db->query('DELETE FROM warehouse_item_history WHERE movement_type="S" and trans_id=?',array($trans_id));
         }
     }
     
-    function adjust_quantity($warehouse_item_id=0,$quantity1=0,$quantity2=0,$trans_id=0){
+    function adjust_quantity($warehouse_item_id=0,$quantity1=0,$quantity2=0,$trans_id=0,$movement_type='A'){
         if($quantity1==0 && $quantity2==0){
             return true;
         }
@@ -696,7 +696,7 @@ class lensesMain{
             where a.id=? limit 1';
         $default_qty_deduct = '0';
         $total_quantity = $quantity1 + $quantity2;
-        if($trans_id>0 && ($result = $this->CI->db->query($sql,$trans_id)) && $result->num_rows() && ($row = $result->row_array())){
+        if($movement_type=='S' && $trans_id>0 && ($result = $this->CI->db->query($sql,$trans_id)) && $result->num_rows() && ($row = $result->row_array())){
             $default_qty_deduct = $row['default_qty_deduct'];
             $item_list = $this->get_combo_list($row['store_item_id']);
         }else{
@@ -705,7 +705,7 @@ class lensesMain{
         
         $count = 0;
         foreach($item_list as $wid => $wid_data){
-            if($trans_id>0){
+            if($movement_type=='S' && $trans_id>0){
                 $quantity1 = 0;
                 $quantity2 = 0;
                 if($default_qty_deduct=="1"){
@@ -722,8 +722,8 @@ class lensesMain{
             }
             $sql = sprintf('UPDATE warehouse_item SET quantity=quantity+%d,quantity2=quantity2+%d WHERE id=%d',$this->CI->db->escape($quantity1),$this->CI->db->escape($quantity2),$this->CI->db->escape($wid));
             if($this->CI->db->query($sql)){
-                $sql = 'INSERT INTO warehouse_item_history(warehouse_item_id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3,adj_quantity,adj_quantity2,trans_id) 
-                        SELECT id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3,"'.$quantity1.'","'.$quantity2.'","'.$trans_id.'" FROM warehouse_item WHERE id = ?';
+                $sql = 'INSERT INTO warehouse_item_history(warehouse_item_id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3,adj_quantity,adj_quantity2,trans_id,movement_type) 
+                        SELECT id,quantity,cost_price,selling_price,expire_date,quantity2,quantity3,"'.$quantity1.'","'.$quantity2.'","'.$trans_id.'","'.$movement_type.'" FROM warehouse_item WHERE id = ?';
                 $this->CI->db->query($sql,array($wid));
                 $count++;
             }
