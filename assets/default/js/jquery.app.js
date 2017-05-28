@@ -11,7 +11,7 @@
 
   function initNavbar () {
 
-    $('.navbar-toggle').on('click', function(event) {
+    $('.topbar-main,.navbar-toggle').on('click', function(event) {
       $(this).toggleClass('open');
       $('#navigation').slideToggle(400);
     });
