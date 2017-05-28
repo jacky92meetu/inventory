@@ -10,8 +10,7 @@
   'use strict';
 
   function initNavbar () {
-
-    $('.topbar-main,.navbar-toggle').on('click', function(event) {
+    $('.topbar-main-hoverbar,.navbar-toggle').on('click', function(event) {
       $(this).toggleClass('open');
       $('#navigation').slideToggle(400);
     });
