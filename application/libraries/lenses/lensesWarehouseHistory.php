@@ -27,7 +27,7 @@ class lensesWarehouseHistory extends lensesMain{
             ,a.movement_type
             ,if(a.movement_type="S",concat("Sales ID: ",a.trans_id),
                     if(a.movement_type="R",concat("Sales ID: ",a.trans_id),
-                            if(a.movement_type="T",concat("Transfered From [",w1.name,"] To [",w2.name,"]"),
+                            if(a.movement_type="T",concat("Transfered To [",w2.name,"] ",b2.skucode),
                                 if(a.movement_type="U",concat("Received From [",w2.name,"]"),"")
                             )
                     )

@@ -266,9 +266,8 @@ class importClass{
         }
         $func .= 'swal({
                 title: "Submission Result",
-                text: "<pre style=\'text-align:left;\'>'.$return['message'].'</pre>",
-                type: "",
-                html: true
+                html: "<pre style=\'text-align:left;\'>'.$return['message'].'</pre>",
+                type: ""
             });';
         $return['message'] = "";
         if(sizeof($func)>0){
