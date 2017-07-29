@@ -121,7 +121,7 @@ $editable = false;
                                 <?php } ?>
                             </tr>
                             <tr>
-                                <th width="10">No.</th>
+                                <th width="10"><input type="checkbox" class="select_all_checkbox"/></th>
                                 <?php $count=1; foreach ($this->cpage->template_data['view_header'] as $header) { ?>
                                     <th><?php echo $header['name']; ?></th>
                                 <?php $count+=1;} ?>
@@ -260,6 +260,9 @@ $editable = false;
         if(typeof obj==='object' && $(obj).closest('[data-id]').length){
             id = $(obj).closest('[data-id]').attr('data-id');
         }
+        if(type=="new"){
+            is_custom = true;
+        }
         if((is_custom && typeof type === 'string') || $('#datatable-editable').is('.custom_form')){
             show_processing(obj);
             var post_data = {};
@@ -360,7 +363,7 @@ $editable = false;
                             $('#custom_form_modal').find('.form-container').attr('data-id',id);
                         }
                         $('#custom_form_modal').modal('show');
-                        $('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled)').first().focus();
+                        //$('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled)').first().focus();
                         if(has_ajax){
                             ajax_change_update(has_ajax,true);
                         }
@@ -449,7 +452,7 @@ $editable = false;
             }else{
                 clone.prependTo($('#datatable-editable').find('tbody'));
             }
-            $('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled)').first().focus();
+            //$('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled)').first().focus();
             if(has_ajax){
                 ajax_change_update(has_ajax,true);
             }
@@ -571,13 +574,27 @@ $editable = false;
         .error(function(){
             show_notification('Submission to server error!','Notification','error');
         })
-        .always(function(){
+        .always(function(data){
             if($(obj).closest('.modal').length){
                 $(obj).closest('.modal').modal('hide');
             }else{
                 show_processing(obj,false);
                 if($(obj).closest('tr.tr-add').length){
-                    $('#datatable-editable').DataTable().ajax.reload(function(){data_edit()},false);
+                    //$('#datatable-editable').DataTable().ajax.reload(function(){data_edit()},false);
+                    return false;
+                }else if($(obj).closest('tr.tr-edit').length){
+                    if(data.status=="1"){
+                        $(obj).closest('tr.tr-edit').each(function(){
+                            $(this).find('td.form-field').each(function(){
+                                
+                            });
+                        });
+                    }
+                    $(obj).closest('tbody').find('tr[data-id="'+$(obj).closest('tr.tr-edit').attr('data-id')+'"].hidden').removeClass('hidden selected');
+                    $('.DTFC_RightWrapper tr.tr-edit').removeClass('tr-edit');
+                    $('.DTFC_RightWrapper tr[data-id="'+$(obj).closest('tr.tr-edit').attr('data-id')+'"]').removeClass('selected');
+                    $('.DTFC_LeftWrapper tr[data-id="'+$(obj).closest('tr.tr-edit').attr('data-id')+'"]').removeClass('selected');
+                    $(obj).closest('tr.tr-edit').remove();
                     return false;
                 }
             }
@@ -783,6 +800,14 @@ $editable = false;
                         $('select.column_filter').val("");
                         table.search( '' ).columns().search( '' ).draw();
                         table.rows().deselect();
+                        $('.select_all_checkbox').prop('checked',false);
+                    });
+                    $('.select_all_checkbox').on('click',function(){
+                        if($(this).prop('checked')){
+                            table.rows().select();
+                        }else{
+                            table.rows().deselect();
+                        }
                     });
                     <?php if($editable){ ?>
                     
@@ -827,13 +852,17 @@ $editable = false;
                         if(thead_search.find('th:eq('+i+') select.column_filter option[value="'+val+'"]').length){
                             $(row).find('td:eq('+i+')').html(thead_search.find('th:eq('+i+') select.column_filter option[value="'+val+'"]').text());
                         }
+                        if(thead_search.find('th:eq('+i+').editable').length){
+                            $(row).find('td:eq('+i+')').addClass('editable_td');
+                        }
                     }
                     <?php if($editable){ ?>
+                    $(row).find('td').last().addClass('actions').html('<a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a>');
                     <?php if($this->cpage->template_data['delete_btn'] || sizeof($this->cpage->template_data['extra_btn'])>0){ ?>
                         $(row).find('td').not('.actions').on('click',function(){ $('tr[data-id="'+$(this).closest('tr[data-id]').attr('data-id')+'"]').toggleClass('selected'); });
+                        //$(row).find('td:first').html('<input type="checkbox" class="select_checkbox" />');
                     <?php } ?>
-                    $(row).find('td').not('.actions').on('dblclick',function(){data_edit($(this).closest('tr').find('td.actions .edit-row'));});
-                    $(row).find('td').last().addClass('actions').html('<a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a>');
+                    $(row).find('td.editable_td').not('.actions').on('dblclick',function(){data_edit($(this).closest('tr').find('td.actions .edit-row'));});
                     <?php } ?>
                 },
                 "columnDefs": [
@@ -866,5 +895,7 @@ $editable = false;
             } ).draw();
             */
         });
+        
+        
     });
 </script>

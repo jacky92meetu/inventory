@@ -19,7 +19,7 @@ class lensesSalesHistory extends lensesMain{
         $this->selected_menu = "sales_history";
         $this->freezePane = 5;
         $this->is_required = false;
-        $this->custom_form = true;
+        $this->custom_form = false;
         $this->add_btn = false;
         $this->ajax_url = base_url('ajax/sales_history');
         $this->search_query = 'select * from (select a.id
@@ -75,7 +75,7 @@ class lensesSalesHistory extends lensesMain{
         
         $this->header = array(
             array('id'=>'id','name'=>'ID'),
-            array('id'=>'account_id','name'=>'Account','is_ajax'=>'1','option_text'=>$supp_list),
+            array('id'=>'account_id','name'=>'Account','custom_col'=>'adj_frame'),
             array('id'=>'store_name','name'=>'Store'),
             array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame'),
