@@ -21,17 +21,18 @@ table.dataTable .fa-trash-o {
 }
 table.dataTable .fa-times {
   color: #ef5350;
+}
+table.dataTable .fa-save {
+  color: #33b86c;
+}
+table.dataTable .cancel-row, table.dataTable .save-row {
   display: none;
 }
 table.dataTable .fa-pencil {
   color: #29b6f6;
 }
-table.dataTable .fa-save {
-  color: #33b86c;
-  display: none;
-}
-table.dataTable .tr-edit .fa-save,table.dataTable .tr-edit .fa-times{display:inline-block;}
-table.dataTable .tr-edit .fa-pencil{display:none;}
+table.dataTable .tr-edit .save-row,table.dataTable .tr-edit .cancel-row{display:inline-block;}
+table.dataTable .tr-edit .edit-row{display:none;}
 table.dataTable .thead-search th{}
 table.dataTable .thead-search th input,table.dataTable .thead-search th select,
 table.dataTable tr.tr-edit input,table.dataTable tr.tr-edit select,

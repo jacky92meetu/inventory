@@ -17,12 +17,13 @@ class lensesSalesEntry extends lensesMain{
         $this->table = "transactions_cache";
         $this->title = "Sales Entry";
         $this->selected_menu = "sales_entry";
-        $this->freezePane = 5;
+        $this->freezePane = 4;
         $this->is_required = false;
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Sales/Payment Import','custom_form'=>'sales_import');
+        $this->extra_btn[] = array('name'=>'Update Courier','custom_form'=>'sales_courier','require_select'=>'1');
         $this->extra_btn[] = array('name'=>'Save Transactions','url'=>base_url('ajax/sales_entry?method=save_transactions'));
-        $this->custom_form = true;
+        $this->custom_form = false;
         $this->ajax_url = base_url('ajax/sales_entry');
         $this->search_query = 'select * from (select a.id
             , b.name account_name
@@ -76,8 +77,8 @@ class lensesSalesEntry extends lensesMain{
         }
         
         $this->header = array(
-            array('id'=>'id','name'=>'ID'),
-            array('id'=>'account_id','name'=>'Account','is_ajax'=>'1','option_text'=>$supp_list),
+            array('id'=>'id','name'=>'ID','custom_col'=>'adj_frame'),
+            array('id'=>'account_id','name'=>'Account'),
             array('id'=>'store_name','name'=>'Store','is_ajax'=>'stores'),
             array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame','is_ajax'=>'products'),
@@ -149,15 +150,16 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'import_type','name'=>'Type','option_text'=>array('sales'=>'Sales Report','payment'=>'Payment Report')),
             array('id'=>'file','name'=>'File','is_file'=>'1')
         );
+        
+        $this->sales_courier_header = array(
+            array('id'=>'id','name'=>'ID','hidden'=>'1'),
+            array('id'=>'type','name'=>'type','value'=>'sales_courier','hidden'=>'1'),
+            array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list,'editable'=>true)
+        );
     }
     
-    function ajax_custom_form(){
-        if($_REQUEST['type']=="sales_import"){
-            $data = $this->sales_import_header;
-            return parent::ajax_custom_form($data);
-        }else{
-            return parent::ajax_custom_form();
-        }
+    function ajax_save(){
+        return $this->ajax_custom_form_save();
     }
     
     function ajax_custom_form_save(){
@@ -166,10 +168,10 @@ class lensesSalesEntry extends lensesMain{
         
         $col_list = array();
         $value = $this->CI->input->post('value',true);
-        $import_type = $value['import_type'];
         
         if(!empty($value['type']) && $value['type']=='sales_import'){
             $return = array("status"=>"0","message"=>"");
+            $import_type = $value['type'];
             
             if(!empty($value['file'])){
                 include_once(APPPATH.'libraries/classes/ImportHelper.php');
@@ -186,12 +188,23 @@ class lensesSalesEntry extends lensesMain{
                 unlink($file);
             }
             return $return;
+        }else if(!empty($value['type']) && $value['type']=='sales_courier'){
+            $return = array("status"=>"0","message"=>"");
+            $selection = $this->CI->input->post('selection',true);
+            if(is_array($selection)){
+                if($this->CI->db->query('update transactions_cache set courier_id = ? where id in (?)',array($value['courier_id'],implode(",", $selection)))){
+                    $return['status'] = "1";
+                }
+            }
+            return $return;
         }else{
             //check available store_item_id
             $store_item_id = $this->CI->input->post('value[store_item_id]',true);
             $quantity = $this->CI->input->post('value[quantity]',true);
-            if($id>0 && ($result = $this->CI->db->query('select quantity from transactions_cache where id=? limit 1',$id)) && ($row = $result->row_array())){
+            $prev_tracking_number = "";
+            if($id>0 && ($result = $this->CI->db->query('select quantity,tracking_number from transactions_cache where id=? limit 1',$id)) && ($row = $result->row_array())){
                 $quantity -= $row['quantity'];
+                $prev_tracking_number = $row['tracking_number'];
             }
             /*
             $temp = $this->get_available_quantity($store_item_id);
@@ -216,6 +229,16 @@ class lensesSalesEntry extends lensesMain{
             if(($temp = explode('/', $value['shipment_date'])) && sizeof($temp)==3){
                 $value['shipment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
             }
+            if(trim($prev_tracking_number)=="" && strlen($value['tracking_number'])>0){
+                if(($result = $this->CI->db->query('select * from couriers a')) && $result->num_rows()){
+                    foreach($result->result_array() as $row){
+                        if(strlen(trim($row['pattern']))>0 && preg_match('#^'.trim($row['pattern']).'$#iu', $value['tracking_number'], $matches)){
+                            $value['courier_id'] = $row['id'];
+                            break;
+                        }
+                    }
+                }
+            }
             $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
             foreach($field_list as $field){
                 if(isset($value[$field])){
@@ -228,6 +251,9 @@ class lensesSalesEntry extends lensesMain{
                 $this->update_query = sprintf('INSERT INTO transactions_cache SET %s',implode(',',$col_list));
             }
             $return = parent::ajax_custom_form_save();
+            if($return['status']=='1'){
+                $return['return_data'] = $value;
+            }
         }
         
         return $return;

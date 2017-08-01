@@ -15,7 +15,7 @@ class lensesMain{
     var $is_required = true;
     var $recordsTotal = 0;
     var $recordsFiltered = 0;
-    var $freezePane = 2;
+    var $freezePane = 1;
     var $data = array();
     var $default_length = 50;
     var $custom_form = false;
@@ -176,7 +176,7 @@ class lensesMain{
             foreach($temp as $r){
                 $count = 0;
                 $temp2 = array();
-                $temp2[] = $count2;
+                //$temp2[] = $count2;
                 foreach($r as $c){
                     /*
                     if(isset($this->header[$count]['option_text']) && isset($this->header[$count]['option_text'][$c])){
@@ -212,13 +212,18 @@ class lensesMain{
             $return['type'] = $this->CI->input->post('type',true); 
         }
         
-        if(isset($this->custom_header) && sizeof($data)==0){
-            $temp = array();
-            foreach($this->custom_header as $value){
-                $temp[$value['id']] = $value;
+        if(sizeof($data)==0){
+            foreach(array((strlen($return['type'])>0?$return['type']:"").'_header','custom_header') as $var){
+                if(isset($this->{$var})){
+                    $temp = array();
+                    foreach($this->{$var} as $value){
+                        $temp[$value['id']] = $value;
+                    }
+                    $this->{$var} = $temp;
+                    $data = $this->{$var};
+                    break;
+                }
             }
-            $this->custom_header = $temp;
-            $data = $this->custom_header;
         }
         
         if(sizeof($data)==0){

@@ -17,7 +17,7 @@ class lensesSalesHistory extends lensesMain{
         $this->table = "transactions";
         $this->title = "Sales History";
         $this->selected_menu = "sales_history";
-        $this->freezePane = 5;
+        $this->freezePane = 4;
         $this->is_required = false;
         $this->custom_form = false;
         $this->add_btn = false;
@@ -74,8 +74,8 @@ class lensesSalesHistory extends lensesMain{
         }
         
         $this->header = array(
-            array('id'=>'id','name'=>'ID'),
-            array('id'=>'account_id','name'=>'Account','custom_col'=>'adj_frame'),
+            array('id'=>'id','name'=>'ID','custom_col'=>'adj_frame'),
+            array('id'=>'account_id','name'=>'Account'),
             array('id'=>'store_name','name'=>'Store'),
             array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame'),
@@ -159,6 +159,10 @@ class lensesSalesHistory extends lensesMain{
         return $return;
     }
     
+    function ajax_save(){
+        return $this->ajax_custom_form_save();
+    }
+    
     function ajax_custom_form_save(){
         $return = array("status"=>"0","message"=>"");
         $id = $this->CI->input->post('id',true);
@@ -166,8 +170,10 @@ class lensesSalesHistory extends lensesMain{
         //check available store_item_id
         $store_item_id = $this->CI->input->post('value[store_item_id]',true);
         $quantity = $this->CI->input->post('value[quantity]',true);
-        if($id>0 && ($result = $this->CI->db->query('select quantity from transactions where id=? limit 1',$id)) && ($row = $result->row_array())){
+        $prev_tracking_number = "";
+        if($id>0 && ($result = $this->CI->db->query('select quantity,tracking_number from transactions where id=? limit 1',$id)) && ($row = $result->row_array())){
             $quantity -= $row['quantity'];
+            $prev_tracking_number = $row['tracking_number'];
         }
         /*
         $temp = $this->get_available_quantity($store_item_id);
@@ -194,6 +200,16 @@ class lensesSalesHistory extends lensesMain{
         if(($temp = explode('/', $value['shipment_date'])) && sizeof($temp)==3){
             $value['shipment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
         }
+        if(trim($prev_tracking_number)=="" && strlen($value['tracking_number'])>0){
+            if(($result = $this->CI->db->query('select * from couriers a')) && $result->num_rows()){
+                foreach($result->result_array() as $row){
+                    if(strlen(trim($row['pattern']))>0 && preg_match('#^'.trim($row['pattern']).'$#iu', $value['tracking_number'], $matches)){
+                        $value['courier_id'] = $row['id'];
+                        break;
+                    }
+                }
+            }
+        }
         $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
         foreach($field_list as $field){
             if(isset($value[$field])){
@@ -204,6 +220,7 @@ class lensesSalesHistory extends lensesMain{
         $return = parent::ajax_custom_form_save();
         if($return['status']=='1'){
             $this->adjust_quantity(0, ($quantity * -1), 0, $id, 'S');
+            $return['return_data'] = $value;
         }
         
         return $return;

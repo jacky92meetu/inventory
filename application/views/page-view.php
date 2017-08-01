@@ -47,9 +47,13 @@ $editable = false;
                         if(isset($temp['custom_form'])){
                             $custom_form = 'custom_form="'.$temp['custom_form'].'"';
                         }
+                        $require_select = "";
+                        if(isset($temp['require_select'])){
+                            $require_select = 'require_select="require_select"';
+                        }
                 ?>
                 <span>
-                    <button class="btn <?php echo $class; ?> waves-effect waves-light" onclick="extra_btn(this)" <?php echo $custom_form; ?> data-goto="<?php echo $temp['url']; ?>"><?php echo $temp['name']; ?></button>
+                    <button class="btn <?php echo $class; ?> waves-effect waves-light" onclick="extra_btn(this)" <?php echo $custom_form; ?> <?php echo $require_select; ?> data-goto="<?php echo $temp['url']; ?>"><?php echo $temp['name']; ?></button>
                 </span>
                 <?php }} ?>
             </div>
@@ -63,8 +67,7 @@ $editable = false;
                         
                         <thead>
                             <tr class="thead-search">
-                                <th width="10" class="dataTables_length_container"></th>
-                                <?php $count=1;
+                                <?php $count=0;
                                     foreach ($this->cpage->template_data['view_header'] as $header) {
                                         $goto_url = "";
                                         $class = "";
@@ -115,18 +118,23 @@ $editable = false;
                                     }
                                 ?>
                                 <?php if($editable){ ?>
-                                <th width="10">
-                                    <button class="resetFilter btn btn-warning waves-effect waves-light"><i class="fa fa-lg fa-refresh"></i></button>
+                                <th width="10" style="vertical-align:top;text-align:right;">
+                                    <div style="position:relative;">
+                                        <div class="btn-group btn-group-xs actions_label" style="position:absolute;top:0;right:0;">
+                                            <button class="resetFilter btn btn-warning waves-effect waves-light"><i class="fa fa-lg fa-refresh"></i></button>
+                                            <button class="select_all_checkbox btn btn-primary waves-effect waves-light"><i class="fa fa-lg fa-check-square-o"></i></button>
+                                            <input type="checkbox" class="select_all_checkbox hidden">
+                                        </div>
+                                    </div>
                                 </th>
                                 <?php } ?>
                             </tr>
                             <tr>
-                                <th width="10"><input type="checkbox" class="select_all_checkbox"/></th>
-                                <?php $count=1; foreach ($this->cpage->template_data['view_header'] as $header) { ?>
+                                <?php $count=0; foreach ($this->cpage->template_data['view_header'] as $header) { ?>
                                     <th><?php echo $header['name']; ?></th>
                                 <?php $count+=1;} ?>
                                 <?php if($editable){ ?>
-                                <th width="10">Actions</th>
+                                    <th style="color:transparent;">Actions</th>    
                                 <?php } ?>
                             </tr>
                         </thead>
@@ -550,7 +558,11 @@ $editable = false;
             var obj = $('#datatable-editable').find('tr.tr-edit,tr.tr-add').first();
             var count = 0;
             $(obj).closest('tr').find('.form-field:not(.default) .form-control:not(.disabled,:disabled)').each(function(){
-                value_list[count] = $(this).val();
+                if($(this).attr('name')){
+                    value_list[$(this).attr('name')] = $(this).val();
+                }else{
+                    value_list[count] = $(this).val();
+                }
                 count++;
             });
             post_data['method'] = 'save';
@@ -558,6 +570,12 @@ $editable = false;
         
         post_data['id'] = id;
         post_data['value'] = value_list;
+        
+        var list = $('#datatable-editable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
+        if(list.length){
+            post_data['selection'] = list;
+        }
+        
         $.post('<?php echo $this->cpage->template_data['view_ajax_url']; ?>',post_data,function(data){
             if(data.status=="1"){
                 show_notification('Data save successfuly.','Notification','success');
@@ -585,8 +603,23 @@ $editable = false;
                 }else if($(obj).closest('tr.tr-edit').length){
                     if(data.status=="1"){
                         $(obj).closest('tr.tr-edit').each(function(){
-                            $(this).find('td.form-field').each(function(){
-                                
+                            var count = 0;
+                            $(this).find('td').each(function(){
+                                if($(this).is('.form-field')){
+                                    var value = "";
+                                    if(typeof data.return_data !== 'undefined' && data.return_data[$(this).find('input,select').attr('name')].length){
+                                        value = data.return_data[$(this).find('input,select').attr('name')];
+                                    }else if($(this).find('input').length){
+                                        value = $(this).find('input').val();
+                                    }else if($(this).find('select').length){
+                                        value = $(this).find('select option:selected').html();
+                                    }
+                                    $(obj).closest('tbody').find('tr[data-id="'+$(obj).closest('tr.tr-edit').attr('data-id')+'"].hidden td:eq('+count+')')
+                                        .attr('data-search',value)
+                                        .attr('data-order',value)
+                                        .html(value);
+                                }
+                                count++;
                             });
                         });
                     }
@@ -678,11 +711,15 @@ $editable = false;
         $('.DTFC_RightWrapper tr.tr-edit').removeClass('tr-edit tr-add');
     }
     function extra_btn(obj){
+        var list = $('#datatable-editable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
         if($(obj).is('[custom_form]')){
+            if($(obj).attr('require_select')=="require_select" && list.length==0){
+                swal({title:"",type:"warning",text:"Please select record!"});
+                return false;
+            }
             return data_edit(obj,$(obj).attr('custom_form'),true);
         }
         var url = $(obj).attr('data-goto');
-        var list = $('#datatable-editable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
         if(window.confirm("Please click the button to continue the \""+$(obj).text()+"\".")){
             var post_data = {};
             post_data['selection'] = list;
@@ -757,8 +794,8 @@ $editable = false;
                 setTimeout(function(){
                     $('#datatable-editable_length').each(function(){
                         var clone = $(this).find('select[name="datatable-editable_length"]').clone(true);
-                        $('.dataTables_length_container').append(clone);
-                        $(this).hide();
+                        $('.actions_label').prepend(clone);
+                        $(this).addClass('hidden');
                     });
                     $('select.column_filter').each(function(){
                         if($(this).val().length && $(this).val()!=='0'){
@@ -800,13 +837,15 @@ $editable = false;
                         $('select.column_filter').val("");
                         table.search( '' ).columns().search( '' ).draw();
                         table.rows().deselect();
-                        $('.select_all_checkbox').prop('checked',false);
+                        $('input.select_all_checkbox').prop('checked',false);
                     });
-                    $('.select_all_checkbox').on('click',function(){
-                        if($(this).prop('checked')){
-                            table.rows().select();
-                        }else{
+                    $('button.select_all_checkbox').on('click',function(){
+                        if($('input.select_all_checkbox').prop('checked')){
                             table.rows().deselect();
+                            $('input.select_all_checkbox').prop('checked',false);
+                        }else{
+                            table.rows().select();
+                            $('input.select_all_checkbox').prop('checked',true);
                         }
                     });
                     <?php if($editable){ ?>
@@ -840,11 +879,12 @@ $editable = false;
                     "data": {'method':'read'}
                 },
                 "createdRow": function(row,data,dataIndex){
-                    $(row).attr('data-id',data[1]);
+                    var $data_id = data[0];
+                    $(row).attr('data-id',$data_id);
                     for(var i=0; i<data.length; i++){
                         var val = data[i];
                         if(thead_search.find('th:eq('+i+')[data-goto]').length){
-                            $(row).find('td:eq('+i+')').html('<a href="'+thead_search.find('th:eq('+i+')[data-goto]').attr('data-goto')+'?id='+data[1]+'">'+val+'</a>');
+                            $(row).find('td:eq('+i+')').html('<a href="'+thead_search.find('th:eq('+i+')[data-goto]').attr('data-goto')+'?id='+$data_id+'">'+val+'</a>');
                         }else if(thead_search.find('th:eq('+i+')[custom-col]').length){
                             $(row).find('td:eq('+i+')').html('<a href="javascript:void(0)" onclick="data_edit(this,\''+thead_search.find('th:eq('+i+')[custom-col]').attr('custom-col')+'\',true)">'+val+'</a>');
                         }
@@ -857,7 +897,7 @@ $editable = false;
                         }
                     }
                     <?php if($editable){ ?>
-                    $(row).find('td').last().addClass('actions').html('<a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a>');
+                    $(row).find('td').last().addClass('actions').html('<div class="pull-right"><a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a></div>');
                     <?php if($this->cpage->template_data['delete_btn'] || sizeof($this->cpage->template_data['extra_btn'])>0){ ?>
                         $(row).find('td').not('.actions').on('click',function(){ $('tr[data-id="'+$(this).closest('tr[data-id]').attr('data-id')+'"]').toggleClass('selected'); });
                         //$(row).find('td:first').html('<input type="checkbox" class="select_checkbox" />');
@@ -866,11 +906,13 @@ $editable = false;
                     <?php } ?>
                 },
                 "columnDefs": [
+                    /*
                     {
                         "targets": [ 0 ],
                         "orderable": false
                     },
-                <?php $count=1; foreach ($this->cpage->template_data['view_header'] as $header) { ?>
+                    */
+                <?php $count=0; foreach ($this->cpage->template_data['view_header'] as $header) { ?>
                     {
                         "targets": [ <?php echo $count; ?> ],
                         "visible": <?php echo ((isset($header['hide']))?"false":"true"); ?>,

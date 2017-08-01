@@ -25,7 +25,7 @@ class lensesWarehouseItem extends lensesMain{
         $this->table = "warehouse_item";
         $this->title = $row['name'].'\'s Items';
         $this->selected_menu = "warehouses";
-        $this->freezePane = 4;
+        $this->freezePane = 3;
         $this->custom_form = false;
         $this->add_btn = false;
         $this->delete_btn = false;

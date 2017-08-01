@@ -17,7 +17,7 @@ class lensesWarehouseHistory extends lensesMain{
         $this->table = "warehouse_item_history";
         $this->title = "Warehouse History";
         $this->selected_menu = "warehouse_history";
-        $this->freezePane = 4;
+        $this->freezePane = 3;
         $this->custom_form = false;
         $this->add_btn = false;
         $this->delete_btn = false;
