@@ -24,17 +24,12 @@ class lensesMain{
     var $delete_btn = true;
     var $extra_btn = array();
     var $parent_id = false;
-    var $user_group_priv = 0;
     
     function __construct(){
         $this->CI = get_instance();
         $this->CI->db->query('SET NAMES "utf8"');        
         //$this->CI->db->query('SET @@global.time_zone = "'.$this->get_global_config("timezone").':00"');
         $this->CI->db->query('SET @@session.time_zone = "'.$this->get_global_config("timezone").':00"');
-        
-        if(!$this->get_user_access($_SESSION['user_type'],$this->user_group_priv)){
-            redirect(base_url("/"),'location');
-        }
         
         if(isset($_POST['columns'])){
             array_splice($_POST['columns'], 0, 1);
@@ -542,24 +537,6 @@ class lensesMain{
             return false;
         }
         return $instance;
-    }
-    
-    function get_user_access($group_id = 0, $priv_id = 0){
-        static $instance = array();
-        if(!isset($instance[$group_id])){
-            $sql = 'select priv_id from user_group_privileges where priv_status=1 and group_id=?';
-            if(($result = $this->CI->db->query($sql,array($group_id))) && $result->num_rows()){
-                $instance[$group_id] = array();
-                $temp = $result->result_array();
-                foreach($temp as $r){
-                    $instance[$group_id][$r['priv_id']] = $r['priv_id'];
-                }
-            }
-        }
-        if($priv_id==0 || (isset($instance[$group_id]) && array_search($priv_id, $instance[$group_id])!==FALSE)){
-            return true;
-        }
-        return false;
     }
     
     function tzdate($date = "",$tz = 0){
