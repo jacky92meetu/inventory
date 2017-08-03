@@ -154,7 +154,8 @@ class lensesSalesEntry extends lensesMain{
         $this->sales_courier_header = array(
             array('id'=>'id','name'=>'ID','hidden'=>'1'),
             array('id'=>'type','name'=>'type','value'=>'sales_courier','hidden'=>'1'),
-            array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list,'editable'=>true)
+            array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list,'editable'=>true),
+            array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','editable'=>true)
         );
     }
     
@@ -191,8 +192,11 @@ class lensesSalesEntry extends lensesMain{
         }else if(!empty($value['type']) && $value['type']=='sales_courier'){
             $return = array("status"=>"0","message"=>"");
             $selection = $this->CI->input->post('selection',true);
+            if(($temp = explode('/', $value['shipment_date'])) && sizeof($temp)==3){
+                $value['shipment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
+            }
             if(is_array($selection)){
-                if($this->CI->db->query('update transactions_cache set courier_id = ? where id in (?)',array($value['courier_id'],implode(",", $selection)))){
+                if($this->CI->db->query('update transactions_cache set courier_id = ?, shipment_date = ? where id in (?)',array($value['courier_id'],$value['shipment_date'],implode(",", $selection)))){
                     $return['status'] = "1";
                 }
             }
