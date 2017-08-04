@@ -172,7 +172,7 @@ class lensesSalesEntry extends lensesMain{
         
         if(!empty($value['type']) && $value['type']=='sales_import'){
             $return = array("status"=>"0","message"=>"");
-            $import_type = $value['type'];
+            $import_type = $value['import_type'];
             
             if(!empty($value['file'])){
                 include_once(APPPATH.'libraries/classes/ImportHelper.php');
