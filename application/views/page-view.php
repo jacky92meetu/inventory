@@ -105,7 +105,7 @@ $editable = false;
                                     <select class="column_filter <?php echo $class2; ?>" data-column="<?php echo $count; ?>" name="<?php echo $header['id']; ?>" <?php echo $sorting; ?>>
                                         <option value=""><?php echo "No Filter"; ?></option>
                                         <?php foreach($header['option_text'] as $key => $value){ ?>
-                                        <option value="<?php echo $key; ?>" <?php echo (($search_get==$key)?"SELECTED":""); ?>><?php echo $value; ?></option>
+                                        <option value="<?php echo $key; ?>" <?php echo (($search_get==$key)?"SELECTED":""); ?> display="<?php echo $value; ?>"><?php echo $value; ?></option>
                                         <?php } ?>
                                     </select>
                                 </th>
@@ -335,7 +335,7 @@ $editable = false;
                                 c.find('label').html(data.data[i].name);
                                 c.find('select').attr('name',data.data[i].id);
                                 for(var j in data.data[i].option_text){
-                                    var t = $('<option value="'+j+'">'+data.data[i].option_text[j]+'</option>');
+                                    var t = $('<option value="'+j+'" display="'+data.data[i].option_text[j]+'">'+data.data[i].option_text[j]+'</option>');
                                     c.find('select').append(t);
                                 }
                                 if(data.data[i].value.length>0){
@@ -427,7 +427,11 @@ $editable = false;
                         var input = $('#datatable-editable').find('.thead-search th:eq('+count+') select.column_filter').clone().removeClass('column_filter');
                         input.find('option[value=""]').remove();
                         if(id.length>0){
-                            input.find('option:contains("'+$(this).html()+'")').attr('selected','selected');
+                            if(input.find('option[value="'+$(this).html()+'"]').length){
+                                input.find('option[value="'+$(this).html()+'"]').attr('selected','selected');
+                            }else{
+                                input.find('option:contains("'+$(this).html()+'")').attr('selected','selected');
+                            }
                         }else{
                             input.find('option:first').attr('selected','selected');
                         }
@@ -498,7 +502,7 @@ $editable = false;
                             if(typeof data.data[i].option_text === 'object' && $(this).is('select')){
                                 $(this).html('');
                                 for(var j in data.data[i].option_text){
-                                    var t = $('<option value="'+j+'">'+data.data[i].option_text[j]+'</option>');
+                                    var t = $('<option value="'+j+'" display="'+data.data[i].option_text[j]+'">'+data.data[i].option_text[j]+'</option>');
                                     $(this).append(t);
                                 }
                             }
