@@ -611,12 +611,14 @@ $editable = false;
                             $(this).find('td').each(function(){
                                 if($(this).is('.form-field')){
                                     var value = "";
+                                    var value2 = "";
                                     if(typeof data.return_data !== 'undefined' && data.return_data[$(this).find('input,select').attr('name')].length){
-                                        value = data.return_data[$(this).find('input,select').attr('name')];
-                                    }else if($(this).find('input').length){
-                                        value = $(this).find('input').val();
+                                        value2 = data.return_data[$(this).find('input,select').attr('name')];
+                                    } 
+                                    if($(this).find('input').length){
+                                        value = value2;
                                     }else if($(this).find('select').length){
-                                        value = $(this).find('select option:selected').html();
+                                        value = $(this).find('select option[value="'+value2+'"]').html();
                                     }
                                     $(obj).closest('tbody').find('tr[data-id="'+$(obj).closest('tr.tr-edit').attr('data-id')+'"].hidden td:eq('+count+')')
                                         .attr('data-search',value)
