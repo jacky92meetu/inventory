@@ -30,14 +30,15 @@ class lensesMain{
         $this->CI->db->query('SET NAMES "utf8"');        
         //$this->CI->db->query('SET @@global.time_zone = "'.$this->get_global_config("timezone").':00"');
         $this->CI->db->query('SET @@session.time_zone = "'.$this->get_global_config("timezone").':00"');
-        
+        /*
         if(isset($_POST['columns'])){
             array_splice($_POST['columns'], 0, 1);
         }
+        
         if(strlen($temp = $this->CI->input->post('order[0][column]',true))>0){
             $_POST['order'][0]['column'] = (int)$temp - 1;
         }
-        
+        */
         if(isset($_SESSION['default_length'])){
             $this->default_length = $_SESSION['default_length'];
         }
