@@ -611,18 +611,20 @@ $editable = false;
                             $(this).find('td').each(function(){
                                 if($(this).is('.form-field')){
                                     var value = "";
-                                    var value2 = "";
-                                    if(typeof data.return_data !== 'undefined' && data.return_data[$(this).find('input,select').attr('name')].length){
-                                        value2 = data.return_data[$(this).find('input,select').attr('name')];
-                                    } 
                                     if($(this).find('input').length){
-                                        value = value2;
+                                        value = $(this).find('input').val();
                                     }else if($(this).find('select').length){
-                                        value = $(this).find('select option[value="'+value2+'"]').html();
+                                        value = $(this).find('select option:selected').html();
+                                    }
+                                    var order_value = value;
+                                    var temp = /^([0-9]{2})[^0-9]([0-9]{2})[^0-9]([0-9]{4})$/gi.exec(value);
+                                    if(temp){
+                                        order_value = new Date(temp[3]+"-"+temp[2]+"-"+temp[1]).getTime()/1000;
+                                        console.log(order_value);
                                     }
                                     $(obj).closest('tbody').find('tr[data-id="'+$(obj).closest('tr.tr-edit').attr('data-id')+'"].hidden td:eq('+count+')')
                                         .attr('data-search',value)
-                                        .attr('data-order',value)
+                                        .attr('data-order',order_value)
                                         .html(value);
                                 }
                                 count++;
@@ -894,7 +896,13 @@ $editable = false;
                         }else if(thead_search.find('th:eq('+i+')[custom-col]').length){
                             $(row).find('td:eq('+i+')').html('<a href="javascript:void(0)" onclick="data_edit(this,\''+thead_search.find('th:eq('+i+')[custom-col]').attr('custom-col')+'\',true)">'+val+'</a>');
                         }
-                        $(row).find('td:eq('+i+')').attr('data-search',val).attr('data-order',val);
+                        var order_value = val;
+                        var temp = /^([0-9]{2})[^0-9]([0-9]{2})[^0-9]([0-9]{4})$/gi.exec(val);
+                        if(temp){
+                            temp = new Date(temp[3]+"-"+temp[2]+"-"+temp[1]).getTime()/1000;
+                            order_value = temp;
+                        }
+                        $(row).find('td:eq('+i+')').attr('data-search',val).attr('data-order',order_value);
                         if(thead_search.find('th:eq('+i+') select.column_filter option[value="'+val+'"]').length){
                             $(row).find('td:eq('+i+')').html(thead_search.find('th:eq('+i+') select.column_filter option[value="'+val+'"]').text());
                         }
