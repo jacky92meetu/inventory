@@ -196,7 +196,7 @@ class lensesSalesEntry extends lensesMain{
                 $value['shipment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
             }
             if(is_array($selection)){
-                if($this->CI->db->query('update transactions_cache set courier_id = ?, shipment_date = ? where id in (?)',array($value['courier_id'],$value['shipment_date'],implode(",", $selection)))){
+                if($this->CI->db->query('update transactions_cache set courier_id = ?, shipment_date = ? where id in ('.implode(",", $selection).')',array($value['courier_id'],$value['shipment_date']))){
                     $return['status'] = "1";
                 }
             }
