@@ -27,7 +27,7 @@ class lensesSalesHistory extends lensesMain{
             , g.name store_name
             , c.store_skucode
             , d.name product_name
-            , e.name option_name
+            , e.code2 option_name
             , a.buyer_id, a.buyer_name, a.buyer_address, a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
             , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
