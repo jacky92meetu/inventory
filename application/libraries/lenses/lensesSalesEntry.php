@@ -21,6 +21,7 @@ class lensesSalesEntry extends lensesMain{
         $this->is_required = false;
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Sales/Payment Import','custom_form'=>'sales_import');
+        $this->extra_btn[] = array('name'=>'Shipping Export','custom_form'=>'shipping_export','require_select'=>'1');
         $this->extra_btn[] = array('name'=>'Update Courier','custom_form'=>'sales_courier','require_select'=>'1');
         $this->extra_btn[] = array('name'=>'Save Transactions','url'=>base_url('ajax/sales_entry?method=save_transactions'));
         $this->custom_form = false;
@@ -57,6 +58,13 @@ class lensesSalesEntry extends lensesMain{
         if(($result = $this->CI->db->query('SELECT id,name FROM couriers ORDER BY name'))){
             foreach($result->result_array() as $value){
                 $courier_list[$value['id']] = $value['name'];
+            }
+        }
+        
+        $courier_list2 = array();
+        if(($result = $this->CI->db->query('SELECT concat(id,"|",name,"|",export_template) as id,name FROM couriers WHERE export_template<>"" ORDER BY name'))){
+            foreach($result->result_array() as $value){
+                $courier_list2[$value['id']] = $value['name'];
             }
         }
         
@@ -157,6 +165,12 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list,'editable'=>true),
             array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','editable'=>true)
         );
+        
+        $this->shipping_export_header = array(
+            array('id'=>'id','name'=>'ID','hidden'=>'1'),
+            array('id'=>'type','name'=>'type','value'=>'shipping_export','hidden'=>'1'),
+            array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list2,'editable'=>true)
+        );
     }
     
     function ajax_save(){
@@ -189,8 +203,13 @@ class lensesSalesEntry extends lensesMain{
                 unlink($file);
             }
             return $return;
+        }else if(!empty($value['type']) && $value['type']=='shipping_export'){
+            $return['message'] = "";
+            $action = base_url('ajax/sales_entry?method=shipping_export');
+            $selection = $this->CI->input->post('selection',true);
+            $return['func'] = $this->write_js_form($action, array('courier_id'=>$value['courier_id'],'selection'=>$selection));
+            return $return;
         }else if(!empty($value['type']) && $value['type']=='sales_courier'){
-            $return = array("status"=>"0","message"=>"");
             $selection = $this->CI->input->post('selection',true);
             if(($temp = explode('/', $value['shipment_date'])) && sizeof($temp)==3){
                 $value['shipment_date'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
@@ -343,6 +362,15 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         }
         $this->CI->db->query('truncate table transactions_cache');
         $this->CI->cmessage->set_message_url('Transactions save.','success','sales_entry');
+    }
+    
+    function ajax_shipping_export(){
+        $courier_id = $this->CI->input->post('courier_id',true);
+        $selection = $this->CI->input->post('selection',true);
+        include_once(APPPATH.'libraries/classes/ImportHelper.php');
+        $class = new ImportHelper;
+        $class->shipping_export($courier_id,$selection);
+        exit;
     }
     
 }

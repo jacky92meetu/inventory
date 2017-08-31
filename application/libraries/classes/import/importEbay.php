@@ -101,7 +101,7 @@ class importEbayClass extends importClass{
     }
     
     function item_export(){
-        $template_path = APPPATH.'libraries/classes/import/templates/item_export_ebay.csv';
+        $template_path = APPPATH.'libraries/classes/templates/item_export_ebay.csv';
         if(!file_exists($template_path)){
             exit;
         }
