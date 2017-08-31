@@ -74,30 +74,42 @@ class importShippingClass extends importClass{
         $field_limit = array();
         $field_limit['sales_id'] = 35;
         $field_limit['buyer_name'] = 30;
-        $field_limit['buyer_addr1'] = 50;
-        $field_limit['buyer_addr2'] = 50;
-        $field_limit['buyer_addr3'] = 30;
+        $field_limit['buyer_address'] = 50;
         $field_limit['buyer_city'] = 30;
         
         $row = 2;
         foreach($item_list as $data){
-            if(array_key_exists($data['buyer_name'], $repeated_row)!==FALSE || array_key_exists($data['buyer_address'], $repeated_row)!==FALSE){
-                $worksheet->getStyle('A'.$row.':CA'.$row)->applyFromArray(
-                    array(
-                        'fill' => array(
-                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
-                            'color' => array('rgb' => '96ffdd')
+            foreach(array('buyer_name','buyer_address') as $cf){
+                $temp = $data[$cf];
+                if(array_key_exists($temp, $repeated_row)!==FALSE){
+                    $worksheet->getStyle('A'.$row)->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => '96ffdd')
+                            )
                         )
-                    )
-                );
+                    );
+                    
+                    $worksheet->getStyle('A'.$repeated_row[$temp])->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => '96ffdd')
+                            )
+                        )
+                    );
+                    
+                    break;
+                }    
             }
+            
             $worksheet->setCellValueExplicitByColumnAndRow(0,$row, "550443685");
             $worksheet->setCellValueExplicitByColumnAndRow(1,$row, $data['store_name']);
             $worksheet->setCellValueExplicitByColumnAndRow(2,$row, $data['sales_id']);
             $worksheet->setCellValueExplicitByColumnAndRow(4,$row, "PPS");
-            $worksheet->setCellValueExplicitByColumnAndRow(6,$row, $data['buyer_name']);
             
-            if(strlen($data['buyer_address']) > $field_limit['buyer_addr1']){
+            if(strlen($data['buyer_name']) > $field_limit['buyer_name']){
                 $worksheet->getStyle('G'.$row)->applyFromArray(
                     array(
                         'fill' => array(
@@ -108,7 +120,31 @@ class importShippingClass extends importClass{
                 );
             }
             $worksheet->setCellValueExplicitByColumnAndRow(6,$row, $data['buyer_name']);
+            
+            if(strlen($data['buyer_address']) > $field_limit['buyer_address']){
+                $worksheet->getStyle('H'.$row)->applyFromArray(
+                    array(
+                        'fill' => array(
+                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FF0000')
+                        )
+                    )
+                );
+            }
+            $worksheet->setCellValueExplicitByColumnAndRow(7,$row, $data['buyer_address']);
+            
+            if(strlen($data['buyer_city']) > $field_limit['buyer_city']){
+                $worksheet->getStyle('K'.$row)->applyFromArray(
+                    array(
+                        'fill' => array(
+                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FF0000')
+                        )
+                    )
+                );
+            }
             $worksheet->setCellValueExplicitByColumnAndRow(10,$row, $data['buyer_city']);
+            
             $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $data['buyer_state']);
             $worksheet->setCellValueExplicitByColumnAndRow(12,$row, $data['buyer_postcode']);
             
@@ -138,8 +174,9 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
             $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $data['product_name']." ".$data['option_name']." * ".$data['quantity']);
             
-            $repeated_row[$data['buyer_name']] = $data['buyer_name'];
-            $repeated_row[$data['buyer_address']] = $data['buyer_address'];
+            $repeated_row[$data['buyer_name']] = $row;
+            $repeated_row[$data['buyer_address']] = $row;
+            $row++;
         }
         
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $inputFileType);
