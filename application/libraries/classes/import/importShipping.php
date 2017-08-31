@@ -168,8 +168,7 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(33,$row, "Sunglasses case");
             $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $data['product_name']." ".$data['option_name']." * ".$data['quantity']);
-            $worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_currency']);
-            $worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_currency']);
+            $worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(41,$row, "MY");
             $worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
             $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $data['product_name']." ".$data['option_name']." * ".$data['quantity']);
