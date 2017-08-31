@@ -31,7 +31,7 @@ class lensesSalesEntry extends lensesMain{
             , g.name store_name
             , c.store_skucode
             , d.name product_name
-            , e.name option_name
+            , e.code2 option_name
             , a.buyer_id, a.buyer_name, a.buyer_address, a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
             , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
@@ -288,7 +288,7 @@ class lensesSalesEntry extends lensesMain{
         $filter_list[] = ['name'=>'store_id','query'=>'SELECT a.id,concat(a.name," (",b.name,")") name FROM stores a,warehouses b WHERE a.warehouse_id=b.id AND a.account_id=? ORDER BY name','id'=>'account_id'];
         $filter_list[] = ['name'=>'product_id','query'=>'SELECT b.id,b.name FROM store_item a join warehouse_item wi on wi.id=a.warehouse_item_id 
 join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY name','id'=>'store_id'];
-        $filter_list[] = ['name'=>'store_item_id','query'=>'SELECT a2.id,b.name name FROM store_item a 
+        $filter_list[] = ['name'=>'store_item_id','query'=>'SELECT a2.id,b.code2 name FROM store_item a 
             join warehouse_item wi on wi.id=a.warehouse_item_id 
             join store_item a2 on a2.store_id=a.store_id
             join warehouse_item wi2 on wi2.id=a2.warehouse_item_id and wi2.product_id=wi.product_id

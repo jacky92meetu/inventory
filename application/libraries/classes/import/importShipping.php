@@ -20,7 +20,7 @@ class importShippingClass extends importClass{
             , g.name store_name
             , c.store_skucode
             , d.name product_name
-            , e.name option_name
+            , e.code2 option_name
             , a.buyer_id, a.buyer_name, a.buyer_address, a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
             , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
@@ -167,11 +167,16 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
             $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(33,$row, "Sunglasses case");
-            $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $data['product_name']." ".$data['option_name']." * ".$data['quantity']);
+            
+            $title = $data['product_name']." ".$data['option_name'];
+            if($data['quantity']>1){
+                $title = $data['product_name']." ".$data['option_name']." * ".$data['quantity'];
+            }
+            $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(41,$row, "MY");
             $worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
-            $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $data['product_name']." ".$data['option_name']." * ".$data['quantity']);
+            $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $title);
             
             $repeated_row[$data['buyer_name']] = $row;
             $repeated_row[$data['buyer_address']] = $row;
