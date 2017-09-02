@@ -32,7 +32,9 @@ class lensesSalesEntry extends lensesMain{
             , c.store_skucode
             , d.name product_name
             , e.code2 option_name
-            , a.buyer_id, a.buyer_name, a.buyer_address, a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
+            , a.buyer_id, a.buyer_name
+            , ifnull(a.buyer_address,"") buyer_address, ifnull(a.buyer_address2,"") buyer_address2, ifnull(a.buyer_address3,"") buyer_address3
+            , a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
             , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
@@ -93,7 +95,9 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'option_name','name'=>'Color','is_ajax'=>'option_item'),
             array('id'=>'buyer_id','name'=>'Buyer ID','editable'=>true),
             array('id'=>'buyer_name','name'=>'Buyer Name','editable'=>true),
-            array('id'=>'buyer_address','name'=>'Buyer Address','editable'=>true),
+            array('id'=>'buyer_address','name'=>'Buyer Address1','editable'=>true),
+            array('id'=>'buyer_address2','name'=>'Buyer Address2','editable'=>true),
+            array('id'=>'buyer_address3','name'=>'Buyer Address3','editable'=>true),
             array('id'=>'buyer_city','name'=>'Buyer City','editable'=>true),
             array('id'=>'buyer_state','name'=>'Buyer State','editable'=>true),
             array('id'=>'buyer_postcode','name'=>'Buyer Postcode','editable'=>true),
@@ -126,7 +130,9 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'store_skucode','name'=>'SKU','editable'=>true),
             array('id'=>'buyer_id','name'=>'Buyer ID','editable'=>true),
             array('id'=>'buyer_name','name'=>'Buyer Name','editable'=>true),
-            array('id'=>'buyer_address','name'=>'Buyer Address','editable'=>true),
+            array('id'=>'buyer_address','name'=>'Buyer Address1','editable'=>true),
+            array('id'=>'buyer_address2','name'=>'Buyer Address2','editable'=>true),
+            array('id'=>'buyer_address3','name'=>'Buyer Address3','editable'=>true),
             array('id'=>'buyer_city','name'=>'Buyer City','editable'=>true),
             array('id'=>'buyer_state','name'=>'Buyer State','editable'=>true),
             array('id'=>'buyer_postcode','name'=>'Buyer Postcode','editable'=>true),
@@ -262,7 +268,7 @@ class lensesSalesEntry extends lensesMain{
                     }
                 }
             }
-            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
+            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
             foreach($field_list as $field){
                 if(isset($value[$field])){
                     $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);

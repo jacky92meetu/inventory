@@ -21,7 +21,9 @@ class importShippingClass extends importClass{
             , c.store_skucode
             , d.name product_name
             , e.code2 option_name
-            , a.buyer_id, a.buyer_name, a.buyer_address, a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
+            , a.buyer_id, a.buyer_name
+            , ifnull(a.buyer_address,"") buyer_address, ifnull(a.buyer_address2,"") buyer_address2, ifnull(a.buyer_address3,"") buyer_address3
+            , a.buyer_city, a.buyer_state, a.buyer_postcode, a.buyer_country, a.buyer_contact, a.buyer_email, a.tracking_number
             , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
@@ -75,6 +77,8 @@ class importShippingClass extends importClass{
         $field_limit['sales_id'] = 35;
         $field_limit['buyer_name'] = 30;
         $field_limit['buyer_address'] = 50;
+        $field_limit['buyer_address2'] = 50;
+        $field_limit['buyer_address3'] = 30;
         $field_limit['buyer_city'] = 30;
         
         $row = 2;
@@ -109,29 +113,19 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(2,$row, $data['sales_id']);
             $worksheet->setCellValueExplicitByColumnAndRow(4,$row, "PPS");
             
-            if(strlen($data['buyer_name']) > $field_limit['buyer_name']){
-                $worksheet->getStyle('G'.$row)->applyFromArray(
-                    array(
-                        'fill' => array(
-                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
-                            'color' => array('rgb' => 'FF0000')
+            foreach(array('buyer_name'=>array('G',6),'buyer_address'=>array('H',7),'buyer_address2'=>array('I',8),'buyer_address3'=>array('J',9)) as $k => $v){
+                if(strlen($data[$k]) > $field_limit[$k]){
+                    $worksheet->getStyle($v[0].$row)->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => 'FF0000')
+                            )
                         )
-                    )
-                );
+                    );
+                }
+                $worksheet->setCellValueExplicitByColumnAndRow($v[1],$row, $data[$k]);
             }
-            $worksheet->setCellValueExplicitByColumnAndRow(6,$row, $data['buyer_name']);
-            
-            if(strlen($data['buyer_address']) > $field_limit['buyer_address']){
-                $worksheet->getStyle('H'.$row)->applyFromArray(
-                    array(
-                        'fill' => array(
-                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
-                            'color' => array('rgb' => 'FF0000')
-                        )
-                    )
-                );
-            }
-            $worksheet->setCellValueExplicitByColumnAndRow(7,$row, $data['buyer_address']);
             
             if(strlen($data['buyer_city']) > $field_limit['buyer_city']){
                 $worksheet->getStyle('K'.$row)->applyFromArray(
