@@ -31,7 +31,7 @@ class lensesStoreItem extends lensesMain{
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Show Products Only','url'=>base_url('/store_item_product?id='.$id));
         $this->ajax_url = base_url('ajax/'.$this->table.'?id='.$id);
-        $this->search_query = sprintf('SELECT * FROM (select a.id,c.name,d.name option_name,a.store_skucode,a.selling_price
+        $this->search_query = sprintf('SELECT * FROM (select a.id,c.name,d.code2 option_name,a.store_skucode,a.selling_price
             ,a.marketplace_item_id,a.marketplace_variation,a.item_status,a.marketplace_item_name,a.marketplace_variation_order,a.marketplace_item_label
             ,a.discount_price,a.expire_date from store_item a
             join warehouse_item b on a.warehouse_item_id=b.id

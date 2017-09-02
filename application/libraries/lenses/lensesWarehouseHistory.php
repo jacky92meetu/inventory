@@ -23,7 +23,7 @@ class lensesWarehouseHistory extends lensesMain{
         $this->delete_btn = false;
         $this->ajax_url = base_url('ajax/warehouse_history');
         
-        $this->search_query = 'select a.id,ifnull(w1.name,"") warehouse_name,b.skucode,c.name product_name,d.name option_name,a.created_date,a.adj_quantity,a.adj_quantity2
+        $this->search_query = 'select a.id,ifnull(w1.name,"") warehouse_name,b.skucode,c.name product_name,d.code2 option_name,a.created_date,a.adj_quantity,a.adj_quantity2
             ,a.movement_type
             ,if(a.movement_type="S",concat("Sales ID: ",a.trans_id),
                     if(a.movement_type="R",concat("Sales ID: ",a.trans_id),

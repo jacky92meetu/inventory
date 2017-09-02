@@ -39,6 +39,10 @@ class ImportHelper {
     function item_export($account_id,$type){
         return $this->get_class($account_id, $type, "", "item_export");
     }
+    
+    function shipping_export($courier_id,$selection){
+        return $this->get_class($courier_id, "shipping", $selection, "shipping_export");
+    }
 }
 
 ?>

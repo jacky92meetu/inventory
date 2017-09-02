@@ -30,7 +30,7 @@ class lensesWarehouseItem extends lensesMain{
         $this->add_btn = false;
         $this->delete_btn = false;
         $this->ajax_url = base_url('ajax/'.$this->table.'?id='.$id);
-        $this->search_query = sprintf('select * from (select a.id,b.name product_name,c.name option_name,a.skucode,a.quantity,a.quantity2,a.cost_price,a.selling_price
+        $this->search_query = sprintf('select * from (select a.id,b.name product_name,c.code2 option_name,a.skucode,a.quantity,a.quantity2,a.cost_price,a.selling_price
 ,a.min_qty min_qty
 ,a.stop_qty stop_qty
 ,if(if(a.stop_qty>0,a.stop_qty,s2.value)>=(a.quantity+a.quantity2) and wih.id is not null,"stop",if(if(a.min_qty>0,a.min_qty,s1.value)>=(a.quantity+a.quantity2) and wih.id is not null,"warning",if(wih.id is null,"new","normal"))) qstatus

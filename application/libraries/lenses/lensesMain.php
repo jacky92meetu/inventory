@@ -870,4 +870,33 @@ select w.id,a.id,c.id item_id,0,concat(a.code,"-",c.code) skucode from warehouse
                 and a.store_item_id<>f.id';
         $this->CI->db->query($sql);
     }
+    
+    function write_js_form($action,$params = array(),$method = "POST"){
+        $temp = "function(){";
+        $temp .= 'var form = document.createElement("form");';
+        $temp .= 'form.setAttribute("method", "'.$method.'");';
+        $temp .= 'form.setAttribute("action", "'.$action.'");';
+        $temp .= 'form.setAttribute("target", "_blank");';
+        $temp .= 'var hiddenField;';
+        foreach($params as $k => $v){
+            if(is_array($v)){
+                foreach($v as $v2){
+                    $temp .= 'hiddenField = document.createElement("input");';
+                    $temp .= 'hiddenField.setAttribute("name", "'.$k.'[]");';
+                    $temp .= 'hiddenField.setAttribute("value", "'.$v2.'");';
+                    $temp .= 'form.appendChild(hiddenField);';
+                }
+            }else{
+                $temp .= 'hiddenField = document.createElement("input");';
+                $temp .= 'hiddenField.setAttribute("name", "'.$k.'");';
+                $temp .= 'hiddenField.setAttribute("value", "'.$v.'");';
+                $temp .= 'form.appendChild(hiddenField);';
+            }
+        }
+        $temp .= 'document.body.appendChild(form);';
+        $temp .= 'form.submit();';
+        $temp .= 'form.remove();';
+        $temp .= '}';
+        return $temp;
+    }
 }
