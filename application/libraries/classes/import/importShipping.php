@@ -65,8 +65,8 @@ class importShippingClass extends importClass{
         $country_list = array();
         $temp = $worksheet->toArray('',true,true,false);
         foreach($temp as $v){
-            $name = strtolower($v[0]);
-            $country_list[$name] = $v[1];
+            $name = strtoupper($v[0]);
+            $country_list[$name] = strtoupper($v[1]);
         }
         unset($temp);
         
@@ -74,19 +74,19 @@ class importShippingClass extends importClass{
         
         $repeated_row = array();
         $field_limit = array();
-        $field_limit['sales_id'] = 35;
-        $field_limit['buyer_name'] = 30;
-        $field_limit['buyer_address'] = 50;
-        $field_limit['buyer_address2'] = 50;
-        $field_limit['buyer_address3'] = 30;
-        $field_limit['buyer_city'] = 30;
+        $field_limit['sales_id'] = array('col_name'=>'C','col_id'=>2,'size'=>35);
+        $field_limit['buyer_name'] = array('col_name'=>'G','col_id'=>6,'size'=>30);
+        $field_limit['buyer_address'] = array('col_name'=>'H','col_id'=>7,'size'=>50);
+        $field_limit['buyer_address2'] = array('col_name'=>'I','col_id'=>8,'size'=>50);
+        $field_limit['buyer_address3'] = array('col_name'=>'J','col_id'=>9,'size'=>30);
+        $field_limit['buyer_city'] = array('col_name'=>'K','col_id'=>10,'size'=>30);
         
         $row = 2;
         foreach($item_list as $data){
             foreach(array('buyer_name','buyer_address') as $cf){
                 $temp = $data[$cf];
                 if(array_key_exists($temp, $repeated_row)!==FALSE){
-                    $worksheet->getStyle('A'.$row)->applyFromArray(
+                    $worksheet->getStyle('A'.$row.':CA'.$row)->applyFromArray(
                         array(
                             'fill' => array(
                                 'type' => PHPExcel_Style_Fill::FILL_SOLID,
@@ -95,7 +95,7 @@ class importShippingClass extends importClass{
                         )
                     );
                     
-                    $worksheet->getStyle('A'.$repeated_row[$temp])->applyFromArray(
+                    $worksheet->getStyle('A'.$repeated_row[$temp].':CA'.$repeated_row[$temp])->applyFromArray(
                         array(
                             'fill' => array(
                                 'type' => PHPExcel_Style_Fill::FILL_SOLID,
@@ -113,9 +113,10 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(2,$row, $data['sales_id']);
             $worksheet->setCellValueExplicitByColumnAndRow(4,$row, "PPS");
             
-            foreach(array('buyer_name'=>array('G',6),'buyer_address'=>array('H',7),'buyer_address2'=>array('I',8),'buyer_address3'=>array('J',9)) as $k => $v){
-                if(strlen($data[$k]) > $field_limit[$k]){
-                    $worksheet->getStyle($v[0].$row)->applyFromArray(
+            foreach($field_limit as $k => $v){
+                if(!isset($data[$k])){continue;}
+                if(strlen($data[$k]) > $v['size']){
+                    $worksheet->getStyle($v['col_name'].$row)->applyFromArray(
                         array(
                             'fill' => array(
                                 'type' => PHPExcel_Style_Fill::FILL_SOLID,
@@ -124,27 +125,17 @@ class importShippingClass extends importClass{
                         )
                     );
                 }
-                $worksheet->setCellValueExplicitByColumnAndRow($v[1],$row, $data[$k]);
+                $worksheet->setCellValueExplicitByColumnAndRow($v['col_id'],$row, $data[$k]);
             }
-            
-            if(strlen($data['buyer_city']) > $field_limit['buyer_city']){
-                $worksheet->getStyle('K'.$row)->applyFromArray(
-                    array(
-                        'fill' => array(
-                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
-                            'color' => array('rgb' => 'FF0000')
-                        )
-                    )
-                );
-            }
-            $worksheet->setCellValueExplicitByColumnAndRow(10,$row, $data['buyer_city']);
             
             $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $data['buyer_state']);
             $worksheet->setCellValueExplicitByColumnAndRow(12,$row, $data['buyer_postcode']);
             
-            $temp = strtolower($data['buyer_country']);
+            $temp = strtoupper($data['buyer_country']);
             if(array_key_exists($temp, $country_list)!==FALSE){
                 $temp = $country_list[$temp];
+            }else if(strlen($temp)==2 && array_search($temp, $country_list)!==FALSE){
+                
             }else{
                 $worksheet->getStyle('N'.$row)->applyFromArray(
                     array(
@@ -154,6 +145,7 @@ class importShippingClass extends importClass{
                         )
                     )
                 );
+                $temp = $data['buyer_country'];
             }
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, $temp);
             
@@ -177,21 +169,153 @@ class importShippingClass extends importClass{
             $row++;
         }
         
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $inputFileType);
-        if($inputFileType=="Excel2007"){
-            header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            $ext = ".xlsx";
-        }else{
-            header('Content-type: application/vnd.ms-excel');
-            $ext = ".xls";
-        }
-        header('Content-Disposition: attachment; filename="globalmail_'.date("YmdHis").$ext.'"');
-        header('Cache-Control: max-age=0');
-        $objWriter->save('php://output');
+        $this->_export($objPHPExcel, $inputFileType, 'globalmail_'.date("YmdHis"));
     }
     
     function singpost_export($item_list){
+        $template_path = APPPATH.'libraries/classes/templates/singpost_export.xlsx';
+        if(!file_exists($template_path)){
+            exit;
+        }
         
+        $inputFileType = PHPExcel_IOFactory::identify($template_path);
+        $objPHPExcel = PHPExcel_IOFactory::createReader($inputFileType);
+        $objPHPExcel = $objPHPExcel->load($template_path);
+        
+        $worksheet = $objPHPExcel->getSheetByName('Country List');
+        $country_list = array();
+        $temp = $worksheet->toArray('',true,true,false);
+        foreach($temp as $v){
+            $name = strtoupper($v[2]);
+            $country_list[$name] = strtoupper($v[1]);
+        }
+        unset($temp);
+        
+        $worksheet = $objPHPExcel->getSheetByName('Quantium_International');
+        
+        $repeated_row = array();
+        $field_limit = array();
+        $field_limit['buyer_name'] = array('col_name'=>'A','col_id'=>0,'size'=>35);
+        $field_limit['buyer_address'] = array('col_name'=>'C','col_id'=>2,'size'=>35);
+        $field_limit['buyer_address2'] = array('col_name'=>'D','col_id'=>3,'size'=>35);
+        $field_limit['buyer_address3'] = array('col_name'=>'E','col_id'=>4,'size'=>35);
+        $field_limit['buyer_city'] = array('col_name'=>'F','col_id'=>5,'size'=>35);
+        $field_limit['buyer_state'] = array('col_name'=>'G','col_id'=>6,'size'=>30);
+        $field_limit['buyer_state'] = array('col_name'=>'I','col_id'=>8,'size'=>10);
+        $field_limit['buyer_contact'] = array('col_name'=>'J','col_id'=>9,'size'=>20);
+        $field_limit['buyer_email'] = array('col_name'=>'K','col_id'=>10,'size'=>255);
+        
+        $row = 2;
+        foreach($item_list as $data){
+            if(strlen($data['buyer_address2'])==0){
+                $data['buyer_address2'] = ".";
+            }
+            
+            foreach(array('buyer_name','buyer_address') as $cf){
+                $temp = $data[$cf];
+                if(array_key_exists($temp, $repeated_row)!==FALSE){
+                    $worksheet->getStyle('A'.$row.':AH'.$row)->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => '96ffdd')
+                            )
+                        )
+                    );
+                    
+                    $worksheet->getStyle('A'.$repeated_row[$temp].':AH'.$repeated_row[$temp])->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => '96ffdd')
+                            )
+                        )
+                    );
+                    
+                    break;
+                }    
+            }
+            
+            foreach($field_limit as $k => $v){
+                if(!isset($data[$k])){continue;}
+                if(strlen($data[$k]) > $v['size']){
+                    $worksheet->getStyle($v['col_name'].$row)->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => 'FF0000')
+                            )
+                        )
+                    );
+                }
+                $worksheet->setCellValueExplicitByColumnAndRow($v['col_id'],$row, $data[$k]);
+            }
+            
+            $temp = strtoupper($data['buyer_country']);
+            if(array_key_exists($temp, $country_list)!==FALSE){
+                $temp = $country_list[$temp];
+            }else if(strlen($temp)==2 && array_search($temp, $country_list)!==FALSE){
+                
+            }else{
+                $worksheet->getStyle('H'.$row)->applyFromArray(
+                    array(
+                        'fill' => array(
+                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FF0000')
+                        )
+                    )
+                );
+                $temp = $data['buyer_country'];
+            }
+            $worksheet->setCellValueExplicitByColumnAndRow(7,$row, $temp);
+            
+            
+            
+            $title = $data['product_name']." ".$data['option_name'];
+            if($data['quantity']>1){
+                $title = $data['product_name']." ".$data['option_name']." * ".$data['quantity'];
+            }
+            $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $title);
+            $worksheet->setCellValueExplicitByColumnAndRow(12,$row, "PACKAGE");
+            $worksheet->setCellValueExplicitByColumnAndRow(13,$row, "M");
+            $worksheet->setCellValueExplicitByColumnAndRow(15,$row, "EZYPRI");
+            $worksheet->setCellValueExplicitByColumnAndRow(15,$row, "EZYPRI");
+            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['quantity'] * $data['selling_price']);
+            $worksheet->setCellValueExplicitByColumnAndRow(17,$row, $data['selling_currency']);
+            $worksheet->setCellValueExplicitByColumnAndRow(18,$row, "Sunglasses case");
+            $worksheet->setCellValueExplicitByColumnAndRow(19,$row, $data['quantity']);
+            $worksheet->setCellValueExplicitByColumnAndRow(20,$row, (0.1 * $data['quantity']));
+            $worksheet->setCellValueExplicitByColumnAndRow(21,$row, "1");
+            $worksheet->setCellValueExplicitByColumnAndRow(22,$row, "1");
+            $worksheet->setCellValueExplicitByColumnAndRow(23,$row, (1 * $data['quantity']));
+            $worksheet->setCellValueExplicitByColumnAndRow(25,$row, "MY");
+            $worksheet->setCellValueExplicitByColumnAndRow(27,$row, "S");
+            
+            $repeated_row[$data['buyer_name']] = $row;
+            $repeated_row[$data['buyer_address']] = $row;
+            $row++;
+        }
+        
+        $this->_export($objPHPExcel, $inputFileType, 'singpost_'.date("YmdHis"));
+    }
+    
+    private function _export($objPHPExcel,$inputFileType,$filename){
+        try{
+            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $inputFileType);
+            if($inputFileType=="Excel2007"){
+                header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                $ext = ".xlsx";
+            }else{
+                header('Content-type: application/vnd.ms-excel');
+                $ext = ".xls";
+            }
+            header('Content-Disposition: attachment; filename="'.$filename.$ext.'"');
+            header('Cache-Control: max-age=0');
+            $objWriter->save('php://output');
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+        exit;
     }
 }
 
