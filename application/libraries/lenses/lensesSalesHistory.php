@@ -15,6 +15,7 @@ class lensesSalesHistory extends lensesMain{
     function setup(){
         $this->CI->cpage->set('breadcrumb',array('Sales History'=>''));
         $this->table = "transactions";
+        $this->custom_view_config = "transactions_cache";
         $this->title = "Sales History";
         $this->selected_menu = "sales_history";
         $this->freezePane = 4;

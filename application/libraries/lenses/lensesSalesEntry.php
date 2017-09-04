@@ -15,6 +15,7 @@ class lensesSalesEntry extends lensesMain{
     function setup(){
         $this->CI->cpage->set('breadcrumb',array('Sales Entry'=>''));
         $this->table = "transactions_cache";
+        $this->custom_view_config = "transactions_cache";
         $this->title = "Sales Entry";
         $this->selected_menu = "sales_entry";
         $this->freezePane = 4;
