@@ -25,6 +25,7 @@ class lensesMain{
     var $extra_btn = array();
     var $parent_id = false;
     var $user_group_priv = 0;
+    var $custom_view_config = '';
     
     function __construct(){
         $this->CI = get_instance();
@@ -80,12 +81,73 @@ class lensesMain{
         }
     }
     
+    function set_custom_view($header,$data = false){
+        static $custom_view = array();
+        static $custom_freezePane = array();
+        $md5_id = md5(json_encode($header));
+        
+        if(!isset($custom_view[$md5_id])){
+            include(dirname(__FILE__).'/config/pageview.php');
+            if(isset($pageview[$this->custom_view_config])){
+                $temp_remaining = $header;
+                $temp_main = array();
+                $freezePane = 0;
+                foreach($pageview[$this->custom_view_config] as $key => $value){
+                    foreach($temp_remaining as $key2 => $value2){
+                        if($value2['id']==$key){
+                            if($value=='1'){
+                                $freezePane++;
+                            }
+                            $temp_main[] = $value2;
+                            unset($temp_remaining[$key2]);
+                            break;
+                        }
+                    }
+                }
+                foreach($temp_remaining as $value){
+                    $temp_main[] = $value;
+                }
+                $custom_view[$md5_id] = $temp_main;
+                $custom_freezePane[$md5_id] = $freezePane;
+            }else{
+                $custom_view[$md5_id] = $header;
+                $custom_freezePane[$md5_id] = $this->freezePane;
+            }
+        }
+        
+        if(is_array($data) && sizeof($data)>0){
+            $data_list = array();
+            foreach($data as $a){
+                $temp = array();
+                foreach($custom_view[$md5_id] as $value){
+                    $arr_pos = 0;
+                    foreach($header as $value2){
+                        if($value['id']==$value2['id'] && isset($a[$arr_pos])){
+                            $temp[] = $a[$arr_pos];
+                            unset($a[$arr_pos]);
+                            break;
+                        }
+                        $arr_pos++;
+                    }
+                }
+                foreach($a as $value){
+                    $temp[] = $value;
+                }
+                $data_list[] = $temp;
+            }
+            $data = $data_list;
+        }
+        
+        return array($custom_view[$md5_id],$custom_freezePane[$md5_id],$data);
+    }
+    
     function view(){
         $this->init_header();
         $contents = array();
         if($this->ajax_url==""){
             $this->ajax_url = base_url('ajax/'.$this->table);
         }
+        list($this->header,$this->freezePane,$contents) = $this->set_custom_view($this->header,$contents);
         $this->CI->cpage->set_html_title($this->title);
         $this->CI->cpage->set('selected_menu',$this->selected_menu);
         $this->CI->cpage->set('view_title',$this->title);
@@ -204,6 +266,7 @@ class lensesMain{
             }
         }
         
+        list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
         $draw = $this->CI->input->post('draw',true);
         $return = array("draw"=>$draw,"recordsTotal"=>$this->recordsTotal,"recordsFiltered"=>$this->recordsFiltered,"data"=>$this->data);
         return $return;
