@@ -83,6 +83,9 @@ class importShippingClass extends importClass{
         
         $row = 2;
         foreach($item_list as $data){
+            $data['selling_currency'] = "USD";
+            $data['selling_price'] = 20;
+            
             foreach(array('buyer_name','buyer_address') as $cf){
                 $temp = $data[$cf];
                 if(array_key_exists($temp, $repeated_row)!==FALSE){
@@ -151,7 +154,8 @@ class importShippingClass extends importClass{
             
             $worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
-            $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
+            //$worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
+            $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(33,$row, "Sunglasses case");
             
             $title = $data['product_name']." ".$data['option_name'];
@@ -207,6 +211,8 @@ class importShippingClass extends importClass{
         
         $row = 2;
         foreach($item_list as $data){
+            $data['selling_currency'] = "USD";
+            $data['selling_price'] = 20;
             if(strlen($data['buyer_address2'])==0){
                 $data['buyer_address2'] = ".";
             }
@@ -280,7 +286,8 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, "M");
             $worksheet->setCellValueExplicitByColumnAndRow(15,$row, "EZYPRI");
             $worksheet->setCellValueExplicitByColumnAndRow(15,$row, "EZYPRI");
-            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['quantity'] * $data['selling_price']);
+            //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['quantity'] * $data['selling_price']);
+            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(17,$row, $data['selling_currency']);
             $worksheet->setCellValueExplicitByColumnAndRow(18,$row, "Sunglasses case");
             $worksheet->setCellValueExplicitByColumnAndRow(19,$row, $data['quantity']);
