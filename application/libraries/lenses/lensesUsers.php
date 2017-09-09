@@ -47,4 +47,17 @@ class lensesUsers extends lensesMain{
         
         return $return;
     }
+    
+    function ajax_change_password(){
+        $return = array("status"=>"0","message"=>"");
+        $old_password = $this->CI->input->post('old_password',true);
+        $new_password = $this->CI->input->post('new_password',true);
+        if(($result = $this->CI->db->query('SELECT id FROM users WHERE username=? AND credential=? LIMIT 1',array($_SESSION['user']['username'],$old_password)))){
+            if(($d = $result->row_array()) && $this->CI->db->query('UPDATE users SET credential=? WHERE id=?',array($new_password,$d['id']))){
+                $return['status'] = "1";
+            }
+        }
+        echo json_encode($return);
+        exit;
+    }
 }

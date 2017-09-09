@@ -24,7 +24,7 @@ class lensesMain{
     var $delete_btn = true;
     var $extra_btn = array();
     var $parent_id = false;
-    var $user_group_priv = 0;
+    var $selected_menu = '';
     var $custom_view_config = '';
     
     function __construct(){
@@ -32,10 +32,6 @@ class lensesMain{
         $this->CI->db->query('SET NAMES "utf8"');        
         //$this->CI->db->query('SET @@global.time_zone = "'.$this->get_global_config("timezone").':00"');
         $this->CI->db->query('SET @@session.time_zone = "'.$this->get_global_config("timezone").':00"');
-        
-        if(!$this->get_user_access($_SESSION['user_type'],$this->user_group_priv)){
-            redirect(base_url("/"),'location');
-        }
         /*
         if(isset($_POST['columns'])){
             array_splice($_POST['columns'], 0, 1);
@@ -58,6 +54,9 @@ class lensesMain{
     }
     
     function init_header(){
+        if(!$this->get_user_access($_SESSION['user']['user_type'],$this->selected_menu)){
+            redirect(base_url("/"),'location');
+        }
         if(!$this->header){
             $data = array();
             $sql = 'SELECT * FROM '.$this->table;
@@ -609,17 +608,26 @@ class lensesMain{
     
     function get_user_access($group_id = 0, $priv_id = 0){
         static $instance = array();
+        if($group_id==0){
+            return true;
+        }
         if(!isset($instance[$group_id])){
-            $sql = 'select priv_id from user_group_privileges where priv_status=1 and group_id=?';
-            if(($result = $this->CI->db->query($sql,array($group_id))) && $result->num_rows()){
-                $instance[$group_id] = array();
-                $temp = $result->result_array();
-                foreach($temp as $r){
-                    $instance[$group_id][$r['priv_id']] = $r['priv_id'];
+            if(empty($_SESSION['user_access_list'][$group_id])){
+                $sql = 'select a.priv_id, ifnull(b.code,"") code from user_group_privileges a left join user_group_privileges_list b on a.priv_id=b.id where a.priv_status=1 and a.group_id=?';
+                if(($result = $this->CI->db->query($sql,array($group_id))) && $result->num_rows()){
+                    $instance[$group_id] = array();
+                    $temp = $result->result_array();
+                    foreach($temp as $r){
+                        $instance[$group_id][$r['priv_id']] = $r['code'];
+                    }
                 }
+            }else{
+                $instance[$group_id] = $_SESSION['user_access_list'][$group_id];
             }
         }
-        if($priv_id==0 || (isset($instance[$group_id]) && array_search($priv_id, $instance[$group_id])!==FALSE)){
+        if((isset($instance[$group_id]) && array_search($priv_id, $instance[$group_id])!==FALSE)
+            || (isset($instance[$group_id]) && array_key_exists($priv_id, $instance[$group_id])!==FALSE)
+        ){
             return true;
         }
         return false;

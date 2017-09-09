@@ -768,7 +768,7 @@ $editable = false;
         });
 
         $('#datatable-editable').each(function () {
-            var filter_sorting = [[ 1, "asc" ]];
+            var filter_sorting = [[ 0, "asc" ]];
             var obj = $(this);
             var thead_search = obj.find('.thead-search');
 

@@ -5,8 +5,37 @@ if (!defined('BASEPATH'))
 <?php
     $selected_menu = (isset($this->CI->cpage->template_data['selected_menu']))?$this->CI->cpage->template_data['selected_menu']:'home';
     $selected_menu = strtolower($selected_menu);
+    
+    $menu_config = array(
+        'sales'=>array('class'=>'md-attach-money'),
+        'inventory'=>array('class'=>'md-account-balance'),
+        'reports'=>array('class'=>'md-insert-chart'),
+        'settings'=>array('class'=>'md-settings-applications')
+    );
+    
+    $menu_list = array();
+    $sql = 'select * from user_group_privileges_list';
+    if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
+        require_once(APPPATH.'libraries/lenses/lensesMain.php');
+        $class = new lensesMain();
+        $temp = $result->result_array();
+        foreach($temp as $r){
+            if(!$class->get_user_access($_SESSION['user']['user_type'], $r['code'])){
+                continue;
+            }
+            $temp2 = &$menu_list;
+            foreach(explode("|",$r['description']) as $title){
+                $a = strtolower($title);
+                if(!isset($temp2[$a])){
+                    $temp2[$a] = array('title'=>$title,'submenu'=>array());
+                }
+                $temp2 = &$temp2[$a]['submenu'];
+            }
+            $temp2 = array('code'=>$r['code'],'url'=>$r['url']);
+        }
+    }
 ?>
-
+<script src="<?php echo base_url('/assets/default'); ?>/js/action.js"></script>
         <header id="topnav">
             <div class="topbar-main">
                 <div class="container">
@@ -98,6 +127,8 @@ if (!defined('BASEPATH'))
                                     <li><a href="javascript:void(0)"><i class="ti-settings m-r-5"></i> Settings</a></li>
                                     <li><a href="javascript:void(0)"><i class="ti-lock m-r-5"></i> Lock screen</a></li>
                                     */ ?>
+                                    <li><a href="javascript:void(0)"><i class="ti-user m-r-5"></i> <b>Welcome, <?php echo $_SESSION['user']['name']; ?></b></a></li>
+                                    <li><a href="javascript:void(0)" onclick="show_password_form(this)"><i class="ti-lock m-r-5"></i> Change Password</a></li>
                                     <li><a href="<?php echo base_url('/home/logout'); ?>"><i class="ti-power-off m-r-5"></i> Logout</a></li>
                                 </ul>
                             </li>
@@ -130,50 +161,40 @@ if (!defined('BASEPATH'))
                         <li class="has-submenu <?php echo (($selected_menu=="home")?"active":""); ?>">
                             <a href="<?php echo base_url("/"); ?>"><i class="md md-dashboard"></i>Dashboard</a>
                         </li>
-                        <li class="has-submenu">
-                            <a href="#"><i class="md md-attach-money"></i>Sales</a>
-                            <ul class="submenu">
-                                <li class="<?php echo (($selected_menu=="sales_entry")?"active":""); ?>"><a href="<?php echo base_url("/sales_entry"); ?>">Sales Entry</a></li>
-                                <li class="<?php echo (($selected_menu=="sales_history")?"active":""); ?>"><a href="<?php echo base_url("/sales_history"); ?>">Sales History</a></li>
-                            </ul>
-                        </li>
-                        <li class="has-submenu">
-                            <a href="#"><i class="md md-account-balance"></i>Inventory</a>
-                            <ul class="submenu">
-                                <li class="<?php echo (($selected_menu=="suppliers")?"active":""); ?>"><a href="<?php echo base_url("/supplier"); ?>">Suppliers</a></li>
-                                <li class="<?php echo (($selected_menu=="options")?"active":""); ?>"><a href="<?php echo base_url("/options"); ?>">Options</a></li>
-                                <li class="<?php echo (($selected_menu=="products")?"active":""); ?>"><a href="<?php echo base_url("/products"); ?>">Products</a></li>
-                                <li class="<?php echo (($selected_menu=="warehouses")?"active":""); ?>"><a href="<?php echo base_url("/warehouses"); ?>">Warehouses</a></li>
-                                <li class="<?php echo (($selected_menu=="stores")?"active":""); ?>"><a href="<?php echo base_url("/stores"); ?>">Online Store</a></li>
-                            </ul>
-                        </li>
-                        <li class="has-submenu">
-                            <a href="#"><i class="md md-insert-chart"></i>Reports</a>
-                            <ul class="submenu">
-                                <li class="<?php echo (($selected_menu=="report_yearly_sales")?"active":""); ?>"><a href="<?php echo base_url("/report_yearly_sales"); ?>">Yearly Sales</a></li>
-                                <li class="<?php echo (($selected_menu=="warehouse_history")?"active":""); ?>"><a href="<?php echo base_url("/warehouse_history"); ?>">Warehouse History</a></li>
-                            </ul>
-                        </li>
                         
-                        <li class="has-submenu">
-                            <a href="#"><i class="md md-settings-applications"></i>Settings</a>
-                            <ul class="submenu">
-                                <?php if($_SESSION['user']['user_type']=="1"){ ?>
-                                <li class="has-submenu">
-                                    <a href="<?php echo base_url("/users"); ?>">User Management</a>
-                                    <ul class="submenu">
-                                        <li class="<?php echo (($selected_menu=="user_login")?"active":""); ?>"><a href="<?php echo base_url("/users"); ?>">User Login</a></li>
-                                        <li class="<?php echo (($selected_menu=="user_group")?"active":""); ?>"><a href="<?php echo base_url("/user_group"); ?>">User group</a></li>
-                                    </ul>
-                                </li>
-                                <li class="<?php echo (($selected_menu=="global_setting")?"active":""); ?>"><a href="<?php echo base_url("/settings"); ?>">Global Settings</a></li>
-                                <?php } ?>
-                                <li class="<?php echo (($selected_menu=="forex")?"active":""); ?>"><a href="<?php echo base_url("/forex"); ?>">Exchange Rate</a></li>
-                                <li class="<?php echo (($selected_menu=="marketplace")?"active":""); ?>"><a href="<?php echo base_url("/marketplaces"); ?>">Market Places</a></li>
-                                <li class="<?php echo (($selected_menu=="accounts")?"active":""); ?>"><a href="<?php echo base_url("/accounts"); ?>">Accounts</a></li>
-                                <li class="<?php echo (($selected_menu=="couriers")?"active":""); ?>"><a href="<?php echo base_url("/couriers"); ?>">Courier Service</a></li>
-                            </ul>
-                        </li>
+                        <?php
+                            foreach($menu_list as $key => $v1){
+                                if(isset($v1['submenu']) && !isset($v1['submenu']['url'])){
+                                    ?>
+                                    <li class="has-submenu">
+                                        <a href="#"><i class="md <?php echo (isset($menu_config[$key]))?$menu_config[$key]['class']:""; ?>"></i><?php echo $v1['title']; ?></a>
+                                        <ul class="submenu">
+                                    <?php
+                                    foreach($v1['submenu'] as $v2){
+                                        if(isset($v2['submenu']) && !isset($v2['submenu']['url'])){
+                                            ?>
+                                            <li class="has-submenu">
+                                                <a href="#"><?php echo $v2['title']; ?></a>
+                                                <ul class="submenu">
+                                            <?php
+                                            foreach($v2['submenu'] as $v3){
+                                                ?><li class="<?php echo (($selected_menu==$v3['submenu']['code'])?"active":""); ?>"><a href="<?php echo base_url($v3['submenu']['url']); ?>"><?php echo $v3['title']; ?></a></li><?php
+                                            }
+                                            ?>
+                                                </ul>
+                                            </li>
+                                            <?php
+                                        }else{
+                                            ?><li class="<?php echo (($selected_menu==$v2['submenu']['code'])?"active":""); ?>"><a href="<?php echo base_url($v2['submenu']['url']); ?>"><?php echo $v2['title']; ?></a></li><?php
+                                        }
+                                    }
+                                    ?>
+                                        </ul>
+                                    </li>
+                                    <?php
+                                }
+                            }
+                        ?>
                         
                         <?php if(isset($_SESSION['notification'])){ ?>
                         <li class="has-submenu">
@@ -196,8 +217,65 @@ if (!defined('BASEPATH'))
             </div>
         </header>
 
+<div id="change_password_form_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="change_password_form_modal" aria-hidden="true" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-content form-container">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Change Password</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12 form-field">
+                        <div class="form-group">
+                            <label class="control-label">Old Password</label>
+                            <input type="password" class="form-control" placeholder="" name="old_password" required>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 form-field">
+                        <div class="form-group">
+                            <label class="control-label">New Password</label>
+                            <input type="password" class="form-control" placeholder="" name="new_password" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary waves-effect waves-light" onclick="change_password_save(this)">Save</button>
+            </div>
+            <div class="modal-footer-loading">
+                Loading...
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 jQuery(function($){
     $('.navigation-menu li.active').parents('li.has-submenu').addClass('active');
 });
+
+function show_password_form(){
+    $('#change_password_form_modal').modal('show');
+}
+
+function change_password_save(obj){
+    var post_data = {};
+    post_data['old_password'] = $(obj).closest('.modal').find('[name="old_password"]').val();
+    post_data['new_password'] = $(obj).closest('.modal').find('[name="new_password"]').val();
+    $.post('<?php echo base_url('ajax/users?method=change_password'); ?>',post_data,function(data){
+        if(data.status=="1"){
+            show_notification('Password update successfuly.','Notification','success');
+        }else{
+            show_notification('Password update fail.','Notification','error');
+        }
+    }, 'json')
+    .error(function(){
+        show_notification('Submission to server error!','Notification','error');
+    })
+    .always(function(){
+        $('#change_password_form_modal').modal('hide');
+    });
+}
 </script>
