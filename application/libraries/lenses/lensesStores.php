@@ -113,6 +113,7 @@ class lensesStores extends lensesMain{
                 $file = tempnam(sys_get_temp_dir(), 'item_import_');
                 $data = $value['file'];
                 $data = base64_decode($data);
+                $data = iconv(mb_detect_encoding($data, "UTF-8,ISO-8859-1"), "UTF-8", $data);
                 file_put_contents($file, $data);
                 $return = $class->item_import($value['account_id'],$value['marketplace_template'], $file);
                 unlink($file);
