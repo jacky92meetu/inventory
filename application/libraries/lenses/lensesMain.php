@@ -5,7 +5,7 @@ error_reporting(0);
 class lensesMain{
     
     var $CI = false;
-    var $title = '';
+    var $title = 'This Page';
     var $table = '';
     var $header = false;
     var $search_query = '';
@@ -26,6 +26,7 @@ class lensesMain{
     var $parent_id = false;
     var $selected_menu = '';
     var $custom_view_config = '';
+    var $page_view = 'page-view';
     
     function __construct(){
         $this->CI = get_instance();
@@ -69,7 +70,7 @@ class lensesMain{
                 $col_exists = false;
                 $temp = array('id'=>$key,'name'=>ucwords(strtolower($key)));
                 if(preg_match('#(^id$)|(_date$)|(_gmtdate$)#iu', $key)==0){
-                    $temp['editable'] = true;
+                    //$temp['editable'] = true;
                     if(stripos($key, 'date')!==FALSE){
                         $temp['is_date'] = true;
                     }
@@ -140,11 +141,11 @@ class lensesMain{
         return array($custom_view[$md5_id],$custom_freezePane[$md5_id],$data);
     }
     
-    function view(){
+    function view($view){
         $this->init_header();
         $contents = array();
         if($this->ajax_url==""){
-            $this->ajax_url = base_url('ajax/'.$this->table);
+            $this->ajax_url = base_url('ajax/'.$view);
         }
         list($this->header,$this->freezePane,$contents) = $this->set_custom_view($this->header,$contents);
         $this->CI->cpage->set_html_title($this->title);
@@ -160,7 +161,7 @@ class lensesMain{
         $this->CI->cpage->set('extra_btn',$this->extra_btn);
         $this->CI->cpage->set('is_required',$this->is_required);
         $this->CI->cpage->set('freezePane',$this->freezePane);
-        return $this->CI->load->view('page-view');
+        return $this->CI->load->view($this->page_view);
     }
     
     function ajax_read(){
@@ -613,24 +614,35 @@ class lensesMain{
         }
         if(!isset($instance[$group_id])){
             if(empty($_SESSION['user_access_list'][$group_id])){
-                $sql = 'select a.priv_id, ifnull(b.code,"") code from user_group_privileges a left join user_group_privileges_list b on a.priv_id=b.id where a.priv_status=1 and a.group_id=?';
+                $sql = 'select a.priv_id, ifnull(b.code,"") code, priv_status from user_group_privileges a left join user_group_privileges_list b on a.priv_id=b.id where a.group_id=?';
                 if(($result = $this->CI->db->query($sql,array($group_id))) && $result->num_rows()){
                     $instance[$group_id] = array();
                     $temp = $result->result_array();
                     foreach($temp as $r){
-                        $instance[$group_id][$r['priv_id']] = $r['code'];
+                        $instance[$group_id][$r['priv_id']] = $r;
                     }
                 }
             }else{
                 $instance[$group_id] = $_SESSION['user_access_list'][$group_id];
             }
         }
-        if((isset($instance[$group_id]) && array_search($priv_id, $instance[$group_id])!==FALSE)
-            || (isset($instance[$group_id]) && array_key_exists($priv_id, $instance[$group_id])!==FALSE)
-        ){
-            return true;
+        
+        $temp = false;
+        if((isset($instance[$group_id]) && array_key_exists($priv_id, $instance[$group_id])!==FALSE)){
+            $temp = $instance[$group_id][$priv_id];
         }
-        return false;
+        if(!$temp && isset($instance[$group_id])){
+            foreach($instance[$group_id] as $v){
+                if($v['code']==$priv_id){
+                    $temp = $v;
+                    break;
+                }
+            }
+        }
+        if($temp && $temp['priv_status']=="0"){
+            return false;
+        }
+        return true;
     }
     
     function tzdate($date = "",$tz = 0){
@@ -867,7 +879,7 @@ class lensesMain{
             from warehouse_item a
             join warehouses w on a.warehouse_id=w.id
             join products b on a.product_id=b.id
-            join option_item c on a.item_id=c.id and c.type="1"
+            join option_item c on a.item_id=c.id
             left join settings s1 on s1.code="min_qty" 
             left join settings s2 on s2.code="stop_qty"
             left join warehouse_item_history wih on wih.warehouse_item_id=a.id
@@ -877,13 +889,15 @@ class lensesMain{
             and wih2.id is null
             group by a.warehouse_id')) && $result->num_rows()){
             $return = array();
-            $_SESSION['notification'] = array();
+            $_SESSION['notification'] = array('badge_list'=>array('total_danger'=>array('badge-class'=>'badge badge-sm badge-danger','size'=>0),'total_warning'=>array('badge-class'=>'badge badge-sm badge-warning','size'=>0)),'data_list'=>array());
             foreach($result->result_array() as $r){
                 if($r['pstop']>0){
-                    $_SESSION['notification']['quantity-danger'] = array('name'=>'Warehouse:'.$r['name'].' <font class="text-danger">out of stock</font>','url'=>base_url("/warehouse_item?id=".$r['warehouse_id']."&search_qstatus=stop"),'badge-class'=>'badge badge-sm badge-danger','size'=>$r['pstop']);
+                    $_SESSION['notification']['badge_list']['total_danger']['size'] += $r['pstop'];
+                    $_SESSION['notification']['data_list'][] = array('name'=>'Warehouse:'.$r['name'].' <font class="text-danger">out of stock</font>','url'=>base_url("/warehouse_item?id=".$r['warehouse_id']."&search_qstatus=stop"),'size'=>$r['pstop']);
                 }
                 if($r['pwarning']>0){
-                    $_SESSION['notification']['quantity-warning'] = array('name'=>'Warehouse:'.$r['name'].' <font class="text-warning">limited stock</font>','url'=>base_url("/warehouse_item?id=".$r['warehouse_id']."&search_qstatus=warning"),'badge-class'=>'badge badge-sm badge-warning','size'=>$r['pwarning']);
+                    $_SESSION['notification']['badge_list']['total_warning']['size'] += $r['pwarning'];
+                    $_SESSION['notification']['data_list'][] = array('name'=>'Warehouse:'.$r['name'].' <font class="text-warning">limited stock</font>','url'=>base_url("/warehouse_item?id=".$r['warehouse_id']."&search_qstatus=warning"),'size'=>$r['pwarning']);
                 }
             }
         }

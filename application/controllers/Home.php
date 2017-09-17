@@ -9,12 +9,15 @@ class Home extends CI_Controller {
     
 	public function index()
 	{
+            return $this->view('home');
+            /*
             if(!isset($_SESSION['user'])){
                 redirect(base_url("/home/login"),'location');
             }
             //$this->output->cache(10);
             $this->cpage->set('selected_menu','home');
             $this->load->view('page-home');
+            */
 	}
         
         public function view($view = ""){
@@ -30,7 +33,7 @@ class Home extends CI_Controller {
             if(class_exists($name)){
                 $class = new $name;
                 if(method_exists($class, 'view')){
-                    return $class->view();
+                    return $class->view($view);
                 }
             }
             redirect(base_url("/"),'location');

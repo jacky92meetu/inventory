@@ -180,5 +180,5 @@
 //initializing 
 function($) {
     "use strict";
-    $.MorrisCharts.init();
+    //$.MorrisCharts.init();
 }(window.jQuery);
