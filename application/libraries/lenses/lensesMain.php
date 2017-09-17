@@ -117,16 +117,16 @@ class lensesMain{
         if(is_array($data) && sizeof($data)>0){
             $data_list = array();
             foreach($data as $a){
+                $temp_remaining = $header;
                 $temp = array();
                 foreach($custom_view[$md5_id] as $value){
-                    $arr_pos = 0;
-                    foreach($header as $value2){
-                        if($value['id']==$value2['id'] && isset($a[$arr_pos])){
-                            $temp[] = $a[$arr_pos];
-                            unset($a[$arr_pos]);
+                    foreach($temp_remaining as $key2 => $value2){
+                        if($value['id']==$value2['id'] && array_key_exists($key2, $a)!==FALSE){
+                            $temp[] = $a[$key2];
+                            unset($a[$key2]);
+                            unset($temp_remaining[$key2]);
                             break;
                         }
-                        $arr_pos++;
                     }
                 }
                 foreach($a as $value){
