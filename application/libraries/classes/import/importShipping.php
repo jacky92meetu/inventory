@@ -4,11 +4,22 @@ include_once 'importClass.php';
 
 class importShippingClass extends importClass{
     
+    var $fp_cur = "";
+    var $fp_amt = "";
+    
     function __construct() {
         parent::__construct();
     }
     
-    function shipping_export($selection){
+    function shipping_export($post_data){
+        if(empty($post_data['selection'])){
+            return false;
+        }
+        if(!empty($post_data['fp_amt']) && is_numeric($post_data['fp_amt']) && !empty($post_data['fp_cur']) && strlen($post_data['fp_cur'])==3){
+            $this->fp_cur = $post_data['fp_cur'];
+            $this->fp_amt = $post_data['fp_amt'];
+        }
+        $selection = $post_data['selection'];
         $temp = explode("|",$this->account_id);
         $this->account_id = $temp[0];
         $name = $temp[1];
@@ -83,8 +94,10 @@ class importShippingClass extends importClass{
         
         $row = 2;
         foreach($item_list as $data){
-            $data['selling_currency'] = "USD";
-            $data['selling_price'] = 20;
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+                $data['selling_currency'] = strtoupper($this->fp_cur);
+                $data['selling_price'] = $this->fp_amt;
+            }
             
             foreach(array('buyer_name','buyer_address') as $cf){
                 $temp = $data[$cf];
@@ -154,8 +167,11 @@ class importShippingClass extends importClass{
             
             $worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
-            //$worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
-            $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+                $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
+            }else{
+                $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
+            }
             $worksheet->setCellValueExplicitByColumnAndRow(33,$row, "Sunglasses case");
             
             $title = $data['product_name']." ".$data['option_name'];
@@ -211,8 +227,11 @@ class importShippingClass extends importClass{
         
         $row = 2;
         foreach($item_list as $data){
-            $data['selling_currency'] = "USD";
-            $data['selling_price'] = 20;
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+                $data['selling_currency'] = strtoupper($this->fp_cur);
+                $data['selling_price'] = $this->fp_amt;
+            }
+            
             if(strlen($data['buyer_address2'])==0){
                 $data['buyer_address2'] = ".";
             }
@@ -286,8 +305,11 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, "M");
             $worksheet->setCellValueExplicitByColumnAndRow(15,$row, "EZYPRI");
             $worksheet->setCellValueExplicitByColumnAndRow(15,$row, "EZYPRI");
-            //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['quantity'] * $data['selling_price']);
-            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['selling_price']);
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+                $worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['selling_price']);
+            }else{
+                $worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['quantity'] * $data['selling_price']);
+            }
             $worksheet->setCellValueExplicitByColumnAndRow(17,$row, $data['selling_currency']);
             $worksheet->setCellValueExplicitByColumnAndRow(18,$row, "Sunglasses case");
             $worksheet->setCellValueExplicitByColumnAndRow(19,$row, $data['quantity']);

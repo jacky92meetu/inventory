@@ -173,10 +173,13 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','editable'=>true)
         );
         
+        $temp = json_decode($_COOKIE['shipping_export'],true);
         $this->shipping_export_header = array(
             array('id'=>'id','name'=>'ID','hidden'=>'1'),
             array('id'=>'type','name'=>'type','value'=>'shipping_export','hidden'=>'1'),
-            array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list2,'editable'=>true)
+            array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list2,'editable'=>true,'value'=>((!empty($temp['courier_id']))?$temp['courier_id']:"")),
+            array('id'=>'fixed_price_currency','name'=>'Fixed Price Currency','option_text'=>$currency_list,'editable'=>true,'value'=>((!empty($temp['fixed_price_currency']))?$temp['fixed_price_currency']:"")),
+            array('id'=>'fixed_price_amount','name'=>'Fixed Price Amount','editable'=>true,'value'=>((!empty($temp['fixed_price_amount']))?$temp['fixed_price_amount']:""))
         );
     }
     
@@ -215,7 +218,8 @@ class lensesSalesEntry extends lensesMain{
             $return['message'] = "";
             $action = base_url('ajax/sales_entry?method=shipping_export');
             $selection = $this->CI->input->post('selection',true);
-            $return['func'] = $this->write_js_form($action, array('courier_id'=>$value['courier_id'],'selection'=>$selection));
+            setcookie("shipping_export", json_encode($value), time()+(60*60*24*30), '/');
+            $return['func'] = $this->write_js_form($action, array('courier_id'=>$value['courier_id'],'fp_cur'=>$value['fixed_price_currency'],'fp_amt'=>$value['fixed_price_amount'],'selection'=>$selection));
             return $return;
         }else if(!empty($value['type']) && $value['type']=='sales_courier'){
             $selection = $this->CI->input->post('selection',true);
@@ -377,7 +381,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $selection = $this->CI->input->post('selection',true);
         include_once(APPPATH.'libraries/classes/ImportHelper.php');
         $class = new ImportHelper;
-        $class->shipping_export($courier_id,$selection);
+        $class->shipping_export($courier_id,$_POST);
         exit;
     }
     
