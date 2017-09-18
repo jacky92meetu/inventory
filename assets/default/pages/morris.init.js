@@ -25,7 +25,17 @@
           gridLineColor: '#eef0f2',
           hideHover: 'auto',
           resize: true, //defaulted to true
-          lineColors: lineColors
+          lineColors: lineColors,
+          hoverCallback: function(index, options, content) {
+              if(options.ykeys.length>1){
+                var total = 0;
+                for(var i in options.ykeys){
+                    total = total + options.data[index][options.ykeys[i]];
+                }
+                content = content + '<div class="morris-hover-row-label" style="display:block;border-top:1px solid #ccc;">Total: '+total+'</div>';
+              }
+              return content;
+            },
         });
     },
     //creates area chart
@@ -41,7 +51,17 @@
             hideHover: 'auto',
             resize: true,
             gridLineColor: '#eef0f2',
-            lineColors: lineColors
+            lineColors: lineColors,
+            hoverCallback: function(index, options, content) {
+              if(options.ykeys.length>1){
+                var total = 0;
+                for(var i in options.ykeys){
+                    total = total + options.data[index][options.ykeys[i]];
+                }
+                content = content + '<div class="morris-hover-row-label" style="display:block;border-top:1px solid #ccc;">Total: '+total+'</div>';
+              }
+              return content;
+            },
         });
     },
     //creates area chart with dotted
@@ -59,7 +79,17 @@
             pointStrokeColors: Pstockcolor,
             resize: true,
             gridLineColor: '#eef0f2',
-            lineColors: lineColors
+            lineColors: lineColors,
+            hoverCallback: function(index, options, content) {
+              if(options.ykeys.length>1){
+                var total = 0;
+                for(var i in options.ykeys){
+                    total = total + options.data[index][options.ykeys[i]];
+                }
+                content = content + '<div class="morris-hover-row-label" style="display:block;border-top:1px solid #ccc;">Total: '+total+'</div>';
+              }
+              return content;
+            },
         });
     },
     //creates Bar chart

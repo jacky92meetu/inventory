@@ -2,6 +2,9 @@
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/morris/morris.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/raphael/raphael-min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/pages/morris.init.js"></script>
+<script>
+    var CSS_COLOR_NAMES = ["#ffbf00","#bf5340","#40bf44","#b3bf40","#e2761d","#6040bf","#bf4088","#8359a6","#0033ff","#ff0026","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"];
+</script>
 
 <div class="row">
     <div class="col-xs-12">
@@ -10,13 +13,7 @@
             <div class="text-center">
                 <ul class="list-inline chart-detail-list">
                     <li>
-                        <h5><i class="fa fa-circle m-r-5" style="color: #3bafda;"></i>Series A</h5>
-                    </li>
-                    <li>
-                        <h5><i class="fa fa-circle m-r-5" style="color: #dcdcdc;"></i>Series B</h5>
-                    </li>
-                    <li>
-                        <h5><i class="fa fa-circle m-r-5" style="color: #80deea;"></i>Series C</h5>
+                        <h4>Total Monthly Deals = <?php echo $dashboard_data['monthly_deals']['total']; ?></h4>
                     </li>
                 </ul>
             </div>
@@ -25,31 +22,31 @@
             $(function(){
                 //create line chart
                 var $data  = [
-                    { y: '2010', a: 30,  b: 20 , c: 10 },
-                    { y: '2011', a: 50,  b: 40 , c: 30 },
-                    { y: '2012', a: 75,  b: 65 , c: 50 },
-                    { y: '2013', a: 50,  b: 40 , c: 22 },
-                    { y: '2014', a: 75,  b: 65 , c: 50 },
-                    { y: '2015', a: 100, b: 90 , c: 65 }
-                  ];
-                $.MorrisCharts.createLineChart('morris-line-example', $data, 'y', ['a', 'b','c'], ['Series A', 'Series B', 'Series C'],['0.1'],['#ffffff'],['#999999'], ["#00b19d", "#29b6f6", "#3f51b5"]);
+                    <?php 
+                        $header = "['".implode("','",array_keys($dashboard_data['monthly_deals']['header']))."']";
+                        $header2 = "['".implode("','",array_values($dashboard_data['monthly_deals']['header']))."']";
+                        foreach($dashboard_data['monthly_deals']['data'] as $key => $value){
+                            $temp = "{y:'".$key."'";
+                            foreach($value as $key2 => $value2){
+                                $temp .= ", ".$key2.":".$value2;
+                            }
+                            $temp .= "},";
+                            echo $temp;
+                        }
+                    ?>
+                ];
+                $.MorrisCharts.createLineChart('morris-line-example', $data, 'y', <?php echo $header; ?>, <?php echo $header2; ?>,['0.1'],['#ffffff'],['#999999'], CSS_COLOR_NAMES);
             });
             </script>
         </div>
     </div>
     <div class="col-xs-12">
         <div class="card-box">
-            <h4 class="text-dark  header-title m-t-0">Monthly Sales</h4>
+            <h4 class="text-dark  header-title m-t-0">Monthly Profit</h4>
             <div class="text-center">
                 <ul class="list-inline chart-detail-list">
                     <li>
-                        <h5><i class="fa fa-circle m-r-5" style="color: #3bafda;"></i>Series A</h5>
-                    </li>
-                    <li>
-                        <h5><i class="fa fa-circle m-r-5" style="color: #dcdcdc;"></i>Series B</h5>
-                    </li>
-                    <li>
-                        <h5><i class="fa fa-circle m-r-5" style="color: #80deea;"></i>Series C</h5>
+                        <h4>Total Monthly Profit = RM<?php echo number_format($dashboard_data['monthly_profit']['total'],',','.'); ?></h4>
                     </li>
                 </ul>
             </div>
@@ -58,21 +55,27 @@
             $(function(){
                 //create line chart
                 var $data  = [
-                    { y: '2010', a: 30,  b: 20 , c: 10 },
-                    { y: '2011', a: 50,  b: 40 , c: 30 },
-                    { y: '2012', a: 75,  b: 65 , c: 50 },
-                    { y: '2013', a: 50,  b: 40 , c: 22 },
-                    { y: '2014', a: 75,  b: 65 , c: 50 },
-                    { y: '2015', a: 100, b: 90 , c: 65 }
-                  ];
-                $.MorrisCharts.createLineChart('morris-line-example2', $data, 'y', ['a', 'b','c'], ['Series A', 'Series B', 'Series C'],['0.1'],['#ffffff'],['#999999'], ["#00b19d", "#29b6f6", "#3f51b5"]);
+                    <?php 
+                        $header = "['".implode("','",array_keys($dashboard_data['monthly_profit']['header']))."']";
+                        $header2 = "['".implode("','",array_values($dashboard_data['monthly_profit']['header']))."']";
+                        foreach($dashboard_data['monthly_profit']['data'] as $key => $value){
+                            $temp = "{y:'".$key."'";
+                            foreach($value as $key2 => $value2){
+                                $temp .= ", ".$key2.":".$value2;
+                            }
+                            $temp .= "},";
+                            echo $temp;
+                        }
+                    ?>
+                ];
+                $.MorrisCharts.createLineChart('morris-line-example2', $data, 'y', <?php echo $header; ?>, <?php echo $header2; ?>,['0.1'],['#ffffff'],['#999999'], CSS_COLOR_NAMES);
             });
             </script>
         </div>
     </div>
 </div>
 
-<div class="row">
+<div class="row small">
     <div class="col-xs-12 col-sm-4">
         <div class="card-box">
             <h4 class="text-dark  header-title m-t-0">Top 10 Daily Deals</h4>
@@ -82,15 +85,21 @@
                         <tr>
                             <th>#</th>
                             <th>Product</th>
-                            <th>Quantity</th>
+                            <th>Qty</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <?php
+                            $count = 0;
+                            foreach($dashboard_data['top_10_daily_deals'] as $data){
+                                $count++;
+                        ?>
                         <tr>
-                            <td>1</td>
-                            <td>Minton Admin v1</td>
-                            <td>12</td>
+                            <td><?php echo $count; ?></td>
+                            <td><?php echo $data['product_name']; ?></td>
+                            <td><?php echo $data['total_qty']; ?></td>
                         </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>
@@ -98,22 +107,28 @@
     </div>
     <div class="col-xs-12 col-sm-4">
         <div class="card-box">
-            <h4 class="text-dark  header-title m-t-0">Top 10 Daily Deals</h4>
+            <h4 class="text-dark  header-title m-t-0">Top 10 Weekly Deals</h4>
             <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Product</th>
-                            <th>Quantity</th>
+                            <th>Qty</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <?php
+                            $count = 0;
+                            foreach($dashboard_data['top_10_weekly_deals'] as $data){
+                                $count++;
+                        ?>
                         <tr>
-                            <td>1</td>
-                            <td>Minton Admin v1</td>
-                            <td>12</td>
+                            <td><?php echo $count; ?></td>
+                            <td><?php echo $data['product_name']; ?></td>
+                            <td><?php echo $data['total_qty']; ?></td>
                         </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>
@@ -121,22 +136,28 @@
     </div>
     <div class="col-xs-12 col-sm-4">
         <div class="card-box">
-            <h4 class="text-dark  header-title m-t-0">Top 10 Daily Deals</h4>
+            <h4 class="text-dark  header-title m-t-0">Top 10 Monthly Deals</h4>
             <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Product</th>
-                            <th>Quantity</th>
+                            <th>Qty</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <?php
+                            $count = 0;
+                            foreach($dashboard_data['top_10_monthly_deals'] as $data){
+                                $count++;
+                        ?>
                         <tr>
-                            <td>1</td>
-                            <td>Minton Admin v1</td>
-                            <td>12</td>
+                            <td><?php echo $count; ?></td>
+                            <td><?php echo $data['product_name']; ?></td>
+                            <td><?php echo $data['total_qty']; ?></td>
                         </tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>
