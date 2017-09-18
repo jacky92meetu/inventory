@@ -101,7 +101,7 @@ class lensesHome extends lensesMain{
         
         $temp2 = array();
         if(($result = $this->CI->db->query('select c.name store_name, a.payment_date
-            ,sum(
+            ,round(sum(
                     (ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(d1.rate,1))
                 + (ifnull(a.shipping_charges_received,0) / ifnull(d1.rate,1))
                     - (ifnull(a.shipping_charges_paid,0) / ifnull(d1.rate,1))
@@ -110,7 +110,7 @@ class lensesHome extends lensesMain{
                     - (ifnull(a.paypal_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(d1.rate,1))
                     - (ifnull(a.paypal_fees_fixed,0) / ifnull(d1.rate,1))
                     - (ifnull(e.cost_price,0))
-            ) profit_amount
+            ),4) profit_amount
             from transactions a
             left join store_item b on b.id=a.store_item_id
             left join stores c on c.id=b.store_id
