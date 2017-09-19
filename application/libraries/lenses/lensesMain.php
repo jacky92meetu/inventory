@@ -27,6 +27,8 @@ class lensesMain{
     var $selected_menu = '';
     var $custom_view_config = '';
     var $page_view = 'page-view';
+    var $extra_filter_header = false;
+    var $display_chart = false;
     
     function __construct(){
         $this->CI = get_instance();
@@ -78,6 +80,24 @@ class lensesMain{
                 $data[] = $temp;
             }
             $this->header = $data;
+        }
+        if($this->extra_filter_header){
+            $temp = array();
+            $temp['type'] = array('id'=>'type','name'=>'type','value'=>'extra_filter','hidden'=>'1');
+            if(!$this->display_chart){
+                $temp['filter_status'] = array('id'=>'filter_status','name'=>'Filter Status','option_text'=>array('0'=>'No Filter','1'=>'Filtered'),'value'=>'0','editable'=>true);
+            }
+            foreach($this->extra_filter_header as $v){
+                $temp[$v['id']] = $v;
+            }
+            $this->extra_filter_header = $temp;
+            if(!empty($_SESSION['extra_filter'][$this->title])){
+                foreach($_SESSION['extra_filter'][$this->title] as $k => $v){
+                    if(isset($this->extra_filter_header[$k])){
+                        $this->extra_filter_header[$k]['value'] = $v;
+                    }
+                }
+            }
         }
     }
     
@@ -142,17 +162,24 @@ class lensesMain{
     }
     
     function view($view){
-        $this->init_header();
-        $contents = array();
+        if($this->display_chart){
+            if(sizeof($this->data)==0){
+                $this->ajax_read();
+            }
+            $this->page_view = 'page-chartview';
+        }else{
+            $this->init_header();
+        }
         if($this->ajax_url==""){
             $this->ajax_url = base_url('ajax/'.$view);
         }
-        list($this->header,$this->freezePane,$contents) = $this->set_custom_view($this->header,$contents);
+        
+        list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
         $this->CI->cpage->set_html_title($this->title);
         $this->CI->cpage->set('selected_menu',$this->selected_menu);
         $this->CI->cpage->set('view_title',$this->title);
         $this->CI->cpage->set('view_header',$this->header);
-        $this->CI->cpage->set('view_contents',$contents);
+        $this->CI->cpage->set('view_contents',$this->data);
         $this->CI->cpage->set('default_length',$this->default_length);
         $this->CI->cpage->set('view_ajax_url',$this->ajax_url);
         $this->CI->cpage->set('custom_form',$this->custom_form);
@@ -161,6 +188,8 @@ class lensesMain{
         $this->CI->cpage->set('extra_btn',$this->extra_btn);
         $this->CI->cpage->set('is_required',$this->is_required);
         $this->CI->cpage->set('freezePane',$this->freezePane);
+        $this->CI->cpage->set('extra_filter',$this->extra_filter_header);
+        $this->CI->cpage->set('display_chart',$this->display_chart);
         return $this->CI->load->view($this->page_view);
     }
     
@@ -189,6 +218,30 @@ class lensesMain{
                 $count += 1;
             }
         }
+        if($this->extra_filter_header && ($this->display_chart || $this->extra_filter_header['filter_status']['value']=="1")){
+            foreach($this->extra_filter_header as $v){
+                $col = explode("|",$v['id']);
+                foreach($this->header as $v2){
+                    if($col[0]==$v2['id']){
+                        $operator = ' = ';
+                        if(isset($v['is_date'])){
+                            if(($temp = explode('/', $v['value'])) && sizeof($temp)==3){
+                                $v['value'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
+                            }
+                            if(stripos($col[1], 'from')!==false){
+                                $operator = ' >= ';
+                            }else if(stripos($col[1], 'to')!==false){
+                                $operator = ' <= ';
+                                $v['value'] .= ' 23:59:59';
+                            }
+                        }
+                        $where_query[] = $col[0].$operator.$this->CI->db->escape($v['value']);
+                        
+                        break;
+                    }
+                }
+            }
+        }
         if(sizeof($where_query)>0){
             $where_query = ' WHERE '.implode(" AND ",$where_query);
         }else{
@@ -209,31 +262,35 @@ class lensesMain{
             $order_query = '';
         }
         
-        $limit_start = ((!empty($this->CI->input->post('start',true)))?$this->CI->input->post('start',true):0);
-        $limit_length = ((!empty($this->CI->input->post('length',true)))?$this->CI->input->post('length',true):$this->default_length);
-        $_SESSION['default_length'] = $limit_length;
-        
+        $limit_start = 0;
+        $limit_length = 1000;
         $this->recordsTotal = 0;
-        $sql = $this->search_query;
-        if(stristr($sql, 'COUNT(*)')===FALSE){
-            $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
-        }
-        if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
-            if(($row = $result->row_array())){
-                $this->recordsTotal = $row['counting'];
-            }
-        }
-        
         $this->recordsFiltered = 0;
-        $sql = $this->search_query.$where_query;
-        if(stristr($sql, 'COUNT(*)')===FALSE){
-            $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
-        }
-        if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
-            if(($row = $result->row_array())){
-                $this->recordsFiltered = $row['counting'];
+        if(!$this->display_chart){
+            $limit_start = ((!empty($this->CI->input->post('start',true)))?$this->CI->input->post('start',true):0);
+            $limit_length = ((!empty($this->CI->input->post('length',true)))?$this->CI->input->post('length',true):$this->default_length);
+            $_SESSION['default_length'] = $limit_length;
+            
+            $sql = $this->search_query;
+            if(stristr($sql, 'COUNT(*)')===FALSE){
+                $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
             }
-        }
+            if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
+                if(($row = $result->row_array())){
+                    $this->recordsTotal = $row['counting'];
+                }
+            }
+            
+            $sql = $this->search_query.$where_query;
+            if(stristr($sql, 'COUNT(*)')===FALSE){
+                $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
+            }
+            if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
+                if(($row = $result->row_array())){
+                    $this->recordsFiltered = $row['counting'];
+                }
+            }
+        }        
         
         $this->data = array();
         $sql = $this->search_query.$where_query.$order_query.' LIMIT '.$limit_start.','.$limit_length;
@@ -264,6 +321,10 @@ class lensesMain{
                 $this->data[] = $temp2;
                 $count2 += 1;
             }
+        }
+        
+        if($this->display_chart){
+            return $this->data;
         }
         
         list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
@@ -391,6 +452,20 @@ class lensesMain{
     
     function ajax_custom_form_save(){
         $return = array("status"=>"0","message"=>"");
+        if($this->CI->input->post('value[type]',true)=="extra_filter"){
+            if(($value = $this->CI->input->post('value',true))){
+                $temp2 = array();
+                foreach($value as $k => $v){
+                    if(array_search($k, array('type'))===false){
+                        $temp2[$k] = $v;
+                    }
+                }
+                $_SESSION['extra_filter'][$this->title] = $temp2;
+            }
+            $return['status'] = "1";
+            $return['func'] = 'function(){location.reload();}';
+            return $return;
+        }
         $id = 0;
         if(strlen($temp = $this->CI->input->post('value[id]',true))>0){
             $id = $temp;

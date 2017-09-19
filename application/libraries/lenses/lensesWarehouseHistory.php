@@ -18,7 +18,6 @@ class lensesWarehouseHistory extends lensesMain{
         $this->title = "Warehouse History";
         $this->selected_menu = "warehouse_history";
         $this->freezePane = 3;
-        $this->custom_form = false;
         $this->add_btn = false;
         $this->delete_btn = false;
         $this->ajax_url = base_url('ajax/warehouse_history');
@@ -41,6 +40,11 @@ class lensesWarehouseHistory extends lensesMain{
             left join warehouses w2 on b2.warehouse_id=w2.id';
         
         $this->header = array(array('id'=>'id','name'=>'ID','filter-sorting'=>'desc'),array('id'=>'warehouse_name','name'=>'Warehouse'),array('id'=>'skucode','name'=>'SKU Code'),array('id'=>'product_name','name'=>'Frame'),array('id'=>'option_name','name'=>'Color'),array('id'=>'created_date','name'=>'Date'),array('id'=>'adj_quantity','name'=>'Storage A Quantity'),array('id'=>'adj_quantity2','name'=>'Storage B Quantity'),array('id'=>'movement_type','name'=>'Movement Type','option_text'=>array('A'=>'Adjustment','S'=>'Sales Entry','R'=>'Sales Return','T'=>'Item Transfered','U'=>'Received From')),array('id'=>'movement_message','name'=>'Message'));
+        
+        $this->extra_filter_header = array(
+            array('id'=>'created_date|from_date','name'=>'From Date','is_date'=>'1','editable'=>true),
+            array('id'=>'created_date|to_date','name'=>'To Date','is_date'=>'1','editable'=>true)
+        );
     }
     
 }
