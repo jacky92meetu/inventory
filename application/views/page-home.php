@@ -10,14 +10,22 @@
     <div class="col-xs-12">
         <div class="card-box">
             <h4 class="text-dark  header-title m-t-0">Monthly Deals</h4>
-            <div class="text-center">
-                <ul class="list-inline chart-detail-list">
-                    <li>
-                        <h4>Total Monthly Deals = <?php echo $dashboard_data['monthly_deals']['total']; ?></h4>
-                    </li>
-                </ul>
+            <div class="row">
+                <div class="col-xs-12 col-sm-9">
+                    <div id="morris-line-example" style="height: 300px;"></div>
+                </div>
+                <div class="col-xs-12 col-sm-3">
+                    <div class="">
+                        <div><h4>Total of Each<h4></div>
+                        <ul class="list-inline chart-detail-list">
+                            <?php foreach($dashboard_data['monthly_deals']['total2'] as $k => $v){ ?>
+                            <li style="display:block;"><?php echo $dashboard_data['monthly_deals']['header'][$k]; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                            <?php } ?>
+                            <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['monthly_deals']['total']; ?></span></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div id="morris-line-example" style="height: 300px;"></div>
             <script>
             $(function(){
                 //create line chart
@@ -43,14 +51,22 @@
     <div class="col-xs-12">
         <div class="card-box">
             <h4 class="text-dark  header-title m-t-0">Monthly Profit</h4>
-            <div class="text-center">
-                <ul class="list-inline chart-detail-list">
-                    <li>
-                        <h4>Total Monthly Profit = RM<?php echo number_format($dashboard_data['monthly_profit']['total'],',','.'); ?></h4>
-                    </li>
-                </ul>
+            <div class="row">
+                <div class="col-xs-12 col-sm-9">
+                    <div id="morris-line-example2" style="height: 300px;"></div>
+                </div>
+                <div class="col-xs-12 col-sm-3">
+                    <div class="">
+                        <div><h4>Total of Each<h4></div>
+                        <ul class="list-inline chart-detail-list">
+                            <?php foreach($dashboard_data['monthly_profit']['total2'] as $k => $v){ ?>
+                            <li style="display:block;"><?php echo $dashboard_data['monthly_profit']['header'][$k]; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                            <?php } ?>
+                            <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['monthly_profit']['total']; ?></span></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div id="morris-line-example2" style="height: 300px;"></div>
             <script>
             $(function(){
                 //create line chart

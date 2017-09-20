@@ -17,6 +17,7 @@ class lensesReportYearlySales extends lensesMain{
         $this->freezePane = 2;
         $this->add_btn = false;
         $this->delete_btn = false;
+        $this->display_chart = true;$this->page_view = 'page-chartview';
         $this->search_query = 'select * from (select c.name store_name, a.payment_date
             ,round(ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(d1.rate,1),4) selling_price
             ,round(ifnull(a.shipping_charges_received,0) / ifnull(d1.rate,1),4) shipping_charges_received
@@ -47,9 +48,7 @@ class lensesReportYearlySales extends lensesMain{
     }
     
     function view($view){
-        $this->display_chart = true;
         $this->ajax_read();
-        $this->page_view = 'page-chartview';
         $data = array();
         if(sizeof($this->data)>0){
             $temp2 = array();
@@ -69,6 +68,7 @@ class lensesReportYearlySales extends lensesMain{
             }
             $temp = array();
             $temp3 = array();
+            $temp4 = array();
             $count = 'a';
             foreach(array_keys($temp2) as $v){
                 $temp3[$count] = $v;
@@ -82,11 +82,15 @@ class lensesReportYearlySales extends lensesMain{
                     foreach($temp3 as $k => $v){
                         $temp[$date][$k] = (!empty($temp2[$v][$date]))?$temp2[$v][$date]:0;
                         $sum_value += $temp[$date][$k];
+                        if(!isset($temp4[$k])){
+                            $temp4[$k] = 0;
+                        }
+                        $temp4[$k] += $temp[$date][$k];
                     }
                     $date = date("Y-m-d",strtotime($date.' +1 day'));
                 }
             }
-            $data = array('total'=>$sum_value,'header'=>$temp3,'data'=>$temp);
+            $data = array('total'=>$sum_value,'header'=>$temp3,'total2'=>$temp4,'data'=>$temp);
         }
         
         $this->CI->cpage->set_html_title($this->title);

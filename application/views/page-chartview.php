@@ -28,16 +28,22 @@ $dashboard_data = $this->cpage->template_data['view_contents'];
         <div class="row">
             <div class="col-xs-12">
                 <div class="">
-                    <?php if(!empty($dashboard_data['total'])){ ?>
-                    <div class="text-center">
-                        <ul class="list-inline chart-detail-list">
-                            <li>
-                                <h4>Total = <?php echo $dashboard_data['total']; ?></h4>
-                            </li>
-                        </ul>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-9">
+                            <div id="morris-line-example" style="height: 300px;"></div>
+                        </div>
+                        <div class="col-xs-12 col-sm-3">
+                            <div class="">
+                                <div><h4>Total of Each<h4></div>
+                                <ul class="list-inline chart-detail-list">
+                                    <?php foreach($dashboard_data['total2'] as $k => $v){ ?>
+                                    <li style="display:block;"><?php echo $dashboard_data['header'][$k]; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                                    <?php } ?>
+                                    <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['total']; ?></span></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <?php } ?>
-                    <div id="morris-line-example"></div>
                     <script>
                     $(function(){
                         //create line chart

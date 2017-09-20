@@ -82,6 +82,7 @@ class lensesHome extends lensesMain{
         }
         $temp = array();
         $temp3 = array();
+        $temp4 = array();
         $count = 'a';
         foreach(array_keys($temp2) as $v){
             $temp3[$count] = $v;
@@ -94,10 +95,14 @@ class lensesHome extends lensesMain{
             foreach($temp3 as $k => $v){
                 $temp[$date][$k] = (!empty($temp2[$v][$date]))?$temp2[$v][$date]:0;
                 $sum_value += $temp[$date][$k];
+                if(!isset($temp4[$k])){
+                    $temp4[$k] = 0;
+                }
+                $temp4[$k] += $temp[$date][$k];
             }
             $date = date("Y-m-d",strtotime($date.' -1 day'));
         }
-        $data['monthly_deals'] = array('total'=>$sum_value,'header'=>$temp3,'data'=>array_reverse($temp));
+        $data['monthly_deals'] = array('total'=>$sum_value,'header'=>$temp3,'total2'=>$temp4,'data'=>array_reverse($temp));
         
         $temp2 = array();
         if(($result = $this->CI->db->query('select c.name store_name, a.payment_date
@@ -130,6 +135,7 @@ class lensesHome extends lensesMain{
         }
         $temp = array();
         $temp3 = array();
+        $temp4 = array();
         $count = 'a';
         foreach(array_keys($temp2) as $v){
             $temp3[$count] = $v;
@@ -142,10 +148,14 @@ class lensesHome extends lensesMain{
             foreach($temp3 as $k => $v){
                 $temp[$date][$k] = (!empty($temp2[$v][$date]))?$temp2[$v][$date]:0;
                 $sum_value += $temp[$date][$k];
+                if(!isset($temp4[$k])){
+                    $temp4[$k] = 0;
+                }
+                $temp4[$k] += $temp[$date][$k];
             }
             $date = date("Y-m-d",strtotime($date.' -1 day'));
         }
-        $data['monthly_profit'] = array('total'=>$sum_value,'header'=>$temp3,'data'=>array_reverse($temp));
+        $data['monthly_profit'] = array('total'=>$sum_value,'header'=>$temp3,'total2'=>$temp4,'data'=>array_reverse($temp));
         
         return $this->CI->load->view('page-home',array('dashboard_data'=>$data));
     }
