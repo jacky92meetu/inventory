@@ -3,6 +3,9 @@ if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 ?>
 <?php 
+if(empty($this->CI->cpage->template_data['breadcrumb']) && strlen($this->CI->cpage->get_html_title())>0){
+    $this->CI->cpage->set('breadcrumb',array($this->CI->cpage->get_html_title()=>''));
+}
 if(isset($this->CI->cpage->template_data['breadcrumb'])){
 ?>
 <div class="breadcrumb-container">

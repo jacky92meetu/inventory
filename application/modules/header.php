@@ -3,7 +3,12 @@ if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 ?>
 <?php
-    $selected_menu = (isset($this->CI->cpage->template_data['selected_menu']))?$this->CI->cpage->template_data['selected_menu']:'home';
+    $selected_menu = 'home';
+    if(!empty($this->CI->cpage->template_data['selected_menu'])){
+        $selected_menu = $this->CI->cpage->template_data['selected_menu'];
+    }else if(!empty($_REQUEST['selected_menu'])){
+        $selected_menu = $_REQUEST['selected_menu'];
+    }
     $selected_menu = strtolower($selected_menu);
     
     $menu_config = array(
@@ -178,14 +183,14 @@ if (!defined('BASEPATH'))
                                                 <ul class="submenu">
                                             <?php
                                             foreach($v2['submenu'] as $v3){
-                                                ?><li class="<?php echo (($selected_menu==$v3['submenu']['code'])?"active":""); ?>"><a href="<?php echo base_url($v3['submenu']['url']); ?>"><?php echo $v3['title']; ?></a></li><?php
+                                                ?><li class="<?php echo (($selected_menu==$v3['submenu']['code'])?"active":""); ?>"><a code="<?php echo $v3['submenu']['code']; ?>" href="<?php echo base_url($v3['submenu']['url']); ?>"><?php echo $v3['title']; ?></a></li><?php
                                             }
                                             ?>
                                                 </ul>
                                             </li>
                                             <?php
                                         }else{
-                                            ?><li class="<?php echo (($selected_menu==$v2['submenu']['code'])?"active":""); ?>"><a href="<?php echo base_url($v2['submenu']['url']); ?>"><?php echo $v2['title']; ?></a></li><?php
+                                            ?><li class="<?php echo (($selected_menu==$v2['submenu']['code'])?"active":""); ?>"><a code="<?php echo $v2['submenu']['code']; ?>" href="<?php echo base_url($v2['submenu']['url']); ?>"><?php echo $v2['title']; ?></a></li><?php
                                         }
                                     }
                                     ?>
@@ -199,12 +204,12 @@ if (!defined('BASEPATH'))
                         <?php if(isset($_SESSION['notification'])){ ?>
                         <li class="has-submenu">
                             <a href="#"><font class="text-danger"><i class="md md-sms"></i>Notification</font> 
-                                <?php foreach($_SESSION['notification'] as $temp2){ ?>
+                                <?php foreach($_SESSION['notification']['badge_list'] as $temp2){ ?>
                                 <span class="<?php echo $temp2['badge-class']; ?>"><?php echo $temp2['size']; ?></span>
                                 <?php } ?>
                             </a>
                             <ul class="submenu">
-                                <?php foreach($_SESSION['notification'] as $temp2){ ?>
+                                <?php foreach($_SESSION['notification']['data_list'] as $temp2){ ?>
                                 <li><a href="<?php echo $temp2['url']; ?>"><?php echo $temp2['name']; ?> (<?php echo $temp2['size']; ?>)</a></li>
                                 <?php } ?>
                             </ul>
@@ -254,6 +259,16 @@ if (!defined('BASEPATH'))
 <script>
 jQuery(function($){
     $('.navigation-menu li.active').parents('li.has-submenu').addClass('active');
+    $('.navigation-menu a[code]').click(function(e){
+        e.preventDefault();
+        var url = $(this).attr('href');
+        var code = $(this).attr('code');
+        if(url.indexOf('?')<=0){
+            url = url + '?';
+        }
+        url = url + '&selected_menu=' + encodeURI(code);
+        location.href = url;
+    });
 });
 
 function show_password_form(){

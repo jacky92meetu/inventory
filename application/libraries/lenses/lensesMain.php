@@ -5,7 +5,7 @@ error_reporting(0);
 class lensesMain{
     
     var $CI = false;
-    var $title = '';
+    var $title = 'This Page';
     var $table = '';
     var $header = false;
     var $search_query = '';
@@ -26,6 +26,9 @@ class lensesMain{
     var $parent_id = false;
     var $selected_menu = '';
     var $custom_view_config = '';
+    var $page_view = 'page-view';
+    var $extra_filter_header = false;
+    var $display_chart = false;
     
     function __construct(){
         $this->CI = get_instance();
@@ -69,7 +72,7 @@ class lensesMain{
                 $col_exists = false;
                 $temp = array('id'=>$key,'name'=>ucwords(strtolower($key)));
                 if(preg_match('#(^id$)|(_date$)|(_gmtdate$)#iu', $key)==0){
-                    $temp['editable'] = true;
+                    //$temp['editable'] = true;
                     if(stripos($key, 'date')!==FALSE){
                         $temp['is_date'] = true;
                     }
@@ -77,6 +80,24 @@ class lensesMain{
                 $data[] = $temp;
             }
             $this->header = $data;
+        }
+        if($this->extra_filter_header){
+            $temp = array();
+            $temp['type'] = array('id'=>'type','name'=>'type','value'=>'extra_filter','hidden'=>'1');
+            if(!$this->display_chart){
+                $temp['filter_status'] = array('id'=>'filter_status','name'=>'Filter Status','option_text'=>array('0'=>'No Filter','1'=>'Filtered'),'value'=>'0','editable'=>true);
+            }
+            foreach($this->extra_filter_header as $v){
+                $temp[$v['id']] = $v;
+            }
+            $this->extra_filter_header = $temp;
+            if(!empty($_SESSION['extra_filter'][$this->title])){
+                foreach($_SESSION['extra_filter'][$this->title] as $k => $v){
+                    if(isset($this->extra_filter_header[$k])){
+                        $this->extra_filter_header[$k]['value'] = $v;
+                    }
+                }
+            }
         }
     }
     
@@ -140,18 +161,25 @@ class lensesMain{
         return array($custom_view[$md5_id],$custom_freezePane[$md5_id],$data);
     }
     
-    function view(){
-        $this->init_header();
-        $contents = array();
-        if($this->ajax_url==""){
-            $this->ajax_url = base_url('ajax/'.$this->table);
+    function view($view){
+        if($this->display_chart){
+            if(sizeof($this->data)==0){
+                $this->ajax_read();
+            }
+            $this->page_view = 'page-chartview';
+        }else{
+            $this->init_header();
         }
-        list($this->header,$this->freezePane,$contents) = $this->set_custom_view($this->header,$contents);
+        if($this->ajax_url==""){
+            $this->ajax_url = base_url('ajax/'.$view);
+        }
+        
+        list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
         $this->CI->cpage->set_html_title($this->title);
         $this->CI->cpage->set('selected_menu',$this->selected_menu);
         $this->CI->cpage->set('view_title',$this->title);
         $this->CI->cpage->set('view_header',$this->header);
-        $this->CI->cpage->set('view_contents',$contents);
+        $this->CI->cpage->set('view_contents',$this->data);
         $this->CI->cpage->set('default_length',$this->default_length);
         $this->CI->cpage->set('view_ajax_url',$this->ajax_url);
         $this->CI->cpage->set('custom_form',$this->custom_form);
@@ -160,7 +188,9 @@ class lensesMain{
         $this->CI->cpage->set('extra_btn',$this->extra_btn);
         $this->CI->cpage->set('is_required',$this->is_required);
         $this->CI->cpage->set('freezePane',$this->freezePane);
-        return $this->CI->load->view('page-view');
+        $this->CI->cpage->set('extra_filter',$this->extra_filter_header);
+        $this->CI->cpage->set('display_chart',$this->display_chart);
+        return $this->CI->load->view($this->page_view);
     }
     
     function ajax_read(){
@@ -188,6 +218,30 @@ class lensesMain{
                 $count += 1;
             }
         }
+        if($this->extra_filter_header && ($this->display_chart || $this->extra_filter_header['filter_status']['value']=="1")){
+            foreach($this->extra_filter_header as $v){
+                $col = explode("|",$v['id']);
+                foreach($this->header as $v2){
+                    if($col[0]==$v2['id']){
+                        $operator = ' = ';
+                        if(isset($v['is_date'])){
+                            if(($temp = explode('/', $v['value'])) && sizeof($temp)==3){
+                                $v['value'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
+                            }
+                            if(stripos($col[1], 'from')!==false){
+                                $operator = ' >= ';
+                            }else if(stripos($col[1], 'to')!==false){
+                                $operator = ' <= ';
+                                $v['value'] .= ' 23:59:59';
+                            }
+                        }
+                        $where_query[] = $col[0].$operator.$this->CI->db->escape($v['value']);
+                        
+                        break;
+                    }
+                }
+            }
+        }
         if(sizeof($where_query)>0){
             $where_query = ' WHERE '.implode(" AND ",$where_query);
         }else{
@@ -208,31 +262,35 @@ class lensesMain{
             $order_query = '';
         }
         
-        $limit_start = ((!empty($this->CI->input->post('start',true)))?$this->CI->input->post('start',true):0);
-        $limit_length = ((!empty($this->CI->input->post('length',true)))?$this->CI->input->post('length',true):$this->default_length);
-        $_SESSION['default_length'] = $limit_length;
-        
+        $limit_start = 0;
+        $limit_length = 1000;
         $this->recordsTotal = 0;
-        $sql = $this->search_query;
-        if(stristr($sql, 'COUNT(*)')===FALSE){
-            $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
-        }
-        if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
-            if(($row = $result->row_array())){
-                $this->recordsTotal = $row['counting'];
-            }
-        }
-        
         $this->recordsFiltered = 0;
-        $sql = $this->search_query.$where_query;
-        if(stristr($sql, 'COUNT(*)')===FALSE){
-            $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
-        }
-        if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
-            if(($row = $result->row_array())){
-                $this->recordsFiltered = $row['counting'];
+        if(!$this->display_chart){
+            $limit_start = ((!empty($this->CI->input->post('start',true)))?$this->CI->input->post('start',true):0);
+            $limit_length = ((!empty($this->CI->input->post('length',true)))?$this->CI->input->post('length',true):$this->default_length);
+            $_SESSION['default_length'] = $limit_length;
+            
+            $sql = $this->search_query;
+            if(stristr($sql, 'COUNT(*)')===FALSE){
+                $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
             }
-        }
+            if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
+                if(($row = $result->row_array())){
+                    $this->recordsTotal = $row['counting'];
+                }
+            }
+            
+            $sql = $this->search_query.$where_query;
+            if(stristr($sql, 'COUNT(*)')===FALSE){
+                $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
+            }
+            if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
+                if(($row = $result->row_array())){
+                    $this->recordsFiltered = $row['counting'];
+                }
+            }
+        }        
         
         $this->data = array();
         $sql = $this->search_query.$where_query.$order_query.' LIMIT '.$limit_start.','.$limit_length;
@@ -263,6 +321,10 @@ class lensesMain{
                 $this->data[] = $temp2;
                 $count2 += 1;
             }
+        }
+        
+        if($this->display_chart){
+            return $this->data;
         }
         
         list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
@@ -390,6 +452,20 @@ class lensesMain{
     
     function ajax_custom_form_save(){
         $return = array("status"=>"0","message"=>"");
+        if($this->CI->input->post('value[type]',true)=="extra_filter"){
+            if(($value = $this->CI->input->post('value',true))){
+                $temp2 = array();
+                foreach($value as $k => $v){
+                    if(array_search($k, array('type'))===false){
+                        $temp2[$k] = $v;
+                    }
+                }
+                $_SESSION['extra_filter'][$this->title] = $temp2;
+            }
+            $return['status'] = "1";
+            $return['func'] = 'function(){location.reload();}';
+            return $return;
+        }
         $id = 0;
         if(strlen($temp = $this->CI->input->post('value[id]',true))>0){
             $id = $temp;
@@ -613,24 +689,35 @@ class lensesMain{
         }
         if(!isset($instance[$group_id])){
             if(empty($_SESSION['user_access_list'][$group_id])){
-                $sql = 'select a.priv_id, ifnull(b.code,"") code from user_group_privileges a left join user_group_privileges_list b on a.priv_id=b.id where a.priv_status=1 and a.group_id=?';
+                $sql = 'select a.priv_id, ifnull(b.code,"") code, priv_status from user_group_privileges a left join user_group_privileges_list b on a.priv_id=b.id where a.group_id=?';
                 if(($result = $this->CI->db->query($sql,array($group_id))) && $result->num_rows()){
                     $instance[$group_id] = array();
                     $temp = $result->result_array();
                     foreach($temp as $r){
-                        $instance[$group_id][$r['priv_id']] = $r['code'];
+                        $instance[$group_id][$r['priv_id']] = $r;
                     }
                 }
             }else{
                 $instance[$group_id] = $_SESSION['user_access_list'][$group_id];
             }
         }
-        if((isset($instance[$group_id]) && array_search($priv_id, $instance[$group_id])!==FALSE)
-            || (isset($instance[$group_id]) && array_key_exists($priv_id, $instance[$group_id])!==FALSE)
-        ){
-            return true;
+        
+        $temp = false;
+        if((isset($instance[$group_id]) && array_key_exists($priv_id, $instance[$group_id])!==FALSE)){
+            $temp = $instance[$group_id][$priv_id];
         }
-        return false;
+        if(!$temp && isset($instance[$group_id])){
+            foreach($instance[$group_id] as $v){
+                if($v['code']==$priv_id){
+                    $temp = $v;
+                    break;
+                }
+            }
+        }
+        if($temp && $temp['priv_status']=="0"){
+            return false;
+        }
+        return true;
     }
     
     function tzdate($date = "",$tz = 0){
@@ -867,7 +954,7 @@ class lensesMain{
             from warehouse_item a
             join warehouses w on a.warehouse_id=w.id
             join products b on a.product_id=b.id
-            join option_item c on a.item_id=c.id and c.type="1"
+            join option_item c on a.item_id=c.id
             left join settings s1 on s1.code="min_qty" 
             left join settings s2 on s2.code="stop_qty"
             left join warehouse_item_history wih on wih.warehouse_item_id=a.id
@@ -877,13 +964,15 @@ class lensesMain{
             and wih2.id is null
             group by a.warehouse_id')) && $result->num_rows()){
             $return = array();
-            $_SESSION['notification'] = array();
+            $_SESSION['notification'] = array('badge_list'=>array('total_danger'=>array('badge-class'=>'badge badge-sm badge-danger','size'=>0),'total_warning'=>array('badge-class'=>'badge badge-sm badge-warning','size'=>0)),'data_list'=>array());
             foreach($result->result_array() as $r){
                 if($r['pstop']>0){
-                    $_SESSION['notification']['quantity-danger'] = array('name'=>'Warehouse:'.$r['name'].' <font class="text-danger">out of stock</font>','url'=>base_url("/warehouse_item?id=".$r['warehouse_id']."&search_qstatus=stop"),'badge-class'=>'badge badge-sm badge-danger','size'=>$r['pstop']);
+                    $_SESSION['notification']['badge_list']['total_danger']['size'] += $r['pstop'];
+                    $_SESSION['notification']['data_list'][] = array('name'=>'Warehouse:'.$r['name'].' <font class="text-danger">out of stock</font>','url'=>base_url("/warehouse_item?id=".$r['warehouse_id']."&search_qstatus=stop"),'size'=>$r['pstop']);
                 }
                 if($r['pwarning']>0){
-                    $_SESSION['notification']['quantity-warning'] = array('name'=>'Warehouse:'.$r['name'].' <font class="text-warning">limited stock</font>','url'=>base_url("/warehouse_item?id=".$r['warehouse_id']."&search_qstatus=warning"),'badge-class'=>'badge badge-sm badge-warning','size'=>$r['pwarning']);
+                    $_SESSION['notification']['badge_list']['total_warning']['size'] += $r['pwarning'];
+                    $_SESSION['notification']['data_list'][] = array('name'=>'Warehouse:'.$r['name'].' <font class="text-warning">limited stock</font>','url'=>base_url("/warehouse_item?id=".$r['warehouse_id']."&search_qstatus=warning"),'size'=>$r['pwarning']);
                 }
             }
         }

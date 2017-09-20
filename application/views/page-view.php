@@ -25,6 +25,11 @@ $editable = false;
         */ ?>
         <div class="row">
             <div class="col-xs-6">
+                <?php if($this->cpage->template_data['extra_filter']){ ?>
+                <span class="">
+                    <button class="btn btn-success waves-effect waves-light" onclick="data_edit(this,'extra_filter',true)">Extra Filter <i class="fa fa-lg fa-search"></i></button>
+                </span>
+                <?php } ?>
                 <?php if($this->cpage->template_data['add_btn']){ $is_custom = ($this->cpage->template_data['add_btn']==='custom_form')?"true":"false"; ?>
                 <span class="">
                     <button id="addToTable" class="btn btn-primary waves-effect waves-light" onclick="data_edit(null,'new',true)">Add <i class="fa fa-lg fa-plus"></i></button>
@@ -117,7 +122,7 @@ $editable = false;
                                         $count+=1;
                                     }
                                 ?>
-                                <?php if($editable){ ?>
+                                <?php if(true){ //if($editable){ ?>
                                 <th width="10" style="vertical-align:top;text-align:right;">
                                     <div style="position:relative;">
                                         <div class="btn-group btn-group-xs actions_label" style="position:absolute;top:0;right:0;">
@@ -133,7 +138,7 @@ $editable = false;
                                 <?php $count=0; foreach ($this->cpage->template_data['view_header'] as $header) { ?>
                                     <th><?php echo $header['name']; ?></th>
                                 <?php $count+=1;} ?>
-                                <?php if($editable){ ?>
+                                <?php if(true){ //if($editable){ ?>
                                     <th style="color:transparent;">Actions</th>    
                                 <?php } ?>
                             </tr>
@@ -856,9 +861,6 @@ $editable = false;
                             $('input.select_all_checkbox').prop('checked',true);
                         }
                     });
-                    <?php if($editable){ ?>
-                    
-                    <?php } ?>
                 },100);
             }).DataTable({
                 paging: true,
@@ -870,7 +872,7 @@ $editable = false;
                 scrollCollapse: true,
                 <?php if($this->cpage->template_data['freezePane']>0){ ?>
                 "fixedColumns": {
-                    <?php if($editable){ ?>
+                    <?php if(true){ //if($editable){ ?>
                     "rightColumns": 1,
                     <?php } ?>
                     "leftColumns": <?php echo $this->cpage->template_data['freezePane']; ?>
@@ -934,7 +936,7 @@ $editable = false;
                         "orderable": <?php echo ((isset($header['noorder']))?"false":"true"); ?>
                     },
                 <?php $count+=1;} ?>
-                <?php if($editable){ ?>
+                <?php if(true){ //if($editable){ ?>
                     {
                         "targets": [ -1 ],
                         "searchable": false,

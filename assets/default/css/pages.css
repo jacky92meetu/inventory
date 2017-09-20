@@ -797,7 +797,8 @@ button.confirm {
   padding: 10px 12px;
   background: #36404a;
   border: none;
-  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: bold;
 }
 .chart-detail-list li {
   margin: 0px 10px;
