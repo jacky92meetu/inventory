@@ -59,6 +59,7 @@ class lensesSalesEntry extends lensesMain{
         
         $courier_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM couriers ORDER BY name'))){
+            $courier_list[0] = "No Set";
             foreach($result->result_array() as $value){
                 $courier_list[$value['id']] = $value['name'];
             }

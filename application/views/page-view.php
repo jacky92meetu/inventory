@@ -110,7 +110,7 @@ $editable = false;
                                     <select class="column_filter <?php echo $class2; ?>" data-column="<?php echo $count; ?>" name="<?php echo $header['id']; ?>" <?php echo $sorting; ?>>
                                         <option value=""><?php echo "No Filter"; ?></option>
                                         <?php foreach($header['option_text'] as $key => $value){ ?>
-                                        <option value="<?php echo $key; ?>" <?php echo (($search_get==$key)?"SELECTED":""); ?> display="<?php echo $value; ?>"><?php echo $value; ?></option>
+                                        <option value="<?php echo $key; ?>" <?php echo ((!empty($search_get) && $search_get==$key)?"SELECTED":""); ?> display="<?php echo $value; ?>"><?php echo $value; ?></option>
                                         <?php } ?>
                                     </select>
                                 </th>

@@ -99,6 +99,7 @@ class lensesMain{
                 }
             }
         }
+        list($this->header,$this->freezePane) = $this->set_custom_view($this->header);
     }
     
     function set_custom_view($header,$data = false){
@@ -129,6 +130,10 @@ class lensesMain{
                 }
                 $custom_view[$md5_id] = $temp_main;
                 $custom_freezePane[$md5_id] = $freezePane;
+                
+                $md5_id2 = md5(json_encode($temp_main));
+                $custom_view[$md5_id2] = $temp_main;
+                $custom_freezePane[$md5_id2] = $freezePane;
             }else{
                 $custom_view[$md5_id] = $header;
                 $custom_freezePane[$md5_id] = $this->freezePane;
@@ -142,9 +147,9 @@ class lensesMain{
                 $temp = array();
                 foreach($custom_view[$md5_id] as $value){
                     foreach($temp_remaining as $key2 => $value2){
-                        if($value['id']==$value2['id'] && array_key_exists($key2, $a)!==FALSE){
-                            $temp[] = $a[$key2];
-                            unset($a[$key2]);
+                        if($value['id']==$value2['id'] && array_key_exists($value2['id'], $a)!==FALSE){
+                            $temp[] = $a[$value2['id']];
+                            unset($a[$value2['id']]);
                             unset($temp_remaining[$key2]);
                             break;
                         }
@@ -156,6 +161,8 @@ class lensesMain{
                 $data_list[] = $temp;
             }
             $data = $data_list;
+        }else{
+            $data = array();
         }
         
         return array($custom_view[$md5_id],$custom_freezePane[$md5_id],$data);
@@ -174,7 +181,10 @@ class lensesMain{
             $this->ajax_url = base_url('ajax/'.$view);
         }
         
-        list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
+        if(!empty($this->data) && sizeof($this->data)>0){
+            list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
+        }
+        
         $this->CI->cpage->set_html_title($this->title);
         $this->CI->cpage->set('selected_menu',$this->selected_menu);
         $this->CI->cpage->set('view_title',$this->title);
@@ -195,6 +205,7 @@ class lensesMain{
     
     function ajax_read(){
         $this->init_header();
+        
         if(strlen($this->search_query)==0){
             $col_list = array();
             foreach($this->header as $col){
@@ -292,42 +303,43 @@ class lensesMain{
             }
         }        
         
-        $this->data = array();
+        $temp_data = array();
         $sql = $this->search_query.$where_query.$order_query.' LIMIT '.$limit_start.','.$limit_length;
         if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
             $temp = $result->result_array();
-            $count2 = $limit_start+1;
             foreach($temp as $r){
-                $count = 0;
                 $temp2 = array();
-                //$temp2[] = $count2;
-                foreach($r as $c){
-                    /*
-                    if(isset($this->header[$count]['option_text']) && isset($this->header[$count]['option_text'][$c])){
-                        $c = $this->header[$count]['option_text'][$c];
-                    }
-                    */
-                    if(isset($this->header[$count]['is_date'])){
+                foreach($r as $k => $c){
+                    if(isset($this->header[$k]['is_date'])){
                         if(strtotime($c)>0 && date("Y-m-d",strtotime($c))!="1970-01-01"){
                             $c = date('d/m/Y',strtotime($c));
                         }else{
                             $c = "";
                         }
                     }
-                    $temp2[] = $c;
-                    $count += 1;
+                    $temp2[$k] = $c;
                 }
                 $temp2[] = '';
-                $this->data[] = $temp2;
-                $count2 += 1;
+                $temp_data[] = $temp2;
             }
         }
+        
+        list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$temp_data);
+        
+        $temp = array();
+        foreach($this->data as $v){
+            $temp2 = array();
+            foreach($v as $v2){
+                $temp2[] = $v2;
+            }
+            $temp[] = $temp2;
+        }
+        $this->data = $temp;
         
         if($this->display_chart){
             return $this->data;
         }
         
-        list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
         $draw = $this->CI->input->post('draw',true);
         $return = array("draw"=>$draw,"recordsTotal"=>$this->recordsTotal,"recordsFiltered"=>$this->recordsFiltered,"data"=>$this->data);
         return $return;
