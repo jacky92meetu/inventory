@@ -81,6 +81,30 @@ class lensesMain{
             }
             $this->header = $data;
         }
+        foreach($this->header as $v){
+            if(preg_match('#(_date$)|(_gmtdate$)#iu', $v['id'])>0){
+                $a=0;$b=0;
+                foreach($this->extra_filter_header as $v2){
+                    $t = explode("|",$v2['id']);
+                    if($v['id']==$t[0]){
+                        if($t=="from_date"){
+                            $a=1;
+                        }else if($t=="to_date"){
+                            $b=1;
+                        }
+                    }
+                    if($a+$b>=2){
+                        break;
+                    }
+                }
+                if($a==0){
+                    $this->extra_filter_header[] = array('id'=>$v['id'].'|from_date','name'=>$v['name'].' (From Date)','is_date'=>'1','value'=>date("d/m/Y",strtotime('-30 day')),'editable'=>true);
+                }
+                if($b==0){
+                    $this->extra_filter_header[] = array('id'=>$v['id'].'|to_date','name'=>$v['name'].' (To Date)','is_date'=>'1','value'=>date("d/m/Y"),'editable'=>true);
+                }
+            }
+        }
         if($this->extra_filter_header){
             $temp = array();
             $temp['type'] = array('id'=>'type','name'=>'type','value'=>'extra_filter','hidden'=>'1');
@@ -475,7 +499,7 @@ class lensesMain{
                 $_SESSION['extra_filter'][$this->title] = $temp2;
             }
             $return['status'] = "1";
-            $return['func'] = 'function(){location.reload();}';
+            //$return['func'] = 'function(){location.reload();}';
             return $return;
         }
         $id = 0;
