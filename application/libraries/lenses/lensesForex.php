@@ -33,7 +33,7 @@ class lensesForex extends lensesMain{
         $select_list = array();
         $table_list = array();
         $header_list = array();
-        $header_list[] = array('id'=>'fdate','name'=>'Date','editable'=>true,'is_date'=>true,'filter-sorting'=>'desc');
+        $header_list[] = array('id'=>'fdate','name'=>'Date','editable'=>true,'is_date'=>true,'is_date_highlight'=>true,'filter-sorting'=>'desc');
         $temp = explode(",",$temp);
         foreach($temp as $v){
             $select_list[] = ',ifnull('.strtolower($v."_rate").',0) '.strtolower($v."_rate");
