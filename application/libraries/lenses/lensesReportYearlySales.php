@@ -39,7 +39,11 @@ class lensesReportYearlySales extends lensesMain{
             group by b.store_id,a.payment_date
             ) a';
         
-        $this->header = array(array('id'=>'store_name','name'=>'Store Name'),array('id'=>'payment_date','name'=>'Payment Date','filter-sorting'=>'asc'),array('id'=>'selling_price','name'=>'Selling Price'),array('id'=>'shipping_charges_received','name'=>'+Shipping $'),array('id'=>'shipping_charges_paid','name'=>'-Shipping $'),array('id'=>'fees','name'=>'Fees'),array('id'=>'cost_price','name'=>'Product Cost'));
+        $this->header = array(array('id'=>'store_name','name'=>'Store Name'),array('id'=>'payment_date','name'=>'Payment Date','filter-sorting'=>'asc','is_date'=>'1'),array('id'=>'selling_price','name'=>'Selling Price'),array('id'=>'shipping_charges_received','name'=>'+Shipping $'),array('id'=>'shipping_charges_paid','name'=>'-Shipping $'),array('id'=>'fees','name'=>'Fees'),array('id'=>'cost_price','name'=>'Product Cost'));
+        
+        $this->extra_filter_header = array(
+            'payment_date|range_date' => array('id'=>'payment_date|range_date','name'=>'Payment Date','option_text'=>$this->default_date_option,'value'=>'30d','editable'=>true)
+        );
     }
     
     function view($view){
@@ -50,6 +54,7 @@ class lensesReportYearlySales extends lensesMain{
             $min_date = false;
             $max_date = false;
             foreach($this->data as $value){
+                $value[1] = $this->from_display_date($value[1]);
                 if(!isset($temp2[$value[0]])){
                     $temp2[$value[0]] = array();
                 }
@@ -95,6 +100,14 @@ class lensesReportYearlySales extends lensesMain{
         $this->CI->cpage->set('view_ajax_url',base_url('ajax/'.$view));
         $this->CI->cpage->set('extra_filter',$this->extra_filter_header);
         return $this->CI->load->view($this->page_view);
+    }
+    
+    function ajax_custom_form_save(){
+        $return = parent::ajax_custom_form_save();
+        if($return['status']=="1"){
+            $return['func'] = 'function(){location.reload();}';
+        }
+        return $return;
     }
     
 }

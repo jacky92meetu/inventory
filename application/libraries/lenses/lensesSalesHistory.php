@@ -146,6 +146,10 @@ class lensesSalesHistory extends lensesMain{
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
         );
+        
+        $this->extra_filter_header = array(
+            'payment_date|range_date' => array('id'=>'payment_date|range_date','name'=>'Payment Date','option_text'=>$this->default_date_option,'value'=>'30d','editable'=>true)
+        );
     }
     
     function ajax_custom_form(){

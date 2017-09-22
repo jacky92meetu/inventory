@@ -29,6 +29,7 @@ class lensesMain{
     var $page_view = 'page-view';
     var $extra_filter_header = false;
     var $display_chart = false;
+    var $default_date_option = array(''=>'','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
     
     function __construct(){
         $this->CI = get_instance();
@@ -82,19 +83,27 @@ class lensesMain{
             $this->header = $data;
         }
         $extra_filter_list = array();
-        $date_option = array(''=>'','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
         foreach($this->header as $v){
             if(!empty($v['is_date'])){
                 $name = $v['id'].'|range_date';
-                $extra_filter_list[$name] = array('id'=>$name,'name'=>$v['name'],'option_text'=>$date_option,'value'=>'','editable'=>true);
+                $extra_filter_list[$name] = array('id'=>$name,'name'=>$v['name'],'option_text'=>$this->default_date_option,'value'=>'','editable'=>true);
                 $name = $v['id'].'|from_date';
                 $extra_filter_list[$name] = array('id'=>$name,'name'=>$v['name'].' (Custom From Date)','is_date'=>'1','value'=>'','editable'=>true);
                 $name = $v['id'].'|to_date';
                 $extra_filter_list[$name] = array('id'=>$name,'name'=>$v['name'].' (Custom To Date)','is_date'=>'1','value'=>'','editable'=>true);
             }
         }
-        $this->extra_filter_header = $extra_filter_list;
+        $this->extra_filter_header = ((sizeof($this->extra_filter_header)>0)?array_merge($extra_filter_list,$this->extra_filter_header):array());
         if($this->extra_filter_header){
+            foreach($this->extra_filter_header as $k => $v){
+                if(($t = $this->set_range_date($v['id'], $v['value'])) && sizeof($t)>0){
+                    foreach($t as $k2 => $v2){
+                        if(isset($this->extra_filter_header[$k2]['value'])){
+                            $this->extra_filter_header[$k2]['value'] = $v2;
+                        }
+                    }
+                }
+            }
             $temp = array();
             $temp['type'] = array('id'=>'type','name'=>'type','value'=>'extra_filter','hidden'=>'1');
             foreach($this->extra_filter_header as $v){
@@ -110,6 +119,36 @@ class lensesMain{
             }
         }
         list($this->header,$this->freezePane) = $this->set_custom_view($this->header);
+    }
+    
+    function set_range_date($k,$v){
+        $return = array();
+        if(strpos($k, "|range_date") && $v!="custom"){
+            $t = explode("|",$k);
+            $fdate = "";
+            $tdate = "";
+            if($v=="7d"){
+                $tdate = $this->to_display_date();
+                $fdate = $this->to_display_date("-7 day");
+            }else if($v=="21d"){
+                $tdate = $this->to_display_date();
+                $fdate = $this->to_display_date("-21 day");
+            }else if($v=="30d"){
+                $tdate = $this->to_display_date();
+                $fdate = $this->to_display_date("-30 day");
+            }else if($v=="cm"){
+                $tdate = $this->to_display_date("last day of this month");
+                $fdate = $this->to_display_date("first day of this month");
+            }else if($v=="lm"){
+                $tdate = $this->to_display_date("last day of last month");
+                $fdate = $this->to_display_date("first day of last month");
+            }
+            $name = $t[0]."|from_date";
+            $return[$name] = $fdate;
+            $name = $t[0]."|to_date";
+            $return[$name] = $tdate;
+        }
+        return $return;
     }
     
     function set_custom_view($header,$data = false){
@@ -484,32 +523,9 @@ class lensesMain{
         if($this->CI->input->post('value[type]',true)=="extra_filter"){
             if(($value = $this->CI->input->post('value',true))){
                 $temp2 = array();
-                $date_option = array(''=>'','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
                 foreach($value as $k => $v){
-                    if(strpos($k, "|range_date") && $v!="custom"){
-                        $t = explode("|",$k);
-                        $fdate = "";
-                        $tdate = "";
-                        if($v=="7d"){
-                            $tdate = $this->to_display_date();
-                            $fdate = $this->to_display_date("-7 day");
-                        }else if($v=="21d"){
-                            $tdate = $this->to_display_date();
-                            $fdate = $this->to_display_date("-21 day");
-                        }else if($v=="30d"){
-                            $tdate = $this->to_display_date();
-                            $fdate = $this->to_display_date("-30 day");
-                        }else if($v=="cm"){
-                            $tdate = $this->to_display_date("last day of this month");
-                            $fdate = $this->to_display_date("first day of this month");
-                        }else if($v=="lm"){
-                            $tdate = $this->to_display_date("last day of last month");
-                            $fdate = $this->to_display_date("first day of last month");
-                        }
-                        $name = $t[0]."|from_date";
-                        $value[$name] = $fdate;
-                        $name = $t[0]."|to_date";
-                        $value[$name] = $tdate;
+                    if(($t = $this->set_range_date($k, $v)) && sizeof($t)>0){
+                        $value = array_merge($value,$t);
                     }
                 }
                 foreach($value as $k => $v){
