@@ -231,6 +231,7 @@ class lensesMain{
         }
         if($this->extra_filter_header && ($this->display_chart || $this->extra_filter_header['filter_status']['value']=="1")){
             foreach($this->extra_filter_header as $v){
+                if(strlen($v['value'])==0){continue;}
                 $col = explode("|",$v['id']);
                 foreach($this->header as $v2){
                     if($col[0]==$v2['id']){
