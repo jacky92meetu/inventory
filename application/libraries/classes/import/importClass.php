@@ -366,7 +366,7 @@ class importClass{
         if(!$courier_list){
             $courier_list = array();
             if(($result = $this->CI->db->query('SELECT id,name FROM couriers ORDER BY name'))){
-                $courier_list[0] = "No Set";
+                $courier_list[0] = "";
                 foreach($result->result_array() as $value){
                     $courier_list[$value['id']] = $value['name'];
                 }

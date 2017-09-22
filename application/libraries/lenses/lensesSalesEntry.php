@@ -59,7 +59,7 @@ class lensesSalesEntry extends lensesMain{
         
         $courier_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM couriers ORDER BY name'))){
-            $courier_list[0] = "No Set";
+            $courier_list[0] = "";
             foreach($result->result_array() as $value){
                 $courier_list[$value['id']] = $value['name'];
             }
@@ -111,8 +111,8 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'quantity','name'=>'Quantity','option_text'=>$quantity_list,'editable'=>true),
             array('id'=>'selling_price','name'=>'Selling Price','editable'=>true),
             array('id'=>'shipping_charges_received','name'=>'Shipment Charges Received','editable'=>true),
-            array('id'=>'payment_date','name'=>'Payment Date','is_date'=>'1','editable'=>true),
-            array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','editable'=>true),
+            array('id'=>'payment_date','name'=>'Payment Date','is_date'=>'1','is_date_highlight'=>'1','editable'=>true),
+            array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','is_date_highlight'=>'1','editable'=>true),
             array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list,'editable'=>true),
             array('id'=>'shipping_charges_paid','name'=>'Shipment Charges Paid','editable'=>true),
             array('id'=>'sales_id','name'=>'Sales ID','editable'=>true),
@@ -146,8 +146,8 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'quantity','name'=>'Quantity','option_text'=>$quantity_list,'editable'=>true),
             array('id'=>'selling_price','name'=>'Selling Price','editable'=>true),
             array('id'=>'shipping_charges_received','name'=>'Shipment Charges Received','editable'=>true),
-            array('id'=>'payment_date','name'=>'Payment Date','is_date'=>'1','editable'=>true),
-            array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','editable'=>true),
+            array('id'=>'payment_date','name'=>'Payment Date','is_date'=>'1','is_date_highlight'=>'1','editable'=>true),
+            array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','is_date_highlight'=>'1','editable'=>true),
             array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list,'editable'=>true),
             array('id'=>'shipping_charges_paid','name'=>'Shipment Charges Paid','editable'=>true),
             array('id'=>'sales_id','name'=>'Sales ID','editable'=>true),
@@ -171,7 +171,7 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'id','name'=>'ID','hidden'=>'1'),
             array('id'=>'type','name'=>'type','value'=>'sales_courier','hidden'=>'1'),
             array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list,'editable'=>true),
-            array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','editable'=>true)
+            array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','is_date_highlight'=>'1','editable'=>true)
         );
         
         $temp = json_decode($_COOKIE['shipping_export'],true);

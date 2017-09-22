@@ -90,6 +90,9 @@ $editable = false;
                                         if(isset($header['is_date'])){
                                             $class2 .= " is_date";
                                         }
+                                        if(isset($header['is_date_highlight'])){
+                                            $class2 .= " is_date_highlight";
+                                        }
                                         if(isset($header['is_ajax'])){
                                             $class2 .= " is_ajax";
                                         }
@@ -157,56 +160,54 @@ $editable = false;
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <h4 class="modal-title">Form</h4>
             </div>
-            <form>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-xs-12 form-field default text-default hidden">
-                            <div class="form-group">
-                                <label class="control-label">Fieldname</label>
-                                <input type="text" class="form-control" placeholder="" required>
-                            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12 form-field default text-default hidden">
+                        <div class="form-group">
+                            <label class="control-label">Fieldname</label>
+                            <input type="text" class="form-control" placeholder="" required>
                         </div>
-                        <div class="col-xs-12 form-field default select-default hidden">
-                            <div class="form-group">
-                                <label class="control-label">Fieldname</label>
-                                <select class="form-control"></select>
-                            </div>
+                    </div>
+                    <div class="col-xs-12 form-field default select-default hidden">
+                        <div class="form-group">
+                            <label class="control-label">Fieldname</label>
+                            <select class="form-control"></select>
                         </div>
-                        <div class="col-xs-12 form-field default readonly-default hidden">
-                            <div class="form-group">
-                                <label class="control-label">Fieldname</label>
-                                <input type="text" class="form-control disabled" DISABLED>
-                                <input type="hidden" class="form-control">
-                            </div>
-                        </div>
-                        <div class="col-xs-12 form-field default hidden-default hidden">
+                    </div>
+                    <div class="col-xs-12 form-field default readonly-default hidden">
+                        <div class="form-group">
+                            <label class="control-label">Fieldname</label>
+                            <input type="text" class="form-control disabled" DISABLED>
                             <input type="hidden" class="form-control">
                         </div>
-                        <div class="col-xs-12 form-field default date-default hidden">
-                            <div class="form-group">
-                                <label class="control-label">Fieldname</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control datepicker-autoclose" placeholder="dd/mm/yyyy">
-                                    <span class="input-group-addon bg-primary b-0 text-white"><i class="ion-calendar"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xs-12 form-field default file-default hidden">
-                            <div class="form-group">
-                                <label class="control-label">Fieldname</label>
-                                <input type="file">
-                                <input type="hidden" class="form-control">
-                                <div class="loading_status">Upload file here</div>
+                    </div>
+                    <div class="col-xs-12 form-field default hidden-default hidden">
+                        <input type="hidden" class="form-control">
+                    </div>
+                    <div class="col-xs-12 col-sm-6 form-field default date-default hidden">
+                        <div class="form-group">
+                            <label class="control-label">Fieldname</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control datepicker-autoclose" placeholder="dd/mm/yyyy">
+                                <span class="input-group-addon bg-primary b-0 text-white"><i class="ion-calendar"></i></span>
                             </div>
                         </div>
                     </div>
+                    <div class="col-xs-12 form-field default file-default hidden">
+                        <div class="form-group">
+                            <label class="control-label">Fieldname</label>
+                            <input type="file">
+                            <input type="hidden" class="form-control">
+                            <div class="loading_status">Upload file here</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="reset" class="btn btn-warning waves-effect">Reset</button>
-                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary waves-effect waves-light" onclick="data_save(this)">Save</button>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary waves-effect waves-light" onclick="data_save(this)">Save</button>
+            </div>
+            
             <div class="modal-footer-loading">
                 Loading...
             </div>
@@ -310,7 +311,7 @@ $editable = false;
                                 c.removeClass('default hidden').appendTo(container);
                                 c.find('label').html(data.data[i].name);
                                 c.find('input').attr('name',data.data[i].id).val(data.data[i].value);
-                                set_date(c.find('input'));
+                                set_date(c.find('input'),data.data[i].is_date_highlight||false);
                             }else if(typeof data.data[i].is_file === 'string'){
                                 var c = container.find('.form-field.file-default.default.hidden').clone();
                                 c.removeClass('default hidden').appendTo(container);
@@ -357,6 +358,14 @@ $editable = false;
                                     }
                                     c.find('select').addClass('is-ajax').on('change',function(){
                                         ajax_change_update($(this));
+                                    });
+                                }
+                                if(data.data[i].id.indexOf('|range_date')>0){
+                                    c.find('select').addClass('range_date').change(function(){
+                                        var t = $(this).attr('name');
+                                        var t2 = t.split("|");
+                                        $('#custom_form_modal input[name="'+t2[0]+'|from_date"]').val("").datepicker("update");
+                                        $('#custom_form_modal input[name="'+t2[0]+'|to_date"]').val("").datepicker("update");
                                     });
                                 }
                             }else{
@@ -430,7 +439,7 @@ $editable = false;
                     }
                     if(filter.is('.is_date')){
                         input.addClass('.datepicker-autoclose');
-                        set_date(input);
+                        set_date(input,filter.is('.is_date_highlight'));
                     }else if(filter.is('select')){
                         var input = $('#datatable-editable').find('.thead-search th:eq('+count+') select.column_filter').clone().removeClass('column_filter');
                         input.find('option[value=""]').remove();

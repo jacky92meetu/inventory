@@ -40,11 +40,6 @@ class lensesReportYearlySales extends lensesMain{
             ) a';
         
         $this->header = array(array('id'=>'store_name','name'=>'Store Name'),array('id'=>'payment_date','name'=>'Payment Date','filter-sorting'=>'asc'),array('id'=>'selling_price','name'=>'Selling Price'),array('id'=>'shipping_charges_received','name'=>'+Shipping $'),array('id'=>'shipping_charges_paid','name'=>'-Shipping $'),array('id'=>'fees','name'=>'Fees'),array('id'=>'cost_price','name'=>'Product Cost'));
-        
-        $this->extra_filter_header = array(
-            array('id'=>'payment_date|from_date','name'=>'From Date','is_date'=>'1','value'=>date("d/m/Y",strtotime('-30 day')),'editable'=>true),
-            array('id'=>'payment_date|to_date','name'=>'To Date','is_date'=>'1','value'=>date("d/m/Y"),'editable'=>true)
-        );
     }
     
     function view($view){

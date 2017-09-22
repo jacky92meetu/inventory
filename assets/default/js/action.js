@@ -34,20 +34,24 @@ function show_notification(message,title,type){
     }
 }
 
-function set_date(obj){
+function set_date(obj,todayHighlight){
     if(typeof obj === 'object' && $(obj).length){
         $(obj).datepicker({
             autoclose: true,
-            todayHighlight: true,
+            todayHighlight: todayHighlight||false,
             format: "dd/mm/yyyy",
             todayBtn: "linked",
+            toggleActive: true,
+            clearBtn: true
         });
     }else{
         $('.datepicker-autoclose:visible').datepicker({
             autoclose: true,
-            todayHighlight: true,
+            todayHighlight: todayHighlight||false,
             format: "dd/mm/yyyy",
             todayBtn: "linked",
+            toggleActive: true,
+            clearBtn: true
         });
     }
 }

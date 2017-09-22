@@ -81,12 +81,22 @@ class lensesMain{
             }
             $this->header = $data;
         }
+        $extra_filter_list = array();
+        $date_option = array(''=>'','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
+        foreach($this->header as $v){
+            if(!empty($v['is_date'])){
+                $name = $v['id'].'|range_date';
+                $extra_filter_list[$name] = array('id'=>$name,'name'=>$v['name'],'option_text'=>$date_option,'value'=>'','editable'=>true);
+                $name = $v['id'].'|from_date';
+                $extra_filter_list[$name] = array('id'=>$name,'name'=>$v['name'].' (Custom From Date)','is_date'=>'1','value'=>'','editable'=>true);
+                $name = $v['id'].'|to_date';
+                $extra_filter_list[$name] = array('id'=>$name,'name'=>$v['name'].' (Custom To Date)','is_date'=>'1','value'=>'','editable'=>true);
+            }
+        }
+        $this->extra_filter_header = $extra_filter_list;
         if($this->extra_filter_header){
             $temp = array();
             $temp['type'] = array('id'=>'type','name'=>'type','value'=>'extra_filter','hidden'=>'1');
-            if(!$this->display_chart){
-                $temp['filter_status'] = array('id'=>'filter_status','name'=>'Filter Status','option_text'=>array('0'=>'No Filter','1'=>'Filtered'),'value'=>'0','editable'=>true);
-            }
             foreach($this->extra_filter_header as $v){
                 $temp[$v['id']] = $v;
             }
@@ -148,6 +158,9 @@ class lensesMain{
                 foreach($custom_view[$md5_id] as $value){
                     foreach($temp_remaining as $key2 => $value2){
                         if($value['id']==$value2['id'] && array_key_exists($value2['id'], $a)!==FALSE){
+                            if(!empty($value2['is_date'])){
+                                $value2['value'] = $this->to_display_date($value2['value']);
+                            }
                             $temp[] = $a[$value2['id']];
                             unset($a[$value2['id']]);
                             unset($temp_remaining[$key2]);
@@ -156,6 +169,9 @@ class lensesMain{
                     }
                 }
                 foreach($a as $value){
+                    if(!empty($value['is_date'])){
+                        $value['value'] = $this->to_display_date($value['value']);
+                    }
                     $temp[] = $value;
                 }
                 $data_list[] = $temp;
@@ -229,20 +245,18 @@ class lensesMain{
                 $count += 1;
             }
         }
-        if($this->extra_filter_header && ($this->display_chart || $this->extra_filter_header['filter_status']['value']=="1")){
+        if($this->extra_filter_header && sizeof($this->extra_filter_header)>0){
             foreach($this->extra_filter_header as $v){
-                if(strlen($v['value'])==0){continue;}
+                if(strpos($v['id'],"|range_date")!==false || strlen($v['value'])==0){continue;}
                 $col = explode("|",$v['id']);
                 foreach($this->header as $v2){
                     if($col[0]==$v2['id']){
                         $operator = ' = ';
                         if(isset($v['is_date'])){
-                            if(($temp = explode('/', $v['value'])) && sizeof($temp)==3){
-                                $v['value'] = $temp[2].'-'.$temp[1].'-'.$temp[0];
-                            }
-                            if(stripos($col[1], 'from')!==false){
+                            $v['value'] = $this->from_display_date($v['value']);
+                            if(stripos($col[1], 'from_date')!==false){
                                 $operator = ' >= ';
-                            }else if(stripos($col[1], 'to')!==false){
+                            }else if(stripos($col[1], 'to_date')!==false){
                                 $operator = ' <= ';
                                 $v['value'] .= ' 23:59:59';
                             }
@@ -311,11 +325,12 @@ class lensesMain{
             foreach($temp as $r){
                 $temp2 = array();
                 foreach($r as $k => $c){
-                    if(isset($this->header[$k]['is_date'])){
-                        if(strtotime($c)>0 && date("Y-m-d",strtotime($c))!="1970-01-01"){
-                            $c = date('d/m/Y',strtotime($c));
-                        }else{
-                            $c = "";
+                    foreach($this->header as $v3){
+                        if($v3['id']==$k){
+                            if(!empty($v3['is_date'])){
+                                $c = $this->to_display_date($c);
+                            }
+                            break;
                         }
                     }
                     $temp2[$k] = $c;
@@ -384,9 +399,12 @@ class lensesMain{
                         $temp['name'] = $col['name'];
                         if(isset($col['is_date'])){
                             $temp['is_date'] = '1';
-                            $temp['value'] = date("d/m/Y");
                         }else if(isset($col['option_text'])){
                             $temp['option_text'] = $col['option_text'];
+                        }
+                        if(isset($col['is_date_highlight'])){
+                            $temp['is_date_highlight'] = '1';
+                            $temp['value'] = $this->to_display_date();
                         }
                         if(isset($col['is_ajax'])){
                             $temp['is_ajax'] = '1';
@@ -422,7 +440,9 @@ class lensesMain{
         foreach($data as $d){
             if($d['is_date']=='1' && empty($d['value'])){
                 if(empty($d['value']) || strtotime($d['value'])<=0 || date("Y-m-d",strtotime($d['value']))=="1970-01-01"){
-                    $d['value'] = date("d/m/Y");
+                    $d['value'] = '';
+                }else if($d['is_date_highlight']){
+                    $d['value'] = $this->to_display_date();
                 }
             }
             if(!isset($d['value'])){
@@ -444,11 +464,7 @@ class lensesMain{
                         if(isset($data[$key])){
                             $data[$key]['value'] = $value;
                             if(isset($data[$key]['is_date'])){
-                                if(strtotime($data[$key]['value'])>0 && date("Y-m-d",strtotime($data[$key]['value']))!="1970-01-01"){
-                                    $data[$key]['value'] = date('d/m/Y',strtotime($data[$key]['value']));
-                                }else{
-                                    $data[$key]['value'] = "";
-                                }
+                                $data[$key]['value'] = $this->to_display_date($data[$key]['value']);
                             }
                         }
                     }
@@ -468,6 +484,34 @@ class lensesMain{
         if($this->CI->input->post('value[type]',true)=="extra_filter"){
             if(($value = $this->CI->input->post('value',true))){
                 $temp2 = array();
+                $date_option = array(''=>'','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
+                foreach($value as $k => $v){
+                    if(strpos($k, "|range_date") && $v!="custom"){
+                        $t = explode("|",$k);
+                        $fdate = "";
+                        $tdate = "";
+                        if($v=="7d"){
+                            $tdate = $this->to_display_date();
+                            $fdate = $this->to_display_date("-7 day");
+                        }else if($v=="21d"){
+                            $tdate = $this->to_display_date();
+                            $fdate = $this->to_display_date("-21 day");
+                        }else if($v=="30d"){
+                            $tdate = $this->to_display_date();
+                            $fdate = $this->to_display_date("-30 day");
+                        }else if($v=="cm"){
+                            $tdate = $this->to_display_date("last day of this month");
+                            $fdate = $this->to_display_date("first day of this month");
+                        }else if($v=="lm"){
+                            $tdate = $this->to_display_date("last day of last month");
+                            $fdate = $this->to_display_date("first day of last month");
+                        }
+                        $name = $t[0]."|from_date";
+                        $value[$name] = $fdate;
+                        $name = $t[0]."|to_date";
+                        $value[$name] = $tdate;
+                    }
+                }
                 foreach($value as $k => $v){
                     if(array_search($k, array('type'))===false){
                         $temp2[$k] = $v;
@@ -476,7 +520,7 @@ class lensesMain{
                 $_SESSION['extra_filter'][$this->title] = $temp2;
             }
             $return['status'] = "1";
-            $return['func'] = 'function(){location.reload();}';
+            //$return['func'] = 'function(){location.reload();}';
             return $return;
         }
         $id = 0;
@@ -749,6 +793,30 @@ class lensesMain{
         }
         $temp = explode(" ",gmdate("Y-m-d H:i:s",strtotime($date)));
         return $temp[0]." ".$temp[1]."";
+    }
+    
+    function from_display_date($date){
+        if(empty($date) || strlen($date)==0){
+            return date("Y-m-d");
+        }
+        if(strlen($date)>0 && ($temp = explode('/', $date)) && sizeof($temp)==3){
+            $date = $temp[2].'-'.$temp[1].'-'.$temp[0];
+        }else{
+            $date = "";
+        }
+        return $date;
+    }
+    
+    function to_display_date($date){
+        if(empty($date) || strlen($date)==0){
+            return date('d/m/Y');
+        }
+        if(strlen($date)>0 && $date!="0000-00-00" && strtotime($date)>0 && date("Y-m-d",strtotime($date))!="1970-01-01"){
+            $date = date('d/m/Y',strtotime($date));
+        }else{
+            $date = "";
+        }
+        return $date;
     }
     
     function set_timezone($tz = ""){
