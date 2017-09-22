@@ -50,7 +50,7 @@
     </div>
     <div class="col-xs-12">
         <div class="card-box">
-            <h4 class="text-dark  header-title m-t-0">30 Days Profit</h4>
+            <h4 class="text-dark  header-title m-t-0">30 Days Profit (RM)</h4>
             <div class="row">
                 <div class="col-xs-12 col-sm-9">
                     <div id="morris-line-example2" style="height: 300px;"></div>

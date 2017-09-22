@@ -13,7 +13,7 @@ class lensesReportYearlySales extends lensesMain{
     }
     
     function setup(){
-        $this->title = "Yearly Sales Report";
+        $this->title = "Yearly Sales Report (RM)";
         $this->freezePane = 2;
         $this->add_btn = false;
         $this->delete_btn = false;
