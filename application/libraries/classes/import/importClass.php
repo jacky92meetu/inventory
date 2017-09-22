@@ -5,6 +5,7 @@ include_once APPPATH.'libraries/classes/extra/PHPExcel_1.8.0/Classes/PHPExcel.ph
 class importClass{
     
     var $account_id = 0;
+    var $default_cols = array('system_tracking_number'=>'shipping_code','system_shipment_date'=>'shipping_date','system_courier_id'=>'shipping_comp');
     
     function __construct() {
         $this->CI = get_instance();
@@ -161,15 +162,27 @@ class importClass{
     function transactions_cache_insert($data = array()){
         $return = array('exists'=>array(),'success'=>array());
         foreach($data as $value){
-            if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=?
-                union distinct 
-                select id from transactions where store_item_id=? AND sales_id=?
-                limit 1',array($value['store_item_id'],$value['sales_id'],$value['store_item_id'],$value['sales_id']))) && $result->num_rows()){
+            if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=? limit 1',array($value['store_item_id'],$value['sales_id']))) && $result->num_rows()){
+                $row = $result->row_array();
+                $return['success'][] = $value['sales_id'];
+                $value_list = array();
+                foreach($this->default_cols as $k => $v){
+                    $k = str_replace('system_', '', $k);
+                    $value_list[] = '`'.$k.'`=""';
+                    if(!empty($value[$k])){
+                        $value_list[] = '`'.$k.'`="'.$value[$k].'"';
+                    }
+                }
+                $sql = 'UPDATE transactions_cache SET '.implode(",", $value_list).' WHERE id=?';
+                $this->CI->db->query($sql,array($row['id']));
+                continue;
+            }
+            if(($result = $this->CI->db->query('select id from transactions where store_item_id=? AND sales_id=? limit 1',array($value['store_item_id'],$value['sales_id']))) && $result->num_rows()){
                 $return['exists'][] = $value['sales_id'];
                 continue;
             }
-            $return['success'][] = $value['sales_id'];
             
+            $return['success'][] = $value['sales_id'];
             $value_list = array();
             foreach($value as $k => $v){
                 $value_list[] = '`'.$k.'`="'.$v.'"';
@@ -278,6 +291,7 @@ class importClass{
     
     public function excel_read($file,$cols = array(),$header_line = 0){
         $return = false;
+        $cols = array_merge($this->default_cols,$cols);
         if(file_exists($file)){
             $data = false;
             try{
@@ -347,6 +361,18 @@ class importClass{
     
     public function excel_get($row = 0,$col = ''){
         $return = "";
+        
+        static $courier_list = false;
+        if(!$courier_list){
+            $courier_list = array();
+            if(($result = $this->CI->db->query('SELECT id,name FROM couriers ORDER BY name'))){
+                $courier_list[0] = "No Set";
+                foreach($result->result_array() as $value){
+                    $courier_list[$value['id']] = $value['name'];
+                }
+            }
+        }
+        
         if(isset($this->excel_data[$row])){
             if($col==""){
                 $temp = array();
@@ -360,6 +386,19 @@ class importClass{
                 $return = trim($this->excel_data[$row][$this->excel_cols[$col]]);
             }
         }
+        
+        $t = "system_".$col;
+        if($return=="" && array_key_exists($t, $this->default_cols)!==false){
+            $return = $this->excel_get($row, $t);
+        }
+        if($t=='system_courier_id'){
+            if(($key = array_search($return, $courier_list))!==false){
+                $return = $key;
+            }else{
+                $return = "";
+            }
+        }
+        
         return $return;
     }
     

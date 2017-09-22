@@ -157,53 +157,56 @@ $editable = false;
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 <h4 class="modal-title">Form</h4>
             </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-xs-12 form-field default text-default hidden">
-                        <div class="form-group">
-                            <label class="control-label">Fieldname</label>
-                            <input type="text" class="form-control" placeholder="" required>
+            <form>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xs-12 form-field default text-default hidden">
+                            <div class="form-group">
+                                <label class="control-label">Fieldname</label>
+                                <input type="text" class="form-control" placeholder="" required>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-xs-12 form-field default select-default hidden">
-                        <div class="form-group">
-                            <label class="control-label">Fieldname</label>
-                            <select class="form-control"></select>
+                        <div class="col-xs-12 form-field default select-default hidden">
+                            <div class="form-group">
+                                <label class="control-label">Fieldname</label>
+                                <select class="form-control"></select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-xs-12 form-field default readonly-default hidden">
-                        <div class="form-group">
-                            <label class="control-label">Fieldname</label>
-                            <input type="text" class="form-control disabled" DISABLED>
+                        <div class="col-xs-12 form-field default readonly-default hidden">
+                            <div class="form-group">
+                                <label class="control-label">Fieldname</label>
+                                <input type="text" class="form-control disabled" DISABLED>
+                                <input type="hidden" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-xs-12 form-field default hidden-default hidden">
                             <input type="hidden" class="form-control">
                         </div>
-                    </div>
-                    <div class="col-xs-12 form-field default hidden-default hidden">
-                        <input type="hidden" class="form-control">
-                    </div>
-                    <div class="col-xs-12 form-field default date-default hidden">
-                        <div class="form-group">
-                            <label class="control-label">Fieldname</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control datepicker-autoclose" placeholder="dd/mm/yyyy">
-                                <span class="input-group-addon bg-primary b-0 text-white"><i class="ion-calendar"></i></span>
+                        <div class="col-xs-12 form-field default date-default hidden">
+                            <div class="form-group">
+                                <label class="control-label">Fieldname</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control datepicker-autoclose" placeholder="dd/mm/yyyy">
+                                    <span class="input-group-addon bg-primary b-0 text-white"><i class="ion-calendar"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 form-field default file-default hidden">
+                            <div class="form-group">
+                                <label class="control-label">Fieldname</label>
+                                <input type="file">
+                                <input type="hidden" class="form-control">
+                                <div class="loading_status">Upload file here</div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xs-12 form-field default file-default hidden">
-                        <div class="form-group">
-                            <label class="control-label">Fieldname</label>
-                            <input type="file">
-                            <input type="hidden" class="form-control">
-                            <div class="loading_status">Upload file here</div>
-                        </div>
-                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary waves-effect waves-light" onclick="data_save(this)">Save</button>
-            </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-warning waves-effect">Reset</button>
+                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary waves-effect waves-light" onclick="data_save(this)">Save</button>
+                </div>
+            </form>
             <div class="modal-footer-loading">
                 Loading...
             </div>

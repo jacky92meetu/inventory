@@ -90,7 +90,7 @@ class lensesSalesEntry extends lensesMain{
         
         $this->header = array(
             array('id'=>'id','name'=>'ID','custom_col'=>'adj_frame'),
-            array('id'=>'account_id','name'=>'Account'),
+            array('id'=>'account_id','name'=>'Account','option_text'=>$supp_list),
             array('id'=>'store_name','name'=>'Store','is_ajax'=>'stores'),
             array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame','is_ajax'=>'products'),

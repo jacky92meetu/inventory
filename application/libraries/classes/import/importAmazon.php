@@ -30,15 +30,15 @@ class importAmazonClass extends importClass{
                 $is_fba = 0;
                 $selling_price = preg_replace('#[^0-9\.]#iu', '', $this->excel_get($row_count, 'selling_price'));
                 $shipping_charges = 0;
-                $tracking_number = "";
-                $courier_id = "";
+                $tracking_number = $this->excel_get($row_count, 'tracking_number');
+                $courier_id = $this->excel_get($row_count, 'courier_id');
                 $sales_id = $this->excel_get($row_count, 'sales_id');
                 $temp_sku = $this->excel_get($row_count,'item_sku');
                 $quantity = $this->excel_get($row_count, 'quantity');
                 if($this->excel_get($row_count, 'amazon-order-id')!=""){
                     $is_fba = 1;
-                    $tracking_number = $this->excel_get($row_count, 'courier_id')." ".$this->excel_get($row_count, 'tracking_number');
-                    $courier_id = $courier_sys_id;
+                    //$tracking_number = $this->excel_get($row_count, 'courier_id')." ".$this->excel_get($row_count, 'tracking_number');
+                    $courier_id = ((strlen($courier_id)!="")?$courier_id:$courier_sys_id);
                     $sales_id = $this->excel_get($row_count, 'amazon-order-id');
                     $temp_sku = str_ireplace('.fba', '', $this->excel_get($row_count,'item_sku'));
                     $quantity = $this->excel_get($row_count, 'quantity-shipped');
