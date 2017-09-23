@@ -54,6 +54,18 @@ class Home extends CI_Controller {
                     $_SESSION['user']['username'] = $temp[0]['username'];
                     $_SESSION['user']['name'] = $temp[0]['name'];
                     $_SESSION['user']['user_type'] = $temp[0]['user_type'];
+                    $_SESSION['user']['config'] = json_decode($temp[0]['config'],true);
+                    
+                    $sql = 'select a.priv_id, ifnull(b.code,"") code, priv_status from user_group_privileges a left join user_group_privileges_list b on a.priv_id=b.id where a.group_id=?';
+                    $temp2 = array();
+                    if(($result = $this->db->query($sql,array($_SESSION['user']['user_type']))) && $result->num_rows()){
+                        $temp = $result->result_array();
+                        foreach($temp as $r){
+                            $temp2[$r['priv_id']] = $r;
+                        }
+                    }
+                    $_SESSION['user']['user_access_list'] = $temp2;
+                    
                     redirect(base_url("/"),'location');
                 }else{
                     $this->cmessage->set_response_message('Username or password not match!','error');

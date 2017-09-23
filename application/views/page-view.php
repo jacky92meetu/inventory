@@ -13,6 +13,26 @@ $editable = false;
 <link href="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/Scroller/css/scroller.bootstrap.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/css/select.dataTables.min.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo base_url('/assets/default'); ?>/plugins/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css" />
+<style>
+body.dragging, body.dragging * {
+  cursor: move !important;
+}
+
+.dragged {
+  position: absolute;
+  opacity: 0.5;
+  z-index: 2000;
+}
+ul.sortable{border:2px solid #007ebd;padding:2px;margin:0;height:300px;overflow-x:scroll;}
+ul.sortable li{list-style-type: none;padding:5px;border:2px solid #007e70;margin:2px;}
+ul.sortable.freeze_list li{background-color: #007ebd;color: #fff;}
+ul.sortable li.placeholder {
+  position: relative;
+}
+ul.sortable li.placeholder:before {
+  position: absolute;
+}
+</style>
 
 <div class="panel">
     <div class="panel-body">
@@ -215,6 +235,60 @@ $editable = false;
     </div>
 </div>
 
+<div id="custom_form_modal2" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true" style="display:none;">
+    <div class="modal-dialog">
+        <div class="modal-content form-container">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Header Options</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <?php
+                    $freeze_list = array();
+                    $normal_list = array();
+                    $count = 1;
+                    $freeze_count = $this->cpage->template_data['freezePane'];
+                    foreach ($this->cpage->template_data['view_header'] as $header) {
+                        if($count<=$freeze_count){
+                            $freeze_list[$header['id']] = $header['name'];
+                        }else{
+                            $normal_list[$header['id']] = $header['name'];
+                        }
+                        $count++;
+                    }
+                    ?>
+                    <div class="col-sm-6">
+                        <div>Freeze Header</div>
+                        <ul class='sortable header_list freeze_list'>
+                            <?php foreach($freeze_list as $k => $v){ ?>
+                            <li data_id="<?php echo $k; ?>"><?php echo $v; ?></li>
+                            <?php } ?>
+                        </ul>
+                    </div>
+                    <div class="col-sm-6">
+                        <div>Normal Header</div>
+                        <ul class='sortable header_list normal_list'>
+                            <?php foreach($normal_list as $k => $v){ ?>
+                            <li data_id="<?php echo $k; ?>"><?php echo $v; ?></li>
+                            <?php } ?>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning waves-effect" onclick="header_reset(this)">Reset Header</button>
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary waves-effect waves-light" onclick="header_save(this)">Save</button>
+            </div>
+            
+            <div class="modal-footer-loading">
+                Loading...
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php /*
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/datatables/dataTables.bootstrap.js"></script>
@@ -236,6 +310,7 @@ $editable = false;
 <script src="<?php echo base_url('/assets/default'); ?>/js/DataTables-1.10.13/extensions/Scroller/js/dataTables.scroller.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/dataTables.select.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+<script src="<?php echo base_url('/assets/default'); ?>/js/jquery-sortable.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/js/action.js"></script>
 
 <script>
@@ -751,6 +826,65 @@ $editable = false;
             post(url, post_data, '_self', 'POST');
         }
     }
+    function header_save(){
+        var list = {};
+        $('#custom_form_modal2 .sortable.freeze_list li[data_id]').map(function(a,b){
+            list[$(b).attr('data_id')] = '1';
+        });
+        $('#custom_form_modal2 .sortable.normal_list li[data_id]').map(function(a,b){
+            list[$(b).attr('data_id')] = '0';
+        });
+        
+        var post_data = {};
+        post_data['method'] = 'custom_form_save';
+        post_data['value'] = {};
+        post_data['value']['type'] = 'header_change';
+        post_data['value']['data'] = list;
+        $.post('<?php echo $this->cpage->template_data['view_ajax_url']; ?>',post_data,function(data){
+            if(data.status=="1"){
+                show_notification('Data save successfuly.','Notification','success');
+            }
+            if(typeof data.message === 'string' && data.message.length>0){
+                if(typeof data.status=='1'){
+                    show_notification(data.message,'Notification','error');
+                }else{
+                    show_notification(data.message,'Notification');
+                }
+            }
+            location.reload();
+        }, 'json')
+        .error(function(){
+            show_notification('Submission to server error!','Notification','error');
+        })
+        .always(function(data){
+            $('.modal').modal('hide');
+        });
+    }
+    function header_reset(){
+        var post_data = {};
+        post_data['method'] = 'custom_form_save';
+        post_data['value'] = {};
+        post_data['value']['type'] = 'header_reset';
+        $.post('<?php echo $this->cpage->template_data['view_ajax_url']; ?>',post_data,function(data){
+            if(data.status=="1"){
+                show_notification('Data save successfuly.','Notification','success');
+            }
+            if(typeof data.message === 'string' && data.message.length>0){
+                if(typeof data.status=='1'){
+                    show_notification(data.message,'Notification','error');
+                }else{
+                    show_notification(data.message,'Notification');
+                }
+            }
+            location.reload();
+        }, 'json')
+        .error(function(){
+            show_notification('Submission to server error!','Notification','error');
+        })
+        .always(function(data){
+            $('.modal').modal('hide');
+        });
+    }
 </script>
 
 <script>
@@ -873,6 +1007,7 @@ $editable = false;
                             $('input.select_all_checkbox').prop('checked',true);
                         }
                     });
+                    $('#datatable-editable_paginate .pagination').append('<li class="paginate_button" title="change header order"><a href="javascript:$(\'#custom_form_modal2\').modal();" class="bg-danger" style="color:#fff;"><i class="fa fa-lg fa-table"></i></a></li>');
                 },100);
             }).DataTable({
                 paging: true,
@@ -966,6 +1101,7 @@ $editable = false;
             */
         });
         
+        $('#custom_form_modal2 .sortable').sortable({group:'header_list'});
         
     });
 </script>

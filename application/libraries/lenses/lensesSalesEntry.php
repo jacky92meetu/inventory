@@ -174,7 +174,7 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','is_date_highlight'=>'1','editable'=>true)
         );
         
-        $temp = json_decode($_COOKIE['shipping_export'],true);
+        $temp = $this->user_config_get('shipping_export', array());
         $this->shipping_export_header = array(
             array('id'=>'id','name'=>'ID','hidden'=>'1'),
             array('id'=>'type','name'=>'type','value'=>'shipping_export','hidden'=>'1'),
@@ -219,7 +219,7 @@ class lensesSalesEntry extends lensesMain{
             $return['message'] = "";
             $action = base_url('ajax/sales_entry?method=shipping_export');
             $selection = $this->CI->input->post('selection',true);
-            setcookie("shipping_export", json_encode($value), time()+(60*60*24*30), '/');
+            $this->user_config_set('shipping_export', $value);
             $return['func'] = $this->write_js_form($action, array('courier_id'=>$value['courier_id'],'fp_cur'=>$value['fixed_price_currency'],'fp_amt'=>$value['fixed_price_amount'],'selection'=>$selection));
             return $return;
         }else if(!empty($value['type']) && $value['type']=='sales_courier'){

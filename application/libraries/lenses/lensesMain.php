@@ -27,7 +27,7 @@ class lensesMain{
     var $selected_menu = '';
     var $custom_view_config = '';
     var $page_view = 'page-view';
-    var $extra_filter_header = false;
+    var $extra_filter_header = array();
     var $display_chart = false;
     var $default_date_option = array(''=>'','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
     
@@ -44,9 +44,7 @@ class lensesMain{
             $_POST['order'][0]['column'] = (int)$temp - 1;
         }
         */
-        if(isset($_SESSION['default_length'])){
-            $this->default_length = $_SESSION['default_length'];
-        }
+        $this->default_length = $this->user_config_get('default_length',$this->default_length);
         
         $this->set_timezone();
         
@@ -93,8 +91,8 @@ class lensesMain{
                 $extra_filter_list[$name] = array('id'=>$name,'name'=>$v['name'].' (Custom To Date)','is_date'=>'1','value'=>'','editable'=>true);
             }
         }
-        $this->extra_filter_header = ((sizeof($this->extra_filter_header)>0)?array_merge($extra_filter_list,$this->extra_filter_header):array());
-        if($this->extra_filter_header){
+        $this->extra_filter_header = array_merge($extra_filter_list,$this->extra_filter_header);
+        if(sizeof($this->extra_filter_header)>0){
             foreach($this->extra_filter_header as $k => $v){
                 if(($t = $this->set_range_date($v['id'], $v['value'])) && sizeof($t)>0){
                     foreach($t as $k2 => $v2){
@@ -110,15 +108,14 @@ class lensesMain{
                 $temp[$v['id']] = $v;
             }
             $this->extra_filter_header = $temp;
-            if(!empty($_SESSION['extra_filter'][$this->title])){
-                foreach($_SESSION['extra_filter'][$this->title] as $k => $v){
-                    if(isset($this->extra_filter_header[$k])){
-                        $this->extra_filter_header[$k]['value'] = $v;
-                    }
+            
+            foreach($this->user_config_get('extra_filter_'.$this->title, array()) as $k => $v){
+                if(isset($this->extra_filter_header[$k])){
+                    $this->extra_filter_header[$k]['value'] = $v;
                 }
             }
         }
-        list($this->header,$this->freezePane) = $this->set_custom_view($this->header);
+        list($this->header,$this->freezePane) = $this->set_custom_view();
     }
     
     function set_range_date($k,$v){
@@ -151,41 +148,23 @@ class lensesMain{
         return $return;
     }
     
-    function set_custom_view($header,$data = false){
+    function set_custom_view($data = false){
         static $custom_view = array();
         static $custom_freezePane = array();
-        $md5_id = md5(json_encode($header));
+        $header = $this->header;
+        $md5_id = 'pageview_'.$this->title;
         
         if(!isset($custom_view[$md5_id])){
-            include(dirname(__FILE__).'/config/pageview.php');
-            if(isset($pageview[$this->custom_view_config])){
-                $temp_remaining = $header;
-                $temp_main = array();
-                $freezePane = 0;
-                foreach($pageview[$this->custom_view_config] as $key => $value){
-                    foreach($temp_remaining as $key2 => $value2){
-                        if($value2['id']==$key){
-                            if($value=='1'){
-                                $freezePane++;
-                            }
-                            $temp_main[] = $value2;
-                            unset($temp_remaining[$key2]);
-                            break;
-                        }
-                    }
-                }
-                foreach($temp_remaining as $value){
-                    $temp_main[] = $value;
-                }
-                $custom_view[$md5_id] = $temp_main;
-                $custom_freezePane[$md5_id] = $freezePane;
-                
-                $md5_id2 = md5(json_encode($temp_main));
-                $custom_view[$md5_id2] = $temp_main;
-                $custom_freezePane[$md5_id2] = $freezePane;
+            if(($temp = $this->user_config_get($md5_id))){
+                list($custom_view[$md5_id],$custom_freezePane[$md5_id]) = $this->process_pageview($temp);
             }else{
-                $custom_view[$md5_id] = $header;
-                $custom_freezePane[$md5_id] = $this->freezePane;
+                include(dirname(__FILE__).'/config/pageview.php');
+                if(isset($pageview[$this->custom_view_config])){
+                    list($custom_view[$md5_id],$custom_freezePane[$md5_id]) = $this->process_pageview($pageview[$this->custom_view_config]);
+                }else{
+                    $custom_view[$md5_id] = $header;
+                    $custom_freezePane[$md5_id] = $this->freezePane;
+                }
             }
         }
         
@@ -223,6 +202,28 @@ class lensesMain{
         return array($custom_view[$md5_id],$custom_freezePane[$md5_id],$data);
     }
     
+    function process_pageview($pageview_list){
+        $temp_remaining = $this->header;
+        $temp_main = array();
+        $freezePane = 0;
+        foreach($pageview_list as $key => $value){
+            foreach($temp_remaining as $key2 => $value2){
+                if($value2['id']==$key){
+                    if($value=='1'){
+                        $freezePane++;
+                    }
+                    $temp_main[] = $value2;
+                    unset($temp_remaining[$key2]);
+                    break;
+                }
+            }
+        }
+        foreach($temp_remaining as $value){
+            $temp_main[] = $value;
+        }
+        return array($temp_main,$freezePane);
+    }
+    
     function view($view){
         if($this->display_chart){
             if(sizeof($this->data)==0){
@@ -237,7 +238,7 @@ class lensesMain{
         }
         
         if(!empty($this->data) && sizeof($this->data)>0){
-            list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$this->data);
+            list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->data);
         }
         
         $this->CI->cpage->set_html_title($this->title);
@@ -253,7 +254,7 @@ class lensesMain{
         $this->CI->cpage->set('extra_btn',$this->extra_btn);
         $this->CI->cpage->set('is_required',$this->is_required);
         $this->CI->cpage->set('freezePane',$this->freezePane);
-        $this->CI->cpage->set('extra_filter',$this->extra_filter_header);
+        $this->CI->cpage->set('extra_filter',((sizeof($this->extra_filter_header)>0)?true:false));
         $this->CI->cpage->set('display_chart',$this->display_chart);
         return $this->CI->load->view($this->page_view);
     }
@@ -334,7 +335,7 @@ class lensesMain{
         if(!$this->display_chart){
             $limit_start = ((!empty($this->CI->input->post('start',true)))?$this->CI->input->post('start',true):0);
             $limit_length = ((!empty($this->CI->input->post('length',true)))?$this->CI->input->post('length',true):$this->default_length);
-            $_SESSION['default_length'] = $limit_length;
+            $this->user_config_set('default_length',$limit_length);
             
             $sql = $this->search_query;
             if(stristr($sql, 'COUNT(*)')===FALSE){
@@ -379,7 +380,7 @@ class lensesMain{
             }
         }
         
-        list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($this->header,$temp_data);
+        list($this->header,$this->freezePane,$this->data) = $this->set_custom_view($temp_data);
         
         $temp = array();
         foreach($this->data as $v){
@@ -533,10 +534,19 @@ class lensesMain{
                         $temp2[$k] = $v;
                     }
                 }
-                $_SESSION['extra_filter'][$this->title] = $temp2;
+                $this->user_config_set('extra_filter_'.$this->title, $temp2);
             }
             $return['status'] = "1";
-            //$return['func'] = 'function(){location.reload();}';
+            return $return;
+        }else if($this->CI->input->post('value[type]',true)=="header_change"){
+            if(($value = $this->CI->input->post('value',true))){
+                $this->user_config_set('pageview_'.$this->title, $value['data']);
+            }
+            $return['status'] = "1";
+            return $return;
+        }else if($this->CI->input->post('value[type]',true)=="header_reset"){
+            $this->user_config_unset('pageview_'.$this->title);
+            $return['status'] = "1";
             return $return;
         }
         $id = 0;
@@ -761,7 +771,9 @@ class lensesMain{
             return true;
         }
         if(!isset($instance[$group_id])){
-            if(empty($_SESSION['user_access_list'][$group_id])){
+            if($_SESSION['user']['user_type']==$group_id){
+                $instance[$group_id] = $_SESSION['user']['user_access_list'];
+            }else{
                 $sql = 'select a.priv_id, ifnull(b.code,"") code, priv_status from user_group_privileges a left join user_group_privileges_list b on a.priv_id=b.id where a.group_id=?';
                 if(($result = $this->CI->db->query($sql,array($group_id))) && $result->num_rows()){
                     $instance[$group_id] = array();
@@ -770,8 +782,6 @@ class lensesMain{
                         $instance[$group_id][$r['priv_id']] = $r;
                     }
                 }
-            }else{
-                $instance[$group_id] = $_SESSION['user_access_list'][$group_id];
             }
         }
         
@@ -791,6 +801,36 @@ class lensesMain{
             return false;
         }
         return true;
+    }
+    
+    function user_config_unset($name){
+        if(!isset($_SESSION['user']['config'])){
+            $_SESSION['user']['config'] = array();
+        }
+        if(isset($_SESSION['user']['config'][$name])){
+            unset($_SESSION['user']['config'][$name]);
+        }
+        $temp = json_encode($_SESSION['user']['config']);
+        return $this->CI->db->query('UPDATE users SET config=? WHERE id=? LIMIT 1',array($temp,$_SESSION['user']['id']));
+    }
+    
+    function user_config_set($name,$value){
+        if(!isset($_SESSION['user']['config'])){
+            $_SESSION['user']['config'] = array();
+        }
+        $_SESSION['user']['config'][$name] = $value;
+        $temp = json_encode($_SESSION['user']['config']);
+        return $this->CI->db->query('UPDATE users SET config=? WHERE id=? LIMIT 1',array($temp,$_SESSION['user']['id']));
+    }
+    
+    function user_config_get($name,$default = false){
+        if(!isset($_SESSION['user']['config'])){
+            $_SESSION['user']['config'] = array();
+        }
+        if(!empty($_SESSION['user']['config'][$name])){
+            return $_SESSION['user']['config'][$name];
+        }
+        return $default;
     }
     
     function tzdate($date = "",$tz = 0){
