@@ -45,23 +45,29 @@ ul.sortable li.placeholder:before {
         */ ?>
         <div class="row">
             <div class="col-xs-6">
+                <span class="">
+                    <button class="btn btn-danger waves-effect waves-light" onclick="javascript:$('#custom_form_modal2').modal();" title="Table header settings"><i class="fa fa-lg fa-table"></i></button>
+                </span>
                 <?php if($this->cpage->template_data['extra_filter']){ ?>
                 <span class="">
-                    <button class="btn btn-success waves-effect waves-light" onclick="data_edit(this,'extra_filter',true)">Extra Filter <i class="fa fa-lg fa-search"></i></button>
+                    <button class="btn btn-success waves-effect waves-light" onclick="data_edit(this,'extra_filter',true)" title="Extra filter"><i class="fa fa-lg fa-search"></i></button>
                 </span>
                 <?php } ?>
                 <?php if($this->cpage->template_data['add_btn']){ $is_custom = ($this->cpage->template_data['add_btn']==='custom_form')?"true":"false"; ?>
                 <span class="">
-                    <button id="addToTable" class="btn btn-primary waves-effect waves-light" onclick="data_edit(null,'new',true)">Add <i class="fa fa-lg fa-plus"></i></button>
+                    <button id="addToTable" class="btn btn-primary waves-effect waves-light" onclick="data_edit(null,'new',true)" title="Add"><i class="fa fa-lg fa-plus"></i></button>
                 </span>
                 <?php } ?>
                 <?php if($this->cpage->template_data['delete_btn']){ ?>
                 <span class="">
-                    <button id="deleteFromTable" class="btn btn-danger waves-effect waves-light" onclick="data_delete()">Delete record <i class="fa fa-lg fa-trash-o"></i></button>
+                    <button id="deleteFromTable" class="btn btn-danger waves-effect waves-light" onclick="data_delete()" title="Delete record"><i class="fa fa-lg fa-trash-o"></i></button>
                 </span>
                 <?php } ?>
             </div>
             <div class="col-xs-6 text-right">
+                <div class="btn-group">
+                    <button type="button" class="btn dropdown-toggle waves-effect waves-light" data-toggle="dropdown" aria-expanded="false">More Function <span class="caret"></span></button>
+                    <ul class="dropdown-menu" role="menu">
                 <?php if(sizeof($this->cpage->template_data['extra_btn'])>0){ 
                     foreach($this->cpage->template_data['extra_btn'] as $temp){ 
                         $class = "btn-default";
@@ -77,10 +83,15 @@ ul.sortable li.placeholder:before {
                             $require_select = 'require_select="require_select"';
                         }
                 ?>
+                    <li><a href="javascript:void(0)" class="<?php echo $class; ?>" onclick="extra_btn(this)" <?php echo $custom_form; ?> <?php echo $require_select; ?> data-goto="<?php echo $temp['url']; ?>"><?php echo $temp['name']; ?></a></li>
+                <?php /*
                 <span>
                     <button class="btn <?php echo $class; ?> waves-effect waves-light" onclick="extra_btn(this)" <?php echo $custom_form; ?> <?php echo $require_select; ?> data-goto="<?php echo $temp['url']; ?>"><?php echo $temp['name']; ?></button>
                 </span>
+                */ ?>
                 <?php }} ?>
+                    </ul>
+                </div>
             </div>
         </div>
         <br />
@@ -1007,7 +1018,6 @@ ul.sortable li.placeholder:before {
                             $('input.select_all_checkbox').prop('checked',true);
                         }
                     });
-                    $('#datatable-editable_paginate .pagination').append('<li class="paginate_button" title="change header order"><a href="javascript:$(\'#custom_form_modal2\').modal();" class="bg-danger" style="color:#fff;"><i class="fa fa-lg fa-table"></i></a></li>');
                 },100);
             }).DataTable({
                 paging: true,
