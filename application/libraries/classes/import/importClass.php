@@ -132,7 +132,7 @@ class importClass{
         $return = false;
         if(is_array($skucode)){
             if($t = $this->get_warehouse_item($skucode)){
-                $sql = 'select b.account_id,a.id store_item_id,b.sales_fees_pect,b.sales_fees_fixed,b.paypal_fees_pect,b.paypal_fees_fixed
+                $sql = 'select b.account_id,a.id store_item_id,b.sales_fees_pect,b.sales_fees_fixed,b.paypal_fees_pect,b.paypal_fees_fixed,b.name store_name
                         from store_item a
                         join stores b on a.store_id=b.id
                         join marketplaces c on b.marketplace_id=c.id
@@ -144,7 +144,7 @@ class importClass{
                 return false;
             }
         }else{
-            $sql = 'select b.account_id,a.id store_item_id,b.sales_fees_pect,b.sales_fees_fixed,b.paypal_fees_pect,b.paypal_fees_fixed
+            $sql = 'select b.account_id,a.id store_item_id,b.sales_fees_pect,b.sales_fees_fixed,b.paypal_fees_pect,b.paypal_fees_fixed,b.name store_name
                     from store_item a
                     join stores b on a.store_id=b.id
                     join marketplaces c on b.marketplace_id=c.id
@@ -160,8 +160,30 @@ class importClass{
     }
     
     function transactions_cache_insert($data = array()){
+        static $courier_list = false;
+        static $courier_pattern = false;
+        if(!$courier_list){
+            $courier_list = array();
+            if(($result = $this->CI->db->query('SELECT id,name,pattern FROM couriers ORDER BY name'))){
+                $courier_list[0] = "";
+                foreach($result->result_array() as $value){
+                    $courier_list[$value['id']] = $value['name'];
+                    $courier_pattern[$value['id']] = $value['pattern'];
+                }
+            }
+        }
+        
         $return = array('exists'=>array(),'success'=>array());
         foreach($data as $value){
+            if((strlen($value['courier_id'])==0 || $value['courier_id']==0) && strlen($value['tracking_number'])>0){
+                foreach($courier_pattern as $k => $v){
+                    if(strlen(trim($v))>0 && preg_match('#^'.trim($v).'$#iu', $value['tracking_number'], $matches)){
+                        $value['courier_id'] = $k;
+                        break;
+                    }
+                }
+            }
+            
             if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=? limit 1',array($value['store_item_id'],$value['sales_id']))) && $result->num_rows()){
                 $row = $result->row_array();
                 $return['success'][] = $value['sales_id'];
@@ -363,12 +385,14 @@ class importClass{
         $return = "";
         
         static $courier_list = false;
+        static $courier_pattern = false;
         if(!$courier_list){
             $courier_list = array();
-            if(($result = $this->CI->db->query('SELECT id,name FROM couriers ORDER BY name'))){
+            if(($result = $this->CI->db->query('SELECT id,name,pattern FROM couriers ORDER BY name'))){
                 $courier_list[0] = "";
                 foreach($result->result_array() as $value){
                     $courier_list[$value['id']] = $value['name'];
+                    $courier_pattern[$value['id']] = $value['pattern'];
                 }
             }
         }
@@ -397,6 +421,8 @@ class importClass{
             }else{
                 $return = "";
             }
+        }else if($t=='system_shipment_date'){
+            $return = date("Y-m-d H:i:s",strtotime($return));
         }
         
         return $return;
