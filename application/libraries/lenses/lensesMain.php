@@ -29,7 +29,7 @@ class lensesMain{
     var $page_view = 'page-view';
     var $extra_filter_header = array();
     var $display_chart = false;
-    var $default_date_option = array(''=>'','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
+    var $default_date_option = array(''=>'','td'=>'Today','yd'=>'Yesterday','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
     
     function __construct(){
         $this->CI = get_instance();
@@ -124,7 +124,13 @@ class lensesMain{
             $t = explode("|",$k);
             $fdate = "";
             $tdate = "";
-            if($v=="7d"){
+            if($v=="td"){
+                $tdate = $this->to_display_date();
+                $fdate = $this->to_display_date();
+            }else if($v=="y7d"){
+                $tdate = $this->to_display_date("-1 day");
+                $fdate = $this->to_display_date("-1 day");
+            }else if($v=="7d"){
                 $tdate = $this->to_display_date();
                 $fdate = $this->to_display_date("-7 day");
             }else if($v=="21d"){
