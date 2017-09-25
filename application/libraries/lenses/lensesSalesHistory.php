@@ -155,18 +155,20 @@ class lensesSalesHistory extends lensesMain{
     function ajax_custom_form(){
         $return = parent::ajax_custom_form();
         
-        $quantity_list = array('0'=>'0');
-        if(!empty($return['data']['store_item_id']['value'])){
-            //$temp = $this->get_available_quantity($return['data']['store_item_id']['value']);
-            $temp = 99;
-            if($temp>0){
-                $quantity_list = array();
-                for($i=1; $i<=min(100,$temp); $i++){
-                    $quantity_list[$i] = $i;
+        if($this->CI->input->post('type',true)=="adj_frame"){
+            $quantity_list = array('0'=>'0');
+            if(!empty($return['data']['store_item_id']['value'])){
+                //$temp = $this->get_available_quantity($return['data']['store_item_id']['value']);
+                $temp = 99;
+                if($temp>0){
+                    $quantity_list = array();
+                    for($i=1; $i<=min(100,$temp); $i++){
+                        $quantity_list[$i] = $i;
+                    }
                 }
             }
+            $return['data']['quantity']['option'] = $quantity_list;
         }
-        $return['data']['quantity']['option'] = $quantity_list;
         
         return $return;
     }
