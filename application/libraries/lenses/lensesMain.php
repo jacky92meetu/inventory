@@ -315,10 +315,12 @@ class lensesMain{
             }
         }
         if(sizeof($where_query)>0){
-            $where_query = ' WHERE '.implode(" AND ",$where_query);
+            $where_query = ' WHERE ('.implode(" AND ",$where_query).') ';
         }else{
             $where_query = '';
         }
+        $this->search_query = str_replace("{WHERE_AND}", str_replace(" WHERE ", " AND ", $where_query), $this->search_query);
+        $this->search_query = str_replace("{WHERE}", $where_query, $this->search_query);
         
         $order_list = array();
         if(!empty($this->CI->input->post('order',true))){
