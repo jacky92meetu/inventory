@@ -76,15 +76,7 @@ class importEbayClass extends importClass{
                 if($row_count==0 || trim(implode("",$this->excel_get($row_count)))==""){
                     continue;
                 }
-                if($this->excel_get($row_count,'relationship')=='Variation'){
-                    $temp3 = array('item_sku'=>$this->excel_get($row_count,'item_sku'),'variation_order'=>$this->excel_get($row_count,'variation_order'),'price'=>$this->excel_get($row_count,'price'),'quantity'=>$this->excel_get($row_count,'quantity'),'store_item_id'=>'0');
-                    if(($row = $this->search_store_item($this->account_id, "ebay", 0, $cur_siteid, array($temp_list[$cur_siteid][$cur_product_id]['item_name'],$this->excel_get($row_count,'variation_order'),$this->excel_get($row_count,'item_sku'))))){
-                        $temp3['store_item_id'] = $row['store_item_id'];
-                        $temp_list[$cur_siteid][$cur_product_id]['variation'][$this->excel_get($row_count,'variation_order')] = $temp3;
-                    }else{
-                        $missing[] = "row no. ".($row_count + 1).": SKU no found. CustomLabel:".$this->excel_get($row_count,'item_sku');
-                    }
-                }else{
+                if($this->excel_get($row_count,'item_id')!=''){
                     if(!empty($this->excel_get($row_count, 'currency')) && ($cur_siteid=="" || $cur_siteid!=$this->excel_get($row_count, 'currency'))){
                         $cur_siteid = strtoupper($this->excel_get($row_count, 'currency'));
                     }
@@ -93,6 +85,16 @@ class importEbayClass extends importClass{
                     }
                     $cur_product_id = $this->excel_get($row_count, 'item_id');
                     $temp_list[$cur_siteid][$this->excel_get($row_count,'item_id')] = array('item_id'=>$this->excel_get($row_count,'item_id'),'item_name'=>$this->excel_get($row_count,'item_name'),'item_sku'=>$this->excel_get($row_count,'item_sku'),'variation_order'=>$this->excel_get($row_count,'variation_order'),'currency'=>strtoupper($this->excel_get($row_count,'currency')),'price'=>$this->excel_get($row_count,'price'),'quantity'=>$this->excel_get($row_count,'quantity'),'variation'=>array());
+                }
+                if($this->excel_get($row_count,'relationship')=='Variation' 
+                        || ($this->excel_get($row_count,'variation_order')=='' && $this->excel_get($row_count,'price')!='' && $this->excel_get($row_count,'quantity')!='')){
+                    $temp3 = array('item_sku'=>$this->excel_get($row_count,'item_sku'),'variation_order'=>$this->excel_get($row_count,'variation_order'),'price'=>$this->excel_get($row_count,'price'),'quantity'=>$this->excel_get($row_count,'quantity'),'store_item_id'=>'0');
+                    if(($row = $this->search_store_item($this->account_id, "ebay", 0, $cur_siteid, array($temp_list[$cur_siteid][$cur_product_id]['item_name'],$this->excel_get($row_count,'variation_order'),$this->excel_get($row_count,'item_sku'))))){
+                        $temp3['store_item_id'] = $row['store_item_id'];
+                        $temp_list[$cur_siteid][$cur_product_id]['variation'][$this->excel_get($row_count,'variation_order')] = $temp3;
+                    }else{
+                        $missing[] = "row no. ".($row_count + 1).": SKU no found. CustomLabel:".$this->excel_get($row_count,'item_sku');
+                    }
                 }
             }
             return $this->get_return($temp_list, $missing, 'item');

@@ -476,6 +476,9 @@ class lensesMain{
                         if(isset($col['form_divider'])){
                             $temp['form_divider'] = '1';
                         }
+                        if(isset($col['optional'])){
+                            $temp['optional'] = '1';
+                        }
                         $data[$key] = $temp;
                         break;
                     }

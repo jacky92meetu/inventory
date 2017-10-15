@@ -38,6 +38,7 @@ class importClass{
         
         //check product id
         $selected_product = false;
+        $temp5 = 0;
         foreach($search_array as $str){
             $temp = preg_replace('#[^0-9a-z\s][^0-9a-z]+[^0-9a-z\s]?#iu', '', $str);
             $temp_str2 = trim(preg_replace('#[\s]+#iu', "", $temp));
@@ -52,8 +53,11 @@ class importClass{
                     }
                 }
                 if(sizeof($temp2)==$count){
-                    $selected_product = $p;
-                    break(2);
+                    if(sizeof($temp2) > $temp5){
+                        $temp5 = sizeof($temp2);
+                        $selected_product = $p;
+                    }
+                    //break(2);
                 }
             }
             if(!$selected_product){
@@ -71,6 +75,7 @@ class importClass{
         $selected_option = false;
         if($selected_product && !empty($instances['option_list'][$selected_product['option_id']])){
             $temp_ops = $instances['option_list'][$selected_product['option_id']];
+            $temp5 = 0;
             foreach($search_array as $str){
                 $temp = $str;
                 foreach(array_reverse($temp_ops) as $p){
@@ -83,8 +88,11 @@ class importClass{
                         }
                     }
                     if(sizeof($temp2)==$count){
-                        $selected_option = $p;
-                        break(2);
+                        if(sizeof($temp2) > $temp5){
+                            $temp5 = sizeof($temp2);
+                            $selected_option = $p;
+                        }
+                        //break(2);
                     }
                 }
             }
@@ -113,8 +121,11 @@ class importClass{
                         foreach(array_reverse($temp_ops) as $p){
                             $temp3 = explode(',',$p['code']);
                             if(sizeof($count)==sizeof($temp3) && ($temp4 = array_intersect($count, $temp3)) && sizeof($temp3)==sizeof($temp4)){
-                                $selected_option = $p;
-                                break(2);
+                                if(sizeof($temp2) > $temp5){
+                                    $temp5 = sizeof($temp2);
+                                    $selected_option = $p;
+                                }
+                                //break(2);
                             }
                         }
                     }
