@@ -106,7 +106,7 @@ class lensesStores extends lensesMain{
                         ,a.marketplace_item_label=""
                         where a.store_id=b.id and b.marketplace_id=c.id and b.warehouse_id=d.warehouse_id and a.warehouse_item_id=d.id
                         and b.account_id=? and c.import_template=?';
-                    $this->CI->db->query($sql,array($value['account_d'],$value['marketplace_template']));
+                    $this->CI->db->query($sql,array($value['account_id'],$value['marketplace_template']));
                 }
                 include_once(APPPATH.'libraries/classes/ImportHelper.php');
                 $class = new ImportHelper;
