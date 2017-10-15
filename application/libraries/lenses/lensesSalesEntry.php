@@ -39,7 +39,7 @@ class lensesSalesEntry extends lensesMain{
             , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
-            , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed
+            , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed, a.cost_price
             ,b.id account_id, a.store_item_id, a.courier_id, g.id store_id, d.id product_id
             from transactions_cache a
             join accounts b on a.account_id=b.id
@@ -121,6 +121,7 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'sales_fees_fixed','name'=>'Store Fee Fixed','editable'=>true),
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
+            array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),
         );
         
         $this->custom_header = array(
@@ -156,6 +157,7 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'sales_fees_fixed','name'=>'Store Fee Fixed','editable'=>true),
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
+            array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),
         );
         
         $this->sales_import_header = array(
@@ -275,7 +277,7 @@ class lensesSalesEntry extends lensesMain{
                     }
                 }
             }
-            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
+            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price');
             foreach($field_list as $field){
                 if(isset($value[$field])){
                     $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
@@ -314,6 +316,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $filter_list[] = ['name'=>'sales_fees_fixed','query'=>'SELECT a.sales_fees_fixed id, a.sales_fees_fixed name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
         $filter_list[] = ['name'=>'paypal_fees_pect','query'=>'SELECT a.paypal_fees_pect id, a.paypal_fees_pect name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
         $filter_list[] = ['name'=>'paypal_fees_fixed','query'=>'SELECT a.paypal_fees_fixed id, a.paypal_fees_fixed name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];
+        $filter_list[] = ['name'=>'cost_price','query'=>'select ifnull(b.cost_price,0) id, ifnull(b.cost_price,0) name from store_item a,warehouse_item b where a.warehouse_item_id=b.id and a.id=? limit 1','id'=>'store_item_id'];
         $filter_list[] = ['name'=>'marketplace_template','query'=>'SELECT b.sales_template id,b.sales_template name FROM stores a,marketplaces b WHERE a.marketplace_id=b.id AND a.account_id=? AND b.sales_template<>"" GROUP BY b.sales_template ORDER BY length(b.sales_template),b.sales_template','id'=>'account_id'];
         
         $return = parent::ajax_change_update($filter_list);

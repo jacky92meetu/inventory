@@ -35,7 +35,7 @@ class lensesSalesHistory extends lensesMain{
             , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
-            , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed
+            , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed, a.cost_price
             ,b.id account_id, a.store_item_id, a.courier_id, g.id store_id, d.id product_id
             from transactions a
             join accounts b on a.account_id=b.id
@@ -110,6 +110,7 @@ class lensesSalesHistory extends lensesMain{
             array('id'=>'sales_fees_fixed','name'=>'Store Fee Fixed','editable'=>true),
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
+            array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),
         );
         
         $this->custom_header = array(
@@ -145,6 +146,7 @@ class lensesSalesHistory extends lensesMain{
             array('id'=>'sales_fees_fixed','name'=>'Store Fee Fixed','editable'=>true),
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
+            array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),
         );
         
         $this->extra_filter_header = array(
@@ -224,7 +226,7 @@ class lensesSalesHistory extends lensesMain{
                 }
             }
         }
-        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed');
+        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price');
         foreach($field_list as $field){
             if(isset($value[$field])){
                 $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
