@@ -144,6 +144,7 @@ class importClass{
         if(is_array($skucode)){
             if($t = $this->get_warehouse_item($skucode)){
                 $sql = 'select b.account_id,a.id store_item_id,b.sales_fees_pect,b.sales_fees_fixed,b.paypal_fees_pect,b.paypal_fees_fixed,b.name store_name
+                        ,d.cost_price
                         from store_item a
                         join stores b on a.store_id=b.id
                         join marketplaces c on b.marketplace_id=c.id
@@ -156,6 +157,7 @@ class importClass{
             }
         }else{
             $sql = 'select b.account_id,a.id store_item_id,b.sales_fees_pect,b.sales_fees_fixed,b.paypal_fees_pect,b.paypal_fees_fixed,b.name store_name
+                    ,d.cost_price
                     from store_item a
                     join stores b on a.store_id=b.id
                     join marketplaces c on b.marketplace_id=c.id
