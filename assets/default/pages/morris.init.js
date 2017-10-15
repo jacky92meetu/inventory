@@ -30,7 +30,7 @@
               if(options.ykeys.length>1){
                 var total = 0;
                 for(var i in options.ykeys){
-                    total = total + options.data[index][options.ykeys[i]];
+                    total = (total + options.data[index][options.ykeys[i]]).toFixed(4) * 1;
                 }
                 content = content + '<div class="morris-hover-row-label" style="display:block;border-top:1px solid #ccc;">Total: '+total+'</div>';
               }
@@ -56,7 +56,7 @@
               if(options.ykeys.length>1){
                 var total = 0;
                 for(var i in options.ykeys){
-                    total = total + options.data[index][options.ykeys[i]];
+                    total = (total + options.data[index][options.ykeys[i]]).toFixed(4) * 1;
                 }
                 content = content + '<div class="morris-hover-row-label" style="display:block;border-top:1px solid #ccc;">Total: '+total+'</div>';
               }
@@ -84,7 +84,7 @@
               if(options.ykeys.length>1){
                 var total = 0;
                 for(var i in options.ykeys){
-                    total = total + options.data[index][options.ykeys[i]];
+                    total = (total + options.data[index][options.ykeys[i]]).toFixed(4) * 1;
                 }
                 content = content + '<div class="morris-hover-row-label" style="display:block;border-top:1px solid #ccc;">Total: '+total+'</div>';
               }
