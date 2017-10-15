@@ -32,6 +32,7 @@ class lensesReportYearlySales extends lensesMain{
             from transactions a
             left join store_item b on b.id=a.store_item_id
             left join stores c on c.id=b.store_id
+            {WHERE}
             group by b.store_id,a.payment_date
             ) a';
         
