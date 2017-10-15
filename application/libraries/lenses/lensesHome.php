@@ -107,23 +107,20 @@ class lensesHome extends lensesMain{
         $temp2 = array();
         if(($result = $this->CI->db->query('select c.name store_name, a.payment_date
             ,round(sum(
-                    (ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(d1.rate,1))
-                + (ifnull(a.shipping_charges_received,0) / ifnull(d1.rate,1))
-                    - (ifnull(a.shipping_charges_paid,0) / ifnull(d1.rate,1))
-                    - (ifnull(a.sales_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(d1.rate,1))
-                    - (ifnull(a.sales_fees_fixed,0) / ifnull(d1.rate,1))
-                    - (ifnull(a.paypal_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(d1.rate,1))
-                    - (ifnull(a.paypal_fees_fixed,0) / ifnull(d1.rate,1))
-                    - (ifnull(e.cost_price,0))
+                    (ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
+                + (ifnull(a.shipping_charges_received,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
+                    - (ifnull(a.shipping_charges_paid,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
+                    - (ifnull(a.sales_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
+                    - (ifnull(a.sales_fees_fixed,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
+                    - (ifnull(a.paypal_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
+                    - (ifnull(a.paypal_fees_fixed,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
+                    - (ifnull(e.cost_price,0) * ifnull(a.quantity,0))
             ),4) profit_amount
             from transactions a
             left join store_item b on b.id=a.store_item_id
             left join stores c on c.id=b.store_id
-            left join exchange_rate d1 on d1.from_code="MYR" and d1.to_code=a.selling_currency and d1.created_date<=a.payment_date
-            left join exchange_rate d2 on d2.from_code="MYR" and d2.to_code=a.selling_currency and d2.created_date<=a.payment_date and d2.id<d1.id
             left join warehouse_item e on e.id=b.warehouse_item_id
             where a.payment_date>=DATE_FORMAT(date_add(now(),INTERVAL -30 DAY), "%Y-%m-%d")
-            and d2.id is null
             group by b.store_id,a.payment_date
             ;'))){
             foreach($result->result_array() as $value){
