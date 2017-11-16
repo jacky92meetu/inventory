@@ -963,7 +963,8 @@ ul.sortable li.placeholder:before {
                 });
                 setTimeout(function(){
                     $('#datatable-editable_length').each(function(){
-                        var clone = $(this).find('select[name="datatable-editable_length"]').clone(true);
+                        var clone = $(this).find('select[name="datatable-editable_length"]').hide().clone(true);
+                        clone.show().val("<?php echo $this->cpage->template_data['default_length']; ?>");
                         $('.actions_label').prepend(clone);
                         $(this).addClass('hidden');
                     });
@@ -1035,8 +1036,8 @@ ul.sortable li.placeholder:before {
                     "leftColumns": <?php echo $this->cpage->template_data['freezePane']; ?>
                 },
                 <?php } ?>
-                "iDisplayLength": <?php echo $this->cpage->template_data['default_length']; ?>,
-                "lengthMenu": [[50, 100, 200], [50, 100, 200]],
+                "iDisplayLength": <?php echo min(25,max(100,$this->cpage->template_data['default_length'])); ?>,
+                "lengthMenu": [[25, 50, 100], [25, 50, 100]],
                 "order": filter_sorting,
                 "processing": true,
                 "serverSide": true,
