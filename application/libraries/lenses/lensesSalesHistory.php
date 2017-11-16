@@ -26,7 +26,7 @@ class lensesSalesHistory extends lensesMain{
         $this->search_query = 'select * from (select a.id
             , b.name account_name
             , g.name store_name
-            , c.store_skucode
+            , a.store_skucode
             , d.name product_name
             , e.code2 option_name
             , a.buyer_id, a.buyer_name
@@ -226,7 +226,7 @@ class lensesSalesHistory extends lensesMain{
                 }
             }
         }
-        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price');
+        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price','store_skucode');
         foreach($field_list as $field){
             if(isset($value[$field])){
                 $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
@@ -254,7 +254,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
             join warehouse_item wi2 on wi2.id=a2.warehouse_item_id and wi2.product_id=wi.product_id
             join option_item b on wi2.item_id=b.id 
             WHERE a.store_id=? AND wi.product_id=? GROUP BY b.id ORDER BY name','id'=>['store_id','product_id']];
-        $filter_list[] = ['name'=>'store_skucode','query'=>'SELECT a.store_skucode id, a.store_skucode name FROM store_item a WHERE a.id=? Limit 1','id'=>'store_item_id'];
+        //$filter_list[] = ['name'=>'store_skucode','query'=>'SELECT a.store_skucode id, a.store_skucode name FROM store_item a WHERE a.id=? Limit 1','id'=>'store_item_id'];
         $filter_list[] = ['name'=>'selling_currency','query'=>'select b.currency id,b.currency name from stores a join marketplaces b on a.marketplace_id=b.id WHERE a.id=? Limit 1','id'=>'store_id','update_only'=>'1'];
         $filter_list[] = ['name'=>'selling_price','query'=>'SELECT a.selling_price id, a.selling_price name FROM store_item a WHERE a.id=? Limit 1','id'=>'store_item_id'];
         $filter_list[] = ['name'=>'sales_fees_pect','query'=>'SELECT a.sales_fees_pect id, a.sales_fees_pect name FROM stores a WHERE a.id=? Limit 1','id'=>'store_id'];

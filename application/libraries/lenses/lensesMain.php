@@ -29,7 +29,7 @@ class lensesMain{
     var $page_view = 'page-view';
     var $extra_filter_header = array();
     var $display_chart = false;
-    var $default_date_option = array(''=>'','td'=>'Today','yd'=>'Yesterday','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
+    var $default_date_option = array('td'=>'Today','yd'=>'Yesterday','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
     
     function __construct(){
         $this->CI = get_instance();
@@ -93,7 +93,16 @@ class lensesMain{
         }
         $this->extra_filter_header = array_merge($extra_filter_list,$this->extra_filter_header);
         if(sizeof($this->extra_filter_header)>0){
+            foreach($this->user_config_get('extra_filter_'.$this->title, array()) as $k => $v){
+                if(isset($this->extra_filter_header[$k])){
+                    $this->extra_filter_header[$k]['value'] = $v;
+                }
+            }
             foreach($this->extra_filter_header as $k => $v){
+                if(strpos($v['id'], "|range_date") && $v['value']==""){
+                    $v['value'] = 'td';
+                    $this->extra_filter_header[$k] = $v;
+                }
                 if(($t = $this->set_range_date($v['id'], $v['value'])) && sizeof($t)>0){
                     foreach($t as $k2 => $v2){
                         if(isset($this->extra_filter_header[$k2]['value'])){
@@ -108,12 +117,6 @@ class lensesMain{
                 $temp[$v['id']] = $v;
             }
             $this->extra_filter_header = $temp;
-            
-            foreach($this->user_config_get('extra_filter_'.$this->title, array()) as $k => $v){
-                if(isset($this->extra_filter_header[$k])){
-                    $this->extra_filter_header[$k]['value'] = $v;
-                }
-            }
         }
         list($this->header,$this->freezePane) = $this->set_custom_view();
     }
@@ -127,7 +130,7 @@ class lensesMain{
             if($v=="td"){
                 $tdate = $this->to_display_date();
                 $fdate = $this->to_display_date();
-            }else if($v=="y7d"){
+            }else if($v=="yd"){
                 $tdate = $this->to_display_date("-1 day");
                 $fdate = $this->to_display_date("-1 day");
             }else if($v=="7d"){

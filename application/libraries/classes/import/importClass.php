@@ -144,7 +144,7 @@ class importClass{
         if(is_array($skucode)){
             if($t = $this->get_warehouse_item($skucode)){
                 $sql = 'select b.account_id,a.id store_item_id,b.sales_fees_pect,b.sales_fees_fixed,b.paypal_fees_pect,b.paypal_fees_fixed,b.name store_name
-                        ,d.cost_price
+                        ,d.cost_price,a.store_skucode
                         from store_item a
                         join stores b on a.store_id=b.id
                         join marketplaces c on b.marketplace_id=c.id
@@ -157,7 +157,7 @@ class importClass{
             }
         }else{
             $sql = 'select b.account_id,a.id store_item_id,b.sales_fees_pect,b.sales_fees_fixed,b.paypal_fees_pect,b.paypal_fees_fixed,b.name store_name
-                    ,d.cost_price
+                    ,d.cost_price,a.store_skucode
                     from store_item a
                     join stores b on a.store_id=b.id
                     join marketplaces c on b.marketplace_id=c.id
@@ -394,8 +394,8 @@ class importClass{
         return $return;
     }
     
-    public function excel_get($row = 0,$col = ''){
-        $return = "";
+    public function excel_get($row = 0,$col = '',$default = ''){
+        $return = null;
         
         static $courier_list = false;
         static $courier_pattern = false;
@@ -436,6 +436,10 @@ class importClass{
             }
         }else if($t=='system_shipment_date'){
             $return = date("Y-m-d H:i:s",strtotime($return));
+        }
+        
+        if(is_null($return)){
+            $return = $default;
         }
         
         return $return;

@@ -30,7 +30,7 @@ class lensesSalesEntry extends lensesMain{
         $this->search_query = 'select * from (select a.id
             , b.name account_name
             , g.name store_name
-            , c.store_skucode
+            , a.store_skucode
             , d.name product_name
             , e.code2 option_name
             , a.buyer_id, a.buyer_name
@@ -277,7 +277,7 @@ class lensesSalesEntry extends lensesMain{
                     }
                 }
             }
-            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price');
+            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price','store_skucode');
             foreach($field_list as $field){
                 if(isset($value[$field])){
                     $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
