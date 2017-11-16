@@ -30,7 +30,7 @@ class lensesSalesEntry extends lensesMain{
         $this->search_query = 'select * from (select a.id
             , b.name account_name
             , g.name store_name
-            , c.store_skucode
+            , a.store_skucode
             , d.name product_name
             , e.code2 option_name
             , a.buyer_id, a.buyer_name
