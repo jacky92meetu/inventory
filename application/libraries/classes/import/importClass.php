@@ -205,7 +205,7 @@ class importClass{
                     $k = str_replace('system_', '', $k);
                     $value_list[] = '`'.$k.'`=""';
                     if(!empty($value[$k])){
-                        $value_list[] = '`'.$k.'`="'.$value[$k].'"';
+                        $value_list[] = '`'.$k.'`="'.$this->clean_data($value[$k]).'"';
                     }
                 }
                 $sql = 'UPDATE transactions_cache SET '.implode(",", $value_list).' WHERE id=?';
@@ -220,7 +220,7 @@ class importClass{
             $return['success'][] = $value['sales_id'];
             $value_list = array();
             foreach($value as $k => $v){
-                $value_list[] = '`'.$k.'`="'.$v.'"';
+                $value_list[] = '`'.$k.'`="'.$this->clean_data($v).'"';
             }
             $sql = 'INSERT INTO transactions_cache SET '.implode(",", $value_list);
             $this->CI->db->query($sql);
@@ -253,7 +253,7 @@ class importClass{
                     unset($row2['id']);
                     $value_list = array();
                     foreach($row2 as $k => $v){
-                        $value_list[] = '`'.$k.'`="'.$v.'"';
+                        $value_list[] = '`'.$k.'`="'.$this->clean_data($v).'"';
                     }
                     $sql = 'INSERT INTO transactions_cache SET '.implode(",", $value_list);
                     $this->CI->db->query($sql);
@@ -451,6 +451,12 @@ class importClass{
             $return = $this->excel_data[$row][$this->excel_cols[$col]] = $val;
         }
         return $return;
+    }
+    
+    public function clean_data($value){
+        $value = str_ireplace(array("'","\""), "", $value);
+        $value = $this->CI->db->escape_str($value);
+        return $value;
     }
     
 }
