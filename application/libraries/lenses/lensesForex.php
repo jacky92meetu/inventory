@@ -36,6 +36,7 @@ class lensesForex extends lensesMain{
         $header_list[] = array('id'=>'fdate','name'=>'Date','editable'=>true,'is_date'=>true,'is_date_highlight'=>true,'filter-sorting'=>'desc');
         $temp = explode(",",$temp);
         foreach($temp as $v){
+            if(strtolower($this->default_currency) == strtolower($v)){continue;}
             $select_list[] = ',ifnull('.strtolower($v."_rate").',0) '.strtolower($v."_rate");
             $table_list[] = 'LEFT JOIN (SELECT created_date sdate, rate '.strtolower($v."_rate").' FROM exchange_rate WHERE from_code="'.$this->default_currency.'" AND to_code="'.$v.'") T_'.$v.' ON a.fdate=T_'.$v.'.sdate';
             $header_list[] = array('id'=>strtolower($v."_rate"),'name'=>strtoupper($v),'editable'=>true);

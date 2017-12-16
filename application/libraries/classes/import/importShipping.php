@@ -176,7 +176,12 @@ class importShippingClass extends importClass{
             
             $title = $data['product_name']." ".$data['option_name'];
             if($data['quantity']>1){
-                $title = $data['product_name']." ".$data['option_name']." * ".$data['quantity'];
+                $temp = array();
+                foreach(explode(",",$data['option_name']) as $v){
+                    $temp[] = $v." * ".$data['quantity'];
+                }
+                $temp = implode(", ",$temp);
+                $title = $data['product_name']." ".$temp;
             }
             $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
@@ -298,7 +303,12 @@ class importShippingClass extends importClass{
             
             $title = $data['product_name']." ".$data['option_name'];
             if($data['quantity']>1){
-                $title = $data['product_name']." ".$data['option_name']." * ".$data['quantity'];
+                $temp = array();
+                foreach(explode(",",$data['option_name']) as $v){
+                    $temp[] = $v." * ".$data['quantity'];
+                }
+                $temp = implode(", ",$temp);
+                $title = $data['product_name']." ".$temp;
             }
             $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $title);
             $worksheet->setCellValueExplicitByColumnAndRow(12,$row, "PACKAGE");
