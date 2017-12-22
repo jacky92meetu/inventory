@@ -44,6 +44,14 @@ class lensesProducts extends lensesMain{
         return $result;
     }
     
+    function ajax_custom_form_save(){
+        $return = parent::ajax_custom_form_save();
+        if($return['status']=='1'){
+            $this->update_store();
+        }
+        return $return;
+    }
+    
     function ajax_delete(){
         $return = array("status"=>"0","message"=>"");
         $selection = $this->CI->input->post('selection',true);
