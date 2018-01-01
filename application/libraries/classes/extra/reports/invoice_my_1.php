@@ -56,7 +56,7 @@ $worksheet->setCellValueExplicit('H13', $arguments['header']['sales_id']);
 
 $worksheet->setCellValueExplicit('A26', $arguments['header']['acc_comp_comments']);
 $worksheet->getStyle('A26')->getFont()->setSize(11);
-$worksheet->setCellValueExplicit('A28', "Currency rate: MYR1 = ".strtoupper($arguments['header']['currency']).round(1/floatval($arguments['header']['rate']),4));
+$worksheet->setCellValueExplicit('A28', "Currency rate: MYR".round(1/floatval($arguments['header']['rate']),4)." = ".strtoupper($arguments['header']['currency'])."1");
 $worksheet->getStyle('A28')->getFont()->setSize(10);
 
 $data_row = 16;
