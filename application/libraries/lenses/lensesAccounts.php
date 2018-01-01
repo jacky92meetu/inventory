@@ -17,7 +17,23 @@ class lensesAccounts extends lensesMain{
         $this->table = "accounts";
         $this->title = "Accounts";
         $this->selected_menu = "accounts";
-        $this->custom_form = false;
+        $this->freezePane = 2;
+        $this->is_required = false;
+        $this->custom_form = true;
+        
+        $this->header = array(
+            array('id'=>'id','name'=>'ID'),
+            array('id'=>'name','name'=>'Account Name','editable'=>true),
+            array('id'=>'acc_comp_name','name'=>'Comp. Name','editable'=>true),
+            array('id'=>'acc_comp_addr','name'=>'Comp. Addr.','editable'=>true,'is_textarea'=>'1'),
+            array('id'=>'acc_comp_tel','name'=>'Comp. Tel.','editable'=>true),
+            array('id'=>'acc_comp_fax','name'=>'Comp. Fax.','editable'=>true),
+            array('id'=>'acc_comp_tax_template','name'=>'Inv. Template','editable'=>true),
+            array('id'=>'acc_comp_tax_no','name'=>'Comp. Tax No.','editable'=>true),
+            array('id'=>'acc_comp_reg_no','name'=>'Comp. Reg. No.','editable'=>true),
+            array('id'=>'acc_comp_comments','name'=>'Inv. Comments','editable'=>true,'is_textarea'=>'1'),
+            array('id'=>'acc_comp_inv_prefix','name'=>'Inv. Prefix','editable'=>true),
+        );
     }
     
     function ajax_delete(){

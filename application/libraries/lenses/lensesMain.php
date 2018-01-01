@@ -472,6 +472,9 @@ class lensesMain{
                         if(isset($col['is_file'])){
                             $temp['is_file'] = '1';
                         }
+                        if(isset($col['is_textarea'])){
+                            $temp['is_textarea'] = '1';
+                        }
                         if(isset($col['value'])){
                             $temp['value'] = $col['value'];
                         }

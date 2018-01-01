@@ -20,6 +20,7 @@ class lensesSalesHistory extends lensesMain{
         $this->selected_menu = "sales_history";
         $this->freezePane = 4;
         $this->is_required = false;
+        $this->extra_btn = array();
         $this->custom_form = false;
         $this->add_btn = false;
         $this->ajax_url = base_url('ajax/sales_history');
@@ -37,6 +38,8 @@ class lensesSalesHistory extends lensesMain{
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
             , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed, a.cost_price
             ,b.id account_id, a.store_item_id, a.courier_id, g.id store_id, d.id product_id
+            ,if(ifnull(ti.sales_id,0)<>0,ti.inv_text,"") inv_no
+            ,if(ifnull(ti.sales_id,0)<>0,ifnull(ti.created_date,""),"") inv_date
             from transactions a
             join accounts b on a.account_id=b.id
             join store_item c on a.store_item_id=c.id
@@ -44,7 +47,9 @@ class lensesSalesHistory extends lensesMain{
             join products d on wi.product_id=d.id
             join option_item e on wi.item_id=e.id
             left join couriers f on a.courier_id=f.id
-            join stores g on c.store_id=g.id) a';
+            join stores g on c.store_id=g.id
+            left join transactions_inv ti on ti.sales_id=a.id
+            ) a';
         
         $supp_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM accounts ORDER BY name'))){
@@ -78,7 +83,7 @@ class lensesSalesHistory extends lensesMain{
         }
         
         $this->header = array(
-            array('id'=>'id','name'=>'ID','custom_col'=>'adj_frame'),
+            array('id'=>'id','name'=>'ID','custom_col'=>'adj_frame','filter-sorting'=>'desc'),
             array('id'=>'account_id','name'=>'Account','option_text'=>$supp_list),
             array('id'=>'store_name','name'=>'Store'),
             array('id'=>'store_skucode','name'=>'SKU'),
@@ -111,6 +116,8 @@ class lensesSalesHistory extends lensesMain{
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
             array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),
+            array('id'=>'inv_no','name'=>'Inv. No','goto'=>base_url('sales_history/print_invoice')),
+            array('id'=>'inv_date','name'=>'Inv. Created Date'),
         );
         
         $this->custom_header = array(
@@ -291,5 +298,32 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         }
         
         return parent::ajax_delete();
+    }
+    
+    function print_invoice(){
+        include_once(APPPATH.'libraries/classes/ExcelHelper.php');
+        $class = new ExcelHelper;
+        $data = array('header'=>array(),'data'=>array());
+        $id = $this->CI->input->post_get('id',true);
+        if(($result = $this->CI->db->query('select a.*,b.*,c.* from transactions a,accounts b,transactions_inv c where b.id=a.account_id and c.sales_id=a.sales_id and a.id = ? LIMIT 1',array($id))) && $result->num_rows()){
+            $data['header'] = $result->row_array();
+            $data['header']['buyer_fulladdr'] = preg_replace("#[\s]*,[,\s]+#iu",", ",trim($data['header']['buyer_address'].",\n".$data['header']['buyer_address2'].",\n".$data['header']['buyer_address3'].",\n".$data['header']['buyer_city'].", ".$data['header']['buyer_state'].", ".$data['header']['buyer_postcode'].", ".$data['header']['buyer_country']));
+        }
+        if(($result = $this->CI->db->query('select d.name product_name, e.code2 option_name, a.* from transactions a 
+                join store_item c on a.store_item_id=c.id
+                join warehouse_item wi on c.warehouse_item_id=wi.id
+                join products d on wi.product_id=d.id
+                join option_item e on wi.item_id=e.id
+                where a.sales_id = ?',array($data['header']['sales_id']))) && $result->num_rows()){
+            foreach($result->result_array() as $row){
+                if(!isset($data['header']['rate'])){
+                    $data['header']['currency'] = $row['selling_currency'];
+                    $data['header']['rate'] = $this->get_rate($row['selling_currency'], $row['payment_date']);
+                }
+                $data['data'][] = $row;
+            }
+        }
+        
+        return $class->exec('invoice_my_1',$data);
     }
 }
