@@ -303,27 +303,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
     function print_invoice(){
         include_once(APPPATH.'libraries/classes/ExcelHelper.php');
         $class = new ExcelHelper;
-        $data = array('header'=>array(),'data'=>array());
         $id = $this->CI->input->post_get('id',true);
-        if(($result = $this->CI->db->query('select a.*,b.*,c.* from transactions a,accounts b,transactions_inv c where b.id=a.account_id and c.sales_id=a.sales_id and a.id = ? LIMIT 1',array($id))) && $result->num_rows()){
-            $data['header'] = $result->row_array();
-            $data['header']['buyer_fulladdr'] = preg_replace("#[\s]*,[,\s]+#iu",", ",trim($data['header']['buyer_address'].",\n".$data['header']['buyer_address2'].",\n".$data['header']['buyer_address3'].",\n".$data['header']['buyer_city'].", ".$data['header']['buyer_state'].", ".$data['header']['buyer_postcode'].", ".$data['header']['buyer_country']));
-        }
-        if(($result = $this->CI->db->query('select d.name product_name, e.code2 option_name, a.* from transactions a 
-                join store_item c on a.store_item_id=c.id
-                join warehouse_item wi on c.warehouse_item_id=wi.id
-                join products d on wi.product_id=d.id
-                join option_item e on wi.item_id=e.id
-                where a.sales_id = ?',array($data['header']['sales_id']))) && $result->num_rows()){
-            foreach($result->result_array() as $row){
-                if(!isset($data['header']['rate'])){
-                    $data['header']['currency'] = $row['selling_currency'];
-                    $data['header']['rate'] = $this->get_rate($row['selling_currency'], $row['payment_date']);
-                }
-                $data['data'][] = $row;
-            }
-        }
-        
-        return $class->exec('invoice_my_1',$data);
+        return $class->exec('invoice_my_1',array('selected_id'=>$id,'lensesClass'=>$this),true);
     }
 }
