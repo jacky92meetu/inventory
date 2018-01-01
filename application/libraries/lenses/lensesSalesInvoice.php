@@ -34,9 +34,9 @@ class lensesSalesInvoice extends lensesMain{
             , GROUP_CONCAT(DISTINCT TRIM(CONCAT(d.name," ",e.code2," X ",a.quantity)) separator "\n") product_name
             , a.buyer_name, a.buyer_email
             , a.payment_date, a.sales_id
-            ,if(ifnull(ti.sales_id,0)<>0,ti.inv_text,"") inv_no
-            ,if(ifnull(ti.sales_id,0)<>0,ifnull(ti.created_date,""),"") inv_date
-            ,if(ifnull(ti.sales_id,0)<>0,1,0) inv_create
+            ,if(ifnull(ti.sales_id,"")<>"",ti.inv_text,"") inv_no
+            ,if(ifnull(ti.sales_id,"")<>"",ifnull(ti.created_date,""),"") inv_date
+            ,if(ifnull(ti.sales_id,"")<>"",1,0) inv_create
             from transactions a
             join accounts b on a.account_id=b.id
             join store_item c on a.store_item_id=c.id
