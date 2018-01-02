@@ -32,7 +32,8 @@ class lensesReportYearlySales extends lensesMain{
             from transactions a
             left join store_item b on b.id=a.store_item_id
             left join stores c on c.id=b.store_id
-            {WHERE}
+            WHERE 1=1 '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND a.created_by="'.$_SESSION['user']['id'].'" ':'').'
+            {WHERE_AND}
             group by b.store_id,a.payment_date
             ) a';
         

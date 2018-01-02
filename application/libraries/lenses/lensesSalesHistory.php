@@ -49,6 +49,7 @@ class lensesSalesHistory extends lensesMain{
             left join couriers f on a.courier_id=f.id
             join stores g on c.store_id=g.id
             left join transactions_inv ti on ti.sales_id=a.id
+            '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE a.created_by="'.$_SESSION['user']['id'].'" {WHERE_AND} ':'').'
             ) a';
         
         $supp_list = array();
@@ -291,13 +292,27 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $return = false;
         
         $selection = $this->CI->input->post('selection',true);
-        if(($result = $this->CI->db->query('select * from transactions a where id in ?',array($selection))) && $result->num_rows()){
+        if(($result = $this->CI->db->query('select * from transactions a where id in ? '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND created_by="'.$_SESSION['user']['id'].'" ':''),array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
                 $this->sales_cancel($row['id']);
             }
         }
         
-        return parent::ajax_delete();
+        $return = array("status"=>"0","message"=>"");
+        
+        if($selection=="ALL"){
+            $sql = 'DELETE FROM '.$this->table.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE created_by="'.$_SESSION['user']['id'].'" ':'');
+            $this->delete_query = $sql;
+        }else if(strlen($this->delete_query)==0){
+            $sql = 'DELETE FROM '.$this->table.' WHERE id IN ? '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND created_by="'.$_SESSION['user']['id'].'" ':'');
+            $this->delete_query = $sql;
+        }
+        //$sql = sprintf($this->delete_query,implode(',',$selection));
+        if(($result = $this->CI->db->query($this->delete_query,array($selection)))){
+            $return['status'] = "1";
+        }
+        
+        return $return;
     }
     
     function print_invoice(){

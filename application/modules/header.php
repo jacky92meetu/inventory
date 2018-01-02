@@ -19,13 +19,13 @@ if (!defined('BASEPATH'))
     );
     
     $menu_list = array();
-    $sql = 'select * from user_group_privileges_list';
+    $sql = 'select * from user_group_privileges_list WHERE IFNULL(url,"")<>"" ';
     if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
         require_once(APPPATH.'libraries/lenses/lensesMain.php');
         $class = new lensesMain();
         $temp = $result->result_array();
         foreach($temp as $r){
-            if(!$class->get_user_access($_SESSION['user']['user_type'], $r['code'])){
+            if(empty($r['url']) || !$class->get_user_access($_SESSION['user']['user_type'], $r['code'])){
                 continue;
             }
             $temp2 = &$menu_list;

@@ -228,6 +228,7 @@ class importClass{
             foreach($value as $k => $v){
                 $value_list[] = '`'.$k.'`="'.$this->clean_data($v).'"';
             }
+            $value_list[] = '`created_by`="'.$this->clean_data($_SESSION['user']['id']).'"';
             $sql = 'INSERT INTO transactions_cache SET '.implode(",", $value_list);
             $this->CI->db->query($sql);
         }
@@ -261,6 +262,7 @@ class importClass{
                     foreach($row2 as $k => $v){
                         $value_list[] = '`'.$k.'`="'.$this->clean_data($v).'"';
                     }
+                    $value_list[] = '`created_by`="'.$this->clean_data($_SESSION['user']['id']).'"';
                     $sql = 'INSERT INTO transactions_cache SET '.implode(",", $value_list);
                     $this->CI->db->query($sql);
                     $trans_id = $this->CI->db->insert_id();
