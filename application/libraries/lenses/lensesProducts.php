@@ -57,10 +57,21 @@ class lensesProducts extends lensesMain{
         $selection = $this->CI->input->post('selection',true);
         if(($result = $this->CI->db->query('select * from '.$this->table.' a where id in ?',array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
-                if(($result2 = $this->CI->db->query('select * from warehouse_item a where product_id=? LIMIT 1',array($row['id']))) && $result2->num_rows()){
+                if(($result2 = $this->CI->db->query('select c.id from warehouse_item c 
+                    left join store_item b on b.warehouse_item_id=c.id
+                    left join transactions a on a.store_item_id=b.id
+                    where (a.id is not null) and c.product_id=? LIMIT 1',array($row['id']))) && $result2->num_rows()){
                     $return['message'].= 'Delete Fail! Some data required "'.$row['name'].'".
     ';
                 }else{
+                    if(($result2 = $this->CI->db->query('select b.id from warehouse_item c 
+                        join store_item b on b.warehouse_item_id=c.id
+                        where c.product_id=?',array($row['id']))) && $result2->num_rows()){
+                        foreach($result2->result_array() as $row2){
+                            $this->CI->db->query('DELETE FROM store_item WHERE id=?',array($row2['id']));
+                        }
+                    }
+                    $this->CI->db->query('DELETE FROM warehouse_item WHERE product_id=?',array($row['id']));
                     if($this->CI->db->query('DELETE FROM '.$this->table.' WHERE id=?',array($row['id']))){
                         $return['status'] = "1";
                     }
