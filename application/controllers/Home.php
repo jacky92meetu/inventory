@@ -20,7 +20,7 @@ class Home extends CI_Controller {
             */
 	}
         
-        public function view($view = ""){
+        public function view($view = "", $view2 = ""){
             if(!isset($_SESSION['user'])){
                 redirect(base_url("/home/login"),'location');
             }
@@ -32,8 +32,10 @@ class Home extends CI_Controller {
             include_once($path);
             if(class_exists($name)){
                 $class = new $name;
-                if(method_exists($class, 'view')){
-                    return $class->view($view);
+                if(!empty($view2) && method_exists($class, $view2)){
+                    return call_user_func(array($class,$view2), trim($view."/".$view2,"/"));
+                }else if(method_exists($class, 'view')){
+                    return call_user_func(array($class,'view'), $view);
                 }
             }
             redirect(base_url("/"),'location');

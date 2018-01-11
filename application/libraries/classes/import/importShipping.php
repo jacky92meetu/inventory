@@ -54,9 +54,9 @@ class importShippingClass extends importClass{
             $item_list = $result->result_array();
         }
         
-        if(stristr($name, 'sing')!==FALSE){
+        if(stristr($template, 'sing')!==FALSE){
             $this->singpost_export($item_list);
-        }else if(stristr($name, 'global')!==FALSE){
+        }else if(stristr($template, 'global')!==FALSE){
             $this->globalmail_export($item_list);
         }
         exit;

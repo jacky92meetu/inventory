@@ -53,7 +53,11 @@ $route['default_controller'] = 'home';
 $route['404_override'] = 'home/index';
 $route['translate_uri_dashes'] = FALSE;
 
+$route['live_update'] = 'home/live_update';
+
+$route['ajax/(:any)/(:any)'] = 'ajax/func/$1/$2';
 $route['ajax/(:any)'] = 'ajax/func/$1';
 
-$route['live_update'] = 'home/live_update';
+$route['home/(:any)'] = 'home/$1';
+$route['(:any)/(:any)'] = 'home/view/$1/$2';
 $route['(:any)'] = 'home/view/$1';

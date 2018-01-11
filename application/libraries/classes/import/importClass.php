@@ -104,23 +104,29 @@ class importClass{
                     foreach($temp2 as $c){
                         foreach($temp_ops as $p){
                             if(stristr($c,$p['name'])!==FALSE){
-                                $count[$p['code']] = $p['code'];
+                                $count[$p['code']] = $p;
                                 continue(2);
                             }
                         }
                         foreach($temp_ops as $p){
                             foreach(explode(' ',$p['name']) as $d){
                                 if(stristr($c,$d)!==FALSE && !isset($count[$p['code']])){
-                                    $count[$p['code']] = $p['code'];
+                                    $count[$p['code']] = $p;
                                     continue(3);
                                 }
                             }
                         }
                     }
                     if(sizeof($temp2)==sizeof($count)){
+                        foreach($count as $p){
+                            if(stripos($p['code'], ",")!==FALSE){
+                                $selected_option = $p;
+                                break(2);
+                            }
+                        }
                         foreach(array_reverse($temp_ops) as $p){
                             $temp3 = explode(',',$p['code']);
-                            if(sizeof($count)==sizeof($temp3) && ($temp4 = array_intersect($count, $temp3)) && sizeof($temp3)==sizeof($temp4)){
+                            if(sizeof($count)==sizeof($temp3) && ($temp4 = array_intersect(array_keys($count), $temp3)) && sizeof($temp3)==sizeof($temp4)){
                                 if(sizeof($temp2) > $temp5){
                                     $temp5 = sizeof($temp2);
                                     $selected_option = $p;
@@ -222,6 +228,7 @@ class importClass{
             foreach($value as $k => $v){
                 $value_list[] = '`'.$k.'`="'.$this->clean_data($v).'"';
             }
+            $value_list[] = '`created_by`="'.$this->clean_data($_SESSION['user']['id']).'"';
             $sql = 'INSERT INTO transactions_cache SET '.implode(",", $value_list);
             $this->CI->db->query($sql);
         }
@@ -255,6 +262,7 @@ class importClass{
                     foreach($row2 as $k => $v){
                         $value_list[] = '`'.$k.'`="'.$this->clean_data($v).'"';
                     }
+                    $value_list[] = '`created_by`="'.$this->clean_data($_SESSION['user']['id']).'"';
                     $sql = 'INSERT INTO transactions_cache SET '.implode(",", $value_list);
                     $this->CI->db->query($sql);
                     $trans_id = $this->CI->db->insert_id();
@@ -350,6 +358,9 @@ class importClass{
                                 $step = 2;
                                 break;
                             }
+                            foreach($row as &$v){
+                                $v = iconv(mb_detect_encoding($v, "UTF-8,ISO-8859-1"), "UTF-8", $v);
+                            }
                             $data[] = $row;
                         }
                         fclose($handle);
@@ -357,6 +368,9 @@ class importClass{
                     if ($step==2 && ($handle = fopen($file, "r")) !== FALSE) {
                         $data = array();
                         while (($row = fgetcsv($handle, 1024, "\t")) !== FALSE) {
+                            foreach($row as &$v){
+                                $v = iconv(mb_detect_encoding($v, "UTF-8,ISO-8859-1"), "UTF-8", $v);
+                            }
                             $data[] = $row;
                         }
                         fclose($handle);

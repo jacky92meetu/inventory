@@ -20,6 +20,7 @@ class lensesSalesHistory extends lensesMain{
         $this->selected_menu = "sales_history";
         $this->freezePane = 4;
         $this->is_required = false;
+        $this->extra_btn = array();
         $this->custom_form = false;
         $this->add_btn = false;
         $this->ajax_url = base_url('ajax/sales_history');
@@ -37,6 +38,8 @@ class lensesSalesHistory extends lensesMain{
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
             , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed, a.cost_price
             ,b.id account_id, a.store_item_id, a.courier_id, g.id store_id, d.id product_id
+            ,if(ifnull(ti.sales_id,0)<>0,ti.inv_text,"") inv_no
+            ,if(ifnull(ti.sales_id,0)<>0,ifnull(ti.created_date,""),"") inv_date
             from transactions a
             join accounts b on a.account_id=b.id
             join store_item c on a.store_item_id=c.id
@@ -44,7 +47,10 @@ class lensesSalesHistory extends lensesMain{
             join products d on wi.product_id=d.id
             join option_item e on wi.item_id=e.id
             left join couriers f on a.courier_id=f.id
-            join stores g on c.store_id=g.id) a';
+            join stores g on c.store_id=g.id
+            left join transactions_inv ti on ti.sales_id=a.id
+            '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE a.created_by="'.$_SESSION['user']['id'].'" {WHERE_AND} ':'').'
+            ) a';
         
         $supp_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM accounts ORDER BY name'))){
@@ -78,7 +84,7 @@ class lensesSalesHistory extends lensesMain{
         }
         
         $this->header = array(
-            array('id'=>'id','name'=>'ID','custom_col'=>'adj_frame'),
+            array('id'=>'id','name'=>'ID','custom_col'=>'adj_frame','filter-sorting'=>'desc'),
             array('id'=>'account_id','name'=>'Account','option_text'=>$supp_list),
             array('id'=>'store_name','name'=>'Store'),
             array('id'=>'store_skucode','name'=>'SKU'),
@@ -111,6 +117,8 @@ class lensesSalesHistory extends lensesMain{
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
             array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),
+            array('id'=>'inv_no','name'=>'Inv. No','goto'=>base_url('sales_history/print_invoice')),
+            array('id'=>'inv_date','name'=>'Inv. Created Date'),
         );
         
         $this->custom_header = array(
@@ -284,12 +292,33 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $return = false;
         
         $selection = $this->CI->input->post('selection',true);
-        if(($result = $this->CI->db->query('select * from transactions a where id in ?',array($selection))) && $result->num_rows()){
+        if(($result = $this->CI->db->query('select * from transactions a where id in ? '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND created_by="'.$_SESSION['user']['id'].'" ':''),array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
                 $this->sales_cancel($row['id']);
             }
         }
         
-        return parent::ajax_delete();
+        $return = array("status"=>"0","message"=>"");
+        
+        if($selection=="ALL"){
+            $sql = 'DELETE FROM '.$this->table.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE created_by="'.$_SESSION['user']['id'].'" ':'');
+            $this->delete_query = $sql;
+        }else if(strlen($this->delete_query)==0){
+            $sql = 'DELETE FROM '.$this->table.' WHERE id IN ? '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND created_by="'.$_SESSION['user']['id'].'" ':'');
+            $this->delete_query = $sql;
+        }
+        //$sql = sprintf($this->delete_query,implode(',',$selection));
+        if(($result = $this->CI->db->query($this->delete_query,array($selection)))){
+            $return['status'] = "1";
+        }
+        
+        return $return;
+    }
+    
+    function print_invoice(){
+        include_once(APPPATH.'libraries/classes/ExcelHelper.php');
+        $class = new ExcelHelper;
+        $id = $this->CI->input->post_get('id',true);
+        return $class->exec('invoice_my_1',array('selected_id'=>$id,'lensesClass'=>$this),true);
     }
 }

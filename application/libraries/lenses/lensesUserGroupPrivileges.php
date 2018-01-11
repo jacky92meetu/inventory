@@ -38,7 +38,7 @@ class lensesUserGroupPrivileges extends lensesMain{
             where id not in (select priv_id from user_group_privileges where group_id=%1$s)',$this->CI->db->escape($id));
         $this->CI->db->query($sql);
         
-        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'description','name'=>'Description'),array('id'=>'priv_status','name'=>'Status','editable'=>true,'option_text'=>array('0'=>'Disable','1'=>'Enable')));
+        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'description','name'=>'Description','filter-sorting'=>'asc'),array('id'=>'priv_status','name'=>'Status','editable'=>true,'option_text'=>array('0'=>'Disable','1'=>'Enable')));
     }
     
 }

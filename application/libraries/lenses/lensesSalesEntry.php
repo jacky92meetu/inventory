@@ -48,7 +48,9 @@ class lensesSalesEntry extends lensesMain{
             join products d on wi.product_id=d.id
             join option_item e on wi.item_id=e.id
             left join couriers f on a.courier_id=f.id
-            join stores g on c.store_id=g.id) a';
+            join stores g on c.store_id=g.id
+            '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE a.created_by="'.$_SESSION['user']['id'].'" {WHERE_AND} ':'').'
+            ) a';
         
         $supp_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM accounts ORDER BY name'))){
@@ -207,7 +209,6 @@ class lensesSalesEntry extends lensesMain{
                 $file = tempnam(sys_get_temp_dir(), 'sales_import_');
                 $data = $value['file'];
                 $data = base64_decode($data);
-                $data = iconv(mb_detect_encoding($data, "UTF-8,ISO-8859-1"), "UTF-8", $data);
                 file_put_contents($file, $data);
                 if($import_type=="sales"){
                     $return = $class->sales_import($value['account_id'],$value['marketplace_template'], $file);
@@ -286,6 +287,7 @@ class lensesSalesEntry extends lensesMain{
             if($id>0){
                 $this->update_query = sprintf('UPDATE transactions_cache SET %s WHERE id="%s"',implode(',',$col_list),$id);
             }else{
+                $col_list['created_by'] = '`created_by`='.$this->CI->db->escape($_SESSION['user']['id']);
                 $this->update_query = sprintf('INSERT INTO transactions_cache SET %s',implode(',',$col_list));
             }
             $return = parent::ajax_custom_form_save();
@@ -340,7 +342,7 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
     function ajax_save_transactions(){
         $this->CI->load->library('cmessage');
         
-        if(($result = $this->CI->db->query('select * from transactions_cache a')) && $result->num_rows()){
+        if(($result = $this->CI->db->query('select * from transactions_cache a '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE a.created_by="'.$_SESSION['user']['id'].'" ':''))) && $result->num_rows()){
             foreach($result->result_array() as $row){
                 if(($result2 = $this->CI->db->query('select id from transactions where store_item_id=? and sales_id=? limit 1',array($row['store_item_id'],$row['sales_id']))) && ($row2 = $result2->row_array())){
                     $col_list = array();
@@ -387,6 +389,25 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $class = new ImportHelper;
         $class->shipping_export($courier_id,$_POST);
         exit;
+    }
+    
+    function ajax_delete(){
+        $return = array("status"=>"0","message"=>"");
+        $selection = $this->CI->input->post('selection',true);
+        
+        if($selection=="ALL"){
+            $sql = 'DELETE FROM '.$this->table.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE created_by="'.$_SESSION['user']['id'].'" ':'');
+            $this->delete_query = $sql;
+        }else if(strlen($this->delete_query)==0){
+            $sql = 'DELETE FROM '.$this->table.' WHERE id IN ? '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND created_by="'.$_SESSION['user']['id'].'" ':'');
+            $this->delete_query = $sql;
+        }
+        //$sql = sprintf($this->delete_query,implode(',',$selection));
+        if(($result = $this->CI->db->query($this->delete_query,array($selection)))){
+            $return['status'] = "1";
+        }
+        
+        return $return;
     }
     
 }

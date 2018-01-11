@@ -232,6 +232,12 @@ ul.sortable li.placeholder:before {
                             <div class="loading_status">Upload file here</div>
                         </div>
                     </div>
+                    <div class="col-xs-12 form-field default textarea-default hidden">
+                        <div class="form-group">
+                            <label class="control-label">Fieldname</label>
+                            <textarea class="form-control" placeholder="" required></textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -336,7 +342,7 @@ ul.sortable li.placeholder:before {
     function show_edit(obj,show){
         if(typeof show === 'undefined'||show===true){
             $(window).on('keyup',function(e){
-                if(e.keyCode==13){
+                if(!$(e.target).is('textarea') && e.keyCode==13){
                     data_save(obj);
                     return false;
                 }else if(e.keyCode==27){
@@ -454,6 +460,11 @@ ul.sortable li.placeholder:before {
                                         $('#custom_form_modal input[name="'+t2[0]+'|to_date"]').val("").datepicker("update");
                                     });
                                 }
+                            }else if(typeof data.data[i].is_textarea === 'string'){
+                                var c = container.find('.form-field.textarea-default.default.hidden').clone();
+                                c.removeClass('default hidden').appendTo(container);
+                                c.find('label').html(data.data[i].name);
+                                c.find('textarea').attr('name',data.data[i].id).val(data.data[i].value);
                             }else{
                                 var c = container.find('.form-field.text-default.default.hidden').clone();
                                 c.removeClass('default hidden').appendTo(container);
@@ -823,18 +834,39 @@ ul.sortable li.placeholder:before {
     }
     function extra_btn(obj){
         var list = $('#datatable-editable').find('tr[data-id].selected').map(function(a,b){return $(this).attr('data-id');}).get();
+        if($(obj).attr('require_select')=="require_select" && list.length==0){
+            swal({title:"",type:"warning",text:"Please select record!"});
+            return false;
+        }
         if($(obj).is('[custom_form]')){
-            if($(obj).attr('require_select')=="require_select" && list.length==0){
-                swal({title:"",type:"warning",text:"Please select record!"});
-                return false;
-            }
             return data_edit(obj,$(obj).attr('custom_form'),true);
         }
         var url = $(obj).attr('data-goto');
         if(window.confirm("Please click the button to continue the \""+$(obj).text()+"\".")){
             var post_data = {};
             post_data['selection'] = list;
-            post(url, post_data, '_self', 'POST');
+            if(url.indexOf("/ajax/")>=0){
+                console.log(post_data);
+                $.post(url, post_data ,function(data){
+                    if(typeof data.message === 'string' && data.message.length>0){
+                        show_notification(data.message,'Notification');
+                    }
+                    if(typeof data.func === 'function'){data.func(obj);}else if(typeof data.func === 'string' && data.func.indexOf("function(")==0){eval('('+data.func+')')();}
+                }, 'json')
+                .error(function(){
+                    show_notification('Submission to server error!','Notification','error');
+                })
+                .always(function(){
+                    show_processing(obj,false);
+                    $('#datatable-editable').DataTable().ajax.reload(function(){
+                        if(typeof $('#datatable-editable').data("selected_data_id") !== 'undefined'){
+                            $('#datatable-editable').parent().scrollTop($('#datatable-editable').data("selected_data_id"));
+                        }
+                    },false);
+                });
+            }else{
+                post(url, post_data, '_self', 'POST');
+            }
         }
     }
     function header_save(){
@@ -1052,7 +1084,7 @@ ul.sortable li.placeholder:before {
                     for(var i=0; i<data.length; i++){
                         var val = data[i];
                         if(thead_search.find('th:eq('+i+')[data-goto]').length){
-                            $(row).find('td:eq('+i+')').html('<a href="'+thead_search.find('th:eq('+i+')[data-goto]').attr('data-goto')+'?id='+$data_id+'">'+val+'</a>');
+                            $(row).find('td:eq('+i+')').html('<a href="javascript:void(0)" onclick="post(\''+thead_search.find('th:eq('+i+')[data-goto]').attr('data-goto')+'\',{id:\''+$data_id+'\'},\'_blank\')">'+val+'</a>');
                         }else if(thead_search.find('th:eq('+i+')[custom-col]').length){
                             $(row).find('td:eq('+i+')').html('<a href="javascript:void(0)" onclick="data_edit(this,\''+thead_search.find('th:eq('+i+')[custom-col]').attr('custom-col')+'\',true)">'+val+'</a>');
                         }
@@ -1072,11 +1104,11 @@ ul.sortable li.placeholder:before {
                     }
                     <?php if($editable){ ?>
                     $(row).find('td').last().addClass('actions').html('<div class="pull-right"><a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a></div>');
-                    <?php if($this->cpage->template_data['delete_btn'] || sizeof($this->cpage->template_data['extra_btn'])>0){ ?>
-                        $(row).find('td').not('.actions').on('click',function(){ $('tr[data-id="'+$(this).closest('tr[data-id]').attr('data-id')+'"]').toggleClass('selected'); });
-                        //$(row).find('td:first').html('<input type="checkbox" class="select_checkbox" />');
-                    <?php } ?>
                     $(row).find('td.editable_td').not('.actions').on('dblclick',function(){data_edit($(this).closest('tr').find('td.actions .edit-row'));});
+                    <?php } ?>
+                    <?php if($this->cpage->template_data['delete_btn'] || sizeof($this->cpage->template_data['extra_btn'])>0){ ?>
+                    $(row).find('td').not('.actions').on('click',function(){ $('tr[data-id="'+$(this).closest('tr[data-id]').attr('data-id')+'"]').toggleClass('selected'); });
+                    //$(row).find('td:first').html('<input type="checkbox" class="select_checkbox" />');
                     <?php } ?>
                 },
                 "columnDefs": [
