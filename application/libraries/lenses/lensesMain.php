@@ -135,13 +135,13 @@ class lensesMain{
                 $fdate = $this->to_display_date("-1 day");
             }else if($v=="7d"){
                 $tdate = $this->to_display_date();
-                $fdate = $this->to_display_date("-7 day");
+                $fdate = $this->to_display_date("-6 day");
             }else if($v=="21d"){
                 $tdate = $this->to_display_date();
-                $fdate = $this->to_display_date("-21 day");
+                $fdate = $this->to_display_date("-20 day");
             }else if($v=="30d"){
                 $tdate = $this->to_display_date();
-                $fdate = $this->to_display_date("-30 day");
+                $fdate = $this->to_display_date("-29 day");
             }else if($v=="cm"){
                 $tdate = $this->to_display_date("last day of this month");
                 $fdate = $this->to_display_date("first day of this month");

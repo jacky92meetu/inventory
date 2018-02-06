@@ -19,7 +19,7 @@
                         <div><h4>Total of Each<h4></div>
                         <ul class="list-inline chart-detail-list">
                             <?php foreach($dashboard_data['monthly_deals']['total2'] as $k => $v){ ?>
-                            <li style="display:block;"><?php echo $dashboard_data['monthly_deals']['header'][$k]; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                            <li style="display:block;"><?php echo (!empty($dashboard_data['monthly_deals']['header'][$k]))?$dashboard_data['monthly_deals']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
                             <?php } ?>
                             <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['monthly_deals']['total']; ?></span></li>
                         </ul>
@@ -60,7 +60,7 @@
                         <div><h4>Total of Each<h4></div>
                         <ul class="list-inline chart-detail-list">
                             <?php foreach($dashboard_data['monthly_profit']['total2'] as $k => $v){ ?>
-                            <li style="display:block;"><?php echo $dashboard_data['monthly_profit']['header'][$k]; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                            <li style="display:block;"><?php echo (!empty($dashboard_data['monthly_profit']['header'][$k]))?$dashboard_data['monthly_profit']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
                             <?php } ?>
                             <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['monthly_profit']['total']; ?></span></li>
                         </ul>

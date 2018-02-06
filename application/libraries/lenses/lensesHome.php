@@ -58,7 +58,7 @@ class lensesHome extends lensesMain{
                 left join warehouse_item c on c.id=warehouse_item_id
                 left join products d on d.id=c.product_id
                 left join option_item e on e.id=c.item_id
-                where a.payment_date>=DATE_FORMAT(date_add(now(),INTERVAL -30 DAY), "%Y-%m-%d")
+                where a.payment_date>=DATE_FORMAT(date_add(now(),INTERVAL -29 DAY), "%Y-%m-%d")
                 '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND a.created_by="'.$_SESSION['user']['id'].'" ':'').'
                 group by a.store_item_id
                 order by total_qty desc limit 10;'))){
@@ -73,7 +73,7 @@ class lensesHome extends lensesMain{
             from transactions a
             left join store_item b on b.id=a.store_item_id
             left join stores c on c.id=b.store_id
-            where a.payment_date>=DATE_FORMAT(date_add(now(),INTERVAL -30 DAY), "%Y-%m-%d")
+            where a.payment_date>DATE_FORMAT(date_add(now(),INTERVAL -29 DAY), "%Y-%m-%d")
             '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND a.created_by="'.$_SESSION['user']['id'].'" ':'').'
             group by b.store_id,a.payment_date
             ;'))){
@@ -123,7 +123,7 @@ class lensesHome extends lensesMain{
             from transactions a
             left join store_item b on b.id=a.store_item_id
             left join stores c on c.id=b.store_id
-            where a.payment_date>=DATE_FORMAT(date_add(now(),INTERVAL -30 DAY), "%Y-%m-%d")
+            where a.payment_date>=DATE_FORMAT(date_add(now(),INTERVAL -29 DAY), "%Y-%m-%d")
             '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND a.created_by="'.$_SESSION['user']['id'].'" ':'').'
             group by b.store_id,a.payment_date
             ;'))){
