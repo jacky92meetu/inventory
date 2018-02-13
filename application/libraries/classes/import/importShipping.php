@@ -165,7 +165,9 @@ class importShippingClass extends importClass{
             }
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, $temp);
             
-            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
+            //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
+            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, "100");
+            
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
             if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
                 $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
@@ -186,7 +188,10 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(41,$row, "MY");
-            $worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
+            
+            //$worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
+            $worksheet->setCellValueExplicitByColumnAndRow(42,$row, "1");
+            
             $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $title);
             
             $repeated_row[$data['buyer_name']] = $row;
