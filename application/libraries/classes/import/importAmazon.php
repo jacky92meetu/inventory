@@ -138,7 +138,7 @@ class importAmazonClass extends importClass{
                 
                 if(array_search($this->excel_get($row_count, 'transaction_type'),array('Order Payment','Refund'))!==FALSE && array_search($this->excel_get($row_count, 'payment_type'),array('Amazon fees','Other','Promo rebates'))!==FALSE){
                     if($this->excel_get($row_count, 'transaction_type')=="Refund"){
-                        $temp_list[$temp]['data']['selling_price'] = 0;
+                        //$temp_list[$temp]['data']['selling_price'] = 0;
                         $temp_list[$temp]['data']['transaction_status'] = '1';
                     }
                     $payment_amount = (float)preg_replace('#[^0-9\.-]#iu', '', $this->excel_get($row_count, 'payment_amount')) * -1;
