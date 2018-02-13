@@ -928,6 +928,10 @@ class lensesMain{
         }
     }
     
+    function get_random_id(){
+        return "SALES-".date("YmdHis")."-".rand(0, 9);
+    }
+    
     function get_rate($cur,$date=''){
         static $instance = array();
         if($date==''){
