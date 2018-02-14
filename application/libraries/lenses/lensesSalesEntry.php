@@ -394,6 +394,20 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         exit;
     }
     
+    function ajax_resend_sales(){
+        $return = array("status"=>"0","message"=>"");
+        $this->CI->load->library('cmessage');
+        $this->CI->cmessage->set_message_url('Resend sales successfully.','success','sales_entry');
+        return $return;
+    }
+    
+    function ajax_duplicate_sales(){
+        $return = array("status"=>"0","message"=>"");
+        $this->CI->load->library('cmessage');
+        $this->CI->cmessage->set_message_url('Duplicate sales successfully.','success','sales_entry');
+        return $return;
+    }
+    
     function ajax_delete(){
         $return = array("status"=>"0","message"=>"");
         $selection = $this->CI->input->post('selection',true);

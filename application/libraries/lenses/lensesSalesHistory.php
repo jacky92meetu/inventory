@@ -21,6 +21,8 @@ class lensesSalesHistory extends lensesMain{
         $this->freezePane = 4;
         $this->is_required = false;
         $this->extra_btn = array();
+        $this->extra_btn[] = array('name'=>'Resend Sales','url'=>base_url('ajax/sales_history?method=resend_sales'),'require_select'=>'1');
+        $this->extra_btn[] = array('name'=>'Duplicate Sales','url'=>base_url('ajax/sales_history?method=duplicate_sales'),'require_select'=>'1');
         $this->custom_form = false;
         $this->add_btn = false;
         $this->ajax_url = base_url('ajax/sales_history');
@@ -294,6 +296,16 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         }
         $return['data']['quantity'] = ['name'=>'quantity','option_text'=>$quantity_list,'value'=>array_shift($quantity_list)];
         */
+        return $return;
+    }
+    
+    function ajax_resend_sales(){
+        $return = array("status"=>"1","message"=>"Sales resend was created successfully.");
+        return $return;
+    }
+    
+    function ajax_duplicate_sales(){
+        $return = array("status"=>"1","message"=>"Sales duplicate was created successfully.");
         return $return;
     }
     
