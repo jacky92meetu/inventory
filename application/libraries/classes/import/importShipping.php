@@ -40,6 +40,7 @@ class importShippingClass extends importClass{
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
             , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed
             ,b.id account_id, a.store_item_id, a.courier_id, g.id store_id, d.id product_id
+            ,upper(if(ifnull(b.acc_comp_inv_prefix,"")<>"",b.acc_comp_inv_prefix,left(b.name,2))) account_code
             from transactions_cache a
             join accounts b on a.account_id=b.id
             join store_item c on a.store_item_id=c.id
@@ -165,7 +166,9 @@ class importShippingClass extends importClass{
             }
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, $temp);
             
-            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
+            //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
+            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, "100");
+            
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
             if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
                 $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
@@ -183,10 +186,14 @@ class importShippingClass extends importClass{
                 $temp = implode(", ",$temp);
                 $title = $data['product_name']." ".$temp;
             }
+            $title = "[".$data['account_code']."] ".$title;
             $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(41,$row, "MY");
-            $worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
+            
+            //$worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
+            $worksheet->setCellValueExplicitByColumnAndRow(42,$row, "1");
+            
             $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $title);
             
             $repeated_row[$data['buyer_name']] = $row;
@@ -310,6 +317,7 @@ class importShippingClass extends importClass{
                 $temp = implode(", ",$temp);
                 $title = $data['product_name']." ".$temp;
             }
+            $title = "[".$data['account_code']."] ".$title;
             $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $title);
             $worksheet->setCellValueExplicitByColumnAndRow(12,$row, "PACKAGE");
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, "M");

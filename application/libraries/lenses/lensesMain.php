@@ -29,7 +29,7 @@ class lensesMain{
     var $page_view = 'page-view';
     var $extra_filter_header = array();
     var $display_chart = false;
-    var $default_date_option = array('td'=>'Today','yd'=>'Yesterday','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
+    var $default_date_option = array('td'=>'Today','yd'=>'Yesterday','7d'=>'1 week','21d'=>'3 weeks','30d'=>'30 days','180d'=>'180 days','365d'=>'365 days','cm'=>'Current Month','lm'=>'Last Month','custom'=>'Custom Refer Below:');
     
     function __construct(){
         $this->CI = get_instance();
@@ -142,6 +142,12 @@ class lensesMain{
             }else if($v=="30d"){
                 $tdate = $this->to_display_date();
                 $fdate = $this->to_display_date("-29 day");
+            }else if($v=="180d"){
+                $tdate = $this->to_display_date();
+                $fdate = $this->to_display_date("-179 day");
+            }else if($v=="365d"){
+                $tdate = $this->to_display_date();
+                $fdate = $this->to_display_date("-364 day");
             }else if($v=="cm"){
                 $tdate = $this->to_display_date("last day of this month");
                 $fdate = $this->to_display_date("first day of this month");
@@ -926,6 +932,10 @@ class lensesMain{
         if(isset($temp[$tz])){
             date_default_timezone_set($temp[$tz]);
         }
+    }
+    
+    function get_random_id(){
+        return "SALES-".date("YmdHis")."-".rand(0, 9);
     }
     
     function get_rate($cur,$date=''){

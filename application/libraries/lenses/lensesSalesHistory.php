@@ -21,6 +21,8 @@ class lensesSalesHistory extends lensesMain{
         $this->freezePane = 4;
         $this->is_required = false;
         $this->extra_btn = array();
+        $this->extra_btn[] = array('name'=>'Resend Sales','url'=>base_url('ajax/sales_history?method=resend_sales'),'require_select'=>'1');
+        $this->extra_btn[] = array('name'=>'Duplicate Sales','url'=>base_url('ajax/sales_history?method=duplicate_sales'),'require_select'=>'1');
         $this->custom_form = false;
         $this->add_btn = false;
         $this->ajax_url = base_url('ajax/sales_history');
@@ -36,10 +38,10 @@ class lensesSalesHistory extends lensesMain{
             , a.selling_currency, a.quantity
             , a.selling_price, a.shipping_charges_received, a.payment_date, a.shipment_date
             , f.name courier_name, a.shipping_charges_paid, a.sales_id
-            , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed, a.cost_price
-            ,b.id account_id, a.store_item_id, a.courier_id, g.id store_id, d.id product_id
+            , a.paypal_trans_id, a.sales_fees_pect, a.sales_fees_fixed, a.paypal_fees_pect, a.paypal_fees_fixed, a.cost_price, a.transaction_status
             ,if(ifnull(ti.sales_id,0)<>0,ti.inv_text,"") inv_no
             ,if(ifnull(ti.sales_id,0)<>0,ifnull(ti.created_date,""),"") inv_date
+            ,b.id account_id, a.store_item_id, a.courier_id, g.id store_id, d.id product_id
             from transactions a
             join accounts b on a.account_id=b.id
             join store_item c on a.store_item_id=c.id
@@ -48,7 +50,7 @@ class lensesSalesHistory extends lensesMain{
             join option_item e on wi.item_id=e.id
             left join couriers f on a.courier_id=f.id
             join stores g on c.store_id=g.id
-            left join transactions_inv ti on ti.sales_id=a.id
+            left join transactions_inv ti on ti.sales_id=a.sales_id
             '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE a.created_by="'.$_SESSION['user']['id'].'" {WHERE_AND} ':'').'
             ) a';
         
@@ -117,6 +119,7 @@ class lensesSalesHistory extends lensesMain{
             array('id'=>'paypal_fees_pect','name'=>'Paypal Fee %','editable'=>true),
             array('id'=>'paypal_fees_fixed','name'=>'Paypal Fee Fixed','editable'=>true),
             array('id'=>'cost_price','name'=>'Cost Price','editable'=>true),
+            array('id'=>'transaction_status','name'=>'Transaction Status','option_text'=>array('0'=>'Normal','1'=>'Refund')),
             array('id'=>'inv_no','name'=>'Inv. No','goto'=>base_url('sales_history/print_invoice')),
             array('id'=>'inv_date','name'=>'Inv. Created Date'),
         );
@@ -163,6 +166,11 @@ class lensesSalesHistory extends lensesMain{
     }
     
     function ajax_custom_form(){
+        $id = $this->CI->input->post('id',true);
+        if($id>0 && ($result = $this->CI->db->query('select a.id from transactions a,transactions_inv b where a.sales_id=b.sales_id and a.id=? limit 1',$id)) && ($row = $result->row_array())){
+            return array("status"=>"0","message"=>"Not allow to change due to invoice created!");
+        }
+        
         $return = parent::ajax_custom_form();
         
         if($this->CI->input->post('type',true)=="adj_frame"){
@@ -190,6 +198,9 @@ class lensesSalesHistory extends lensesMain{
     function ajax_custom_form_save(){
         $return = array("status"=>"0","message"=>"");
         $id = $this->CI->input->post('id',true);
+        if($id>0 && ($result = $this->CI->db->query('select a.id from transactions a,transactions_inv b where a.sales_id=b.sales_id and a.id=? limit 1',$id)) && ($row = $result->row_array())){
+            return array("status"=>"0","message"=>"Not allow to change due to invoice created!");
+        }
         
         //check available store_item_id
         $store_item_id = $this->CI->input->post('value[store_item_id]',true);
@@ -285,6 +296,16 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         }
         $return['data']['quantity'] = ['name'=>'quantity','option_text'=>$quantity_list,'value'=>array_shift($quantity_list)];
         */
+        return $return;
+    }
+    
+    function ajax_resend_sales(){
+        $return = array("status"=>"1","message"=>"Sales resend was created successfully.");
+        return $return;
+    }
+    
+    function ajax_duplicate_sales(){
+        $return = array("status"=>"1","message"=>"Sales duplicate was created successfully.");
         return $return;
     }
     

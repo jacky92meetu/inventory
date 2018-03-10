@@ -358,8 +358,8 @@ class importClass{
                                 $step = 2;
                                 break;
                             }
-                            foreach($row as &$v){
-                                $v = iconv(mb_detect_encoding($v, "UTF-8,ISO-8859-1"), "UTF-8", $v);
+                            foreach($row as $k => $v){
+                                $row[$k] = iconv(mb_detect_encoding($v, "UTF-8,ISO-8859-1"), "UTF-8", $v);
                             }
                             $data[] = $row;
                         }
@@ -368,8 +368,8 @@ class importClass{
                     if ($step==2 && ($handle = fopen($file, "r")) !== FALSE) {
                         $data = array();
                         while (($row = fgetcsv($handle, 1024, "\t")) !== FALSE) {
-                            foreach($row as &$v){
-                                $v = iconv(mb_detect_encoding($v, "UTF-8,ISO-8859-1"), "UTF-8", $v);
+                            foreach($row as $k => $v){
+                                $row[$k] = iconv(mb_detect_encoding($v, "UTF-8,ISO-8859-1"), "UTF-8", $v);
                             }
                             $data[] = $row;
                         }

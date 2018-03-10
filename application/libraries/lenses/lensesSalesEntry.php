@@ -153,7 +153,7 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'shipment_date','name'=>'Shipment Date','is_date'=>'1','is_date_highlight'=>'1','editable'=>true),
             array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list,'editable'=>true),
             array('id'=>'shipping_charges_paid','name'=>'Shipment Charges Paid','editable'=>true),
-            array('id'=>'sales_id','name'=>'Sales ID','editable'=>true),
+            array('id'=>'sales_id','name'=>'Sales ID','value'=>$this->get_random_id(),'editable'=>true),
             array('id'=>'paypal_trans_id','name'=>'Paypal Transaction ID','editable'=>true),
             array('id'=>'sales_fees_pect','name'=>'Store Fee %','editable'=>true),
             array('id'=>'sales_fees_fixed','name'=>'Store Fee Fixed','editable'=>true),
@@ -281,6 +281,9 @@ class lensesSalesEntry extends lensesMain{
             $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price','store_skucode');
             foreach($field_list as $field){
                 if(isset($value[$field])){
+                    if($field=="sales_id" && $value[$field]==""){
+                        $value[$field] = $this->get_random_id();
+                    }
                     $col_list[$field] = '`'.$field.'`='.$this->CI->db->escape($value[$field]);
                 }
             }
@@ -389,6 +392,20 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
         $class = new ImportHelper;
         $class->shipping_export($courier_id,$_POST);
         exit;
+    }
+    
+    function ajax_resend_sales(){
+        $return = array("status"=>"0","message"=>"");
+        $this->CI->load->library('cmessage');
+        $this->CI->cmessage->set_message_url('Resend sales successfully.','success','sales_entry');
+        return $return;
+    }
+    
+    function ajax_duplicate_sales(){
+        $return = array("status"=>"0","message"=>"");
+        $this->CI->load->library('cmessage');
+        $this->CI->cmessage->set_message_url('Duplicate sales successfully.','success','sales_entry');
+        return $return;
     }
     
     function ajax_delete(){
