@@ -937,6 +937,7 @@ ul.sortable li.placeholder:before {
     var dataTableMouseMoveOverlay = $('<div class="dataTableMouseMoveOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;display:none;cursor:move;"></div>');
     dataTableMouseMoveOverlay.on({
         'mousemove': function(e) {
+            e.preventDefault();
             if(clicked){
                 var temp = 0;
                 temp = clickX - e.pageX;
@@ -947,11 +948,11 @@ ul.sortable li.placeholder:before {
                 clickX = e.pageX;
             }
         },
-        'mouseup': function() {
+        'mouseup': function(e) {
             clicked = false;
             $(this).hide();
         },
-        'mouseout': function() {
+        'mouseout': function(e) {
             clicked = false;
             $(this).hide();
         }
@@ -979,6 +980,7 @@ ul.sortable li.placeholder:before {
                         clickX = e.pageX;
                         $(this).on({
                             'mousemove': function(e) {
+                                e.preventDefault();
                                 if(clicked && (Math.abs(clickX - e.pageX)>0 || Math.abs(clickY - e.pageY)>0)){
                                     $(this).off('mousemove');
                                     dataTableMouseMoveOverlay.show();
@@ -987,7 +989,7 @@ ul.sortable li.placeholder:before {
                             }
                         });
                     },
-                    'mouseup': function() {
+                    'mouseup': function(e) {
                         clicked = false;
                         dataTableMouseMoveOverlay.hide();
                         $(this).off('mousemove');
