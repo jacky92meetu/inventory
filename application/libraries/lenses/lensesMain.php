@@ -292,7 +292,9 @@ class lensesMain{
             foreach($this->CI->input->post('columns',true) as $c){
                 if(strlen($c['search']['value'])>0 && isset($this->header[$count])){
                     if((bool)$c['search']['regex']===true && empty($this->header[$count]['option_text'])){
-                        $where_query[] = $this->header[$count]['id'].' LIKE "%'.$this->CI->db->escape_like_str($c['search']['value']).'%" ESCAPE "!" ';
+                        foreach(explode(" ",$c['search']['value']) as $t){
+                            $where_query[] = $this->header[$count]['id'].' LIKE "%'.$this->CI->db->escape_like_str($t).'%" ESCAPE "!" ';
+                        }
                     }else{
                         $where_query[] = $this->header[$count]['id'].' = '.$this->CI->db->escape($c['search']['value']);
                     }
