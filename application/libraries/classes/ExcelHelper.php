@@ -18,6 +18,9 @@ class ExcelHelper {
     public function exec($name = "", $arguments = array(), $to_pdf = false) {
         $file = dirname(__FILE__).'/extra/reports/'.$name.'.php';
         if(file_exists($file)){
+            if(is_array($arguments['selected_id']) && sizeof($arguments['selected_id'])==1){
+                $arguments['selected_id'] = implode("",$arguments['selected_id']);
+            }
             if(is_array($arguments['selected_id'])){
                 $zip_file = tempnam("tmp", "zip");
                 $zip = new ZipArchive();

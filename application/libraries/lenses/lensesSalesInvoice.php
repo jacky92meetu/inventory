@@ -21,8 +21,8 @@ class lensesSalesInvoice extends lensesMain{
         $this->is_required = false;
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Generate Invoice','url'=>base_url('ajax/sales_invoice?method=generate_invoice'),'require_select'=>'1');
-        $this->extra_btn[] = array('name'=>'Download Invoice as Excel','url'=>base_url('sales_invoice/download_invoice'),'require_select'=>'1');
-        $this->extra_btn[] = array('name'=>'Download Invoice as PDF','url'=>base_url('sales_invoice/download_invoice_pdf'),'require_select'=>'1');
+        $this->extra_btn[] = array('name'=>'Download Invoice as Excel','url'=>base_url('ajax/sales_invoice?method=generate_invoice&method2=download_invoice'),'require_select'=>'1');
+        $this->extra_btn[] = array('name'=>'Download Invoice as PDF','url'=>base_url('ajax/sales_invoice?method=generate_invoice&method2=download_invoice_pdf'),'require_select'=>'1');
         $this->custom_form = false;
         $this->add_btn = false;
         $this->delete_btn = false;
@@ -75,6 +75,7 @@ class lensesSalesInvoice extends lensesMain{
     function ajax_generate_invoice(){
         $return = array("status"=>"0","message"=>"");
         $selection = $this->CI->input->post('selection',true);
+        $method2 = $this->CI->input->post_get('method2',true);
         if(($result = $this->CI->db->query('select a.sales_id, a.account_id from transactions a left join transactions_inv b on b.sales_id=a.sales_id where b.sales_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
                 $this->CI->db->query('INSERT INTO transactions_inv SET account_id=?, sales_id=?',array($row['account_id'],$row['sales_id']));
@@ -84,6 +85,10 @@ class lensesSalesInvoice extends lensesMain{
             $return['status'] = "1";
         }else{
             $return['message'] = "Fail to generate invoice.";
+        }
+        if(array_search($method2,array("download_invoice","download_invoice_pdf"))!==FALSE){
+            $return['message'] .= "<div>Download in process...</div>";
+            $return['func'] = "function(){post('".base_url('/sales_invoice/'.$method2)."', {selection:\"".implode(",",$selection)."\"}, '_blank', 'POST');}";
         }
         return $return;
     }

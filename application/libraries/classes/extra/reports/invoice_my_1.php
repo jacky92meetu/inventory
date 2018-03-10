@@ -66,7 +66,8 @@ foreach($arguments['data'] as $row){
     if($count>0){
         $worksheet->insertNewRowBefore($data_row, 1);
     }
-    $worksheet->setCellValueExplicit('A'.$data_row, "IM_0");
+    //$worksheet->setCellValueExplicit('A'.$data_row, "IM_0");
+    $worksheet->setCellValueExplicit('A'.$data_row, "ZRE");
     $worksheet->mergeCells('B'.$data_row.':F'.$data_row);
     $worksheet->setCellValueExplicit('B'.$data_row, "[".$row['store_skucode']."] ".$row['product_name']." ".$row['option_name']." @ (".$row['selling_currency'].$row['selling_price'].")");
     $quantity = $row['quantity'];
