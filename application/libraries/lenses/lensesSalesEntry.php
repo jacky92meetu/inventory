@@ -257,7 +257,7 @@ class lensesSalesEntry extends lensesMain{
             if(($result = $this->CI->db->query('select id from transactions_cache where store_item_id=? AND sales_id=? AND id<>?
                 union distinct 
                 select id from transactions where store_item_id=? AND sales_id=? AND id<>?
-                limit 1',array($value['store_item_id'],$value['sales_id'],$id,$value['store_item_id'],$value['sales_id'],$id))) && $result->num_rows()){
+                limit 1',array($value['store_item_id'],$value['sales_id'],(!empty($id)?$id:0),$value['store_item_id'],$value['sales_id'],(!empty($id)?$id:0)))) && $result->num_rows()){
                 $return['message'] = 'Sales exists!';
                 return $return;
             }
@@ -396,15 +396,52 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
     
     function ajax_resend_sales(){
         $return = array("status"=>"0","message"=>"");
-        $this->CI->load->library('cmessage');
-        $this->CI->cmessage->set_message_url('Resend sales successfully.','success','sales_entry');
+        $selection = $this->CI->input->post('selection',true);
+        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','quantity','payment_date','sales_id','cost_price','store_skucode');
+        if(($result = $this->CI->db->query('select * from transactions a where id in ? '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND created_by="'.$_SESSION['user']['id'].'" ':''),array($selection))) && $result->num_rows()){
+            $count = 0;
+            foreach($result->result_array() as $row){
+                $temp = array_intersect_key($row,array_flip($field_list));
+                $temp['sales_id'] = "RESEND-".$temp['sales_id'];
+                $_POST['value'] = $temp;
+                if(($temp = $this->ajax_custom_form_save()) && $temp['status']=="1"){
+                    $count++;
+                }
+            }
+            if($count>0){
+                $return['status'] = "1";
+                $return['message'] = $count." record(s) was created as sales resend.";
+            }else{
+                $return['message'] = "Fail to create sales record!";
+            }
+        }
+        
         return $return;
     }
     
     function ajax_duplicate_sales(){
         $return = array("status"=>"0","message"=>"");
-        $this->CI->load->library('cmessage');
-        $this->CI->cmessage->set_message_url('Duplicate sales successfully.','success','sales_entry');
+        $selection = $this->CI->input->post('selection',true);
+        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','sales_id','sales_fees_pect','sales_fees_fixed','paypal_fees_pect','paypal_fees_fixed','cost_price','store_skucode');
+        if(($result = $this->CI->db->query('select * from transactions a where id in ? '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND created_by="'.$_SESSION['user']['id'].'" ':''),array($selection))) && $result->num_rows()){
+            $count = 0;
+            foreach($result->result_array() as $row){
+                $temp = array_intersect_key($row,array_flip($field_list));
+                $temp['sales_id'] = $this->get_random_id();
+                $temp['payment_date'] = date("Y-m-d");
+                $_POST['value'] = $temp;
+                if(($temp = $this->ajax_custom_form_save()) && $temp['status']=="1"){
+                    $count++;
+                }
+            }
+            if($count>0){
+                $return['status'] = "1";
+                $return['message'] = $count." record(s) was created as sales duplicate.";
+            }else{
+                $return['message'] = "Fail to create sales record!";
+            }
+        }
+        
         return $return;
     }
     

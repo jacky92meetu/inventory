@@ -63,7 +63,7 @@ where (ifnull(w.allow_combo,"")="Y" or ifnull(c.type,"0")="1") and a.warehouse_i
         if(strlen($temp = $this->CI->input->post('type',true))>0 && $temp=="adj_quantity"){
             $warehouse_list = array();
             $cur_warehouse_id = $this->CI->input->get('id',0);
-            if(($result = $this->CI->db->query('SELECT id,name FROM warehouses WHERE id<>? ORDER BY name',array($cur_warehouse_id)))){
+            if(($result = $this->CI->db->query('SELECT id,name FROM warehouses WHERE id<>? ORDER BY name',array((!empty($cur_warehouse_id)?$cur_warehouse_id:0))))){
                 foreach($result->result_array() as $value){
                     $warehouse_list[$value['id']] = $value['name'];
                 }
