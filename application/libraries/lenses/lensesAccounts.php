@@ -33,6 +33,7 @@ class lensesAccounts extends lensesMain{
             array('id'=>'acc_comp_reg_no','name'=>'Comp. Reg. No.','editable'=>true),
             array('id'=>'acc_comp_comments','name'=>'Inv. Comments','editable'=>true,'is_textarea'=>'1'),
             array('id'=>'acc_comp_inv_prefix','name'=>'Inv. Prefix','editable'=>true),
+            array('id'=>'acc_comp_cn_prefix','name'=>'CN. Prefix','editable'=>true),
         );
     }
     

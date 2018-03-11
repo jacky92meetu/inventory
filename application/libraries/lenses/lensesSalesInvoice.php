@@ -21,8 +21,11 @@ class lensesSalesInvoice extends lensesMain{
         $this->is_required = false;
         $this->extra_btn = array();
         $this->extra_btn[] = array('name'=>'Generate Invoice','url'=>base_url('ajax/sales_invoice?method=generate_invoice'),'require_select'=>'1');
+        $this->extra_btn[] = array('name'=>'Generate Credit Note','url'=>base_url('ajax/sales_invoice?method=generate_creditnote'),'require_select'=>'1');
         $this->extra_btn[] = array('name'=>'Download Invoice as Excel','url'=>base_url('ajax/sales_invoice?method=generate_invoice&method2=download_invoice'),'require_select'=>'1');
         $this->extra_btn[] = array('name'=>'Download Invoice as PDF','url'=>base_url('ajax/sales_invoice?method=generate_invoice&method2=download_invoice_pdf'),'require_select'=>'1');
+        $this->extra_btn[] = array('name'=>'Download Credit Note as Excel','url'=>base_url('ajax/sales_invoice?method=generate_creditnote&method2=download_creditnote'),'require_select'=>'1');
+        $this->extra_btn[] = array('name'=>'Download Credit Note as PDF','url'=>base_url('ajax/sales_invoice?method=generate_creditnote&method2=download_creditnote_pdf'),'require_select'=>'1');
         $this->custom_form = false;
         $this->add_btn = false;
         $this->delete_btn = false;
@@ -37,6 +40,9 @@ class lensesSalesInvoice extends lensesMain{
             ,if(ifnull(ti.sales_id,"")<>"",ti.inv_text,"") inv_no
             ,if(ifnull(ti.sales_id,"")<>"",ifnull(ti.created_date,""),"") inv_date
             ,if(ifnull(ti.sales_id,"")<>"",1,0) inv_create
+            ,if(ifnull(tcn.inv_id,"")<>"",tcn.cn_text,"") cn_no
+            ,if(ifnull(tcn.inv_id,"")<>"",ifnull(tcn.created_date,""),"") cn_date
+            ,if(ifnull(tcn.inv_id,"")<>"",1,0) cn_create
             from transactions a
             join accounts b on a.account_id=b.id
             join store_item c on a.store_item_id=c.id
@@ -46,6 +52,7 @@ class lensesSalesInvoice extends lensesMain{
             left join couriers f on a.courier_id=f.id
             join stores g on c.store_id=g.id
             left join transactions_inv ti on ti.sales_id=a.sales_id
+            left join transactions_inv_cn tcn on tcn.inv_id=ti.inv_id
             group by a.sales_id
             ) a';
         
@@ -69,6 +76,9 @@ class lensesSalesInvoice extends lensesMain{
             array('id'=>'inv_no','name'=>'Inv. No','goto'=>base_url('sales_invoice/print_invoice')),
             array('id'=>'inv_date','name'=>'Inv. Created Date'),
             array('id'=>'inv_create','name'=>'Inv. Was Create','option_text'=>array('0'=>'No','1'=>'Yes')),
+            array('id'=>'cn_no','name'=>'CN. No','goto'=>base_url('sales_invoice/print_creditnote')),
+            array('id'=>'cn_date','name'=>'CN. Created Date'),
+            array('id'=>'cn_create','name'=>'CN. Was Create','option_text'=>array('0'=>'No','1'=>'Yes')),
         );
     }
     
@@ -84,9 +94,30 @@ class lensesSalesInvoice extends lensesMain{
             $return['message'] = "Invoice(s) generated successfully.";
             $return['status'] = "1";
         }else{
-            $return['message'] = "Fail to generate invoice.";
+            $return['message'] = "Fail to generate Invoice.";
         }
         if(array_search($method2,array("download_invoice","download_invoice_pdf"))!==FALSE){
+            $return['message'] .= "<div>Download in process...</div>";
+            $return['func'] = "function(){post('".base_url('/sales_invoice/'.$method2)."', {selection:\"".implode(",",$selection)."\"}, '_blank', 'POST');}";
+        }
+        return $return;
+    }
+    
+    function ajax_generate_creditnote(){
+        $return = array("status"=>"0","message"=>"");
+        $selection = $this->CI->input->post('selection',true);
+        $method2 = $this->CI->input->post_get('method2',true);
+        if(($result = $this->CI->db->query('select b.inv_id, a.account_id from transactions a join transactions_inv b on b.sales_id=a.sales_id left join transactions_inv_cn c on c.inv_id=b.inv_id where c.cn_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
+            foreach($result->result_array() as $row){
+                $this->CI->db->query('INSERT INTO transactions_inv_cn SET account_id=?, inv_id=?',array($row['account_id'],$row['inv_id']));
+                $this->CI->db->query('UPDATE transactions_inv_cn a,accounts b SET a.cn_text=concat(ifnull(b.acc_comp_cn_prefix,""),right(concat("00000000",ifnull(a.cn_id,"")),8)) WHERE a.account_id=b.id and a.inv_id=?',array($row['inv_id']));
+            }
+            $return['message'] = "Credit Note(s) generated successfully.";
+            $return['status'] = "1";
+        }else{
+            $return['message'] = "Fail to generate Credit Note.";
+        }
+        if(array_search($method2,array("download_creditnote","download_creditnote_pdf"))!==FALSE){
             $return['message'] .= "<div>Download in process...</div>";
             $return['func'] = "function(){post('".base_url('/sales_invoice/'.$method2)."', {selection:\"".implode(",",$selection)."\"}, '_blank', 'POST');}";
         }
@@ -112,5 +143,26 @@ class lensesSalesInvoice extends lensesMain{
         $class = new ExcelHelper;
         $id = $this->CI->input->post_get('id',true);
         return $class->exec('invoice_my_1',array('selected_id'=>$id,'lensesClass'=>$this),true);
+    }
+    
+    function download_creditnote(){
+        include_once(APPPATH.'libraries/classes/ExcelHelper.php');
+        $class = new ExcelHelper;
+        $selection = $this->CI->input->post('selection',true);
+        return $class->exec('creditnote_my_1',array('selected_id'=>explode(",",$selection),'lensesClass'=>$this),false);
+    }
+    
+    function download_creditnote_pdf(){
+        include_once(APPPATH.'libraries/classes/ExcelHelper.php');
+        $class = new ExcelHelper;
+        $selection = $this->CI->input->post('selection',true);
+        return $class->exec('creditnote_my_1',array('selected_id'=>explode(",",$selection),'lensesClass'=>$this),true);
+    }
+    
+    function print_creditnote(){
+        include_once(APPPATH.'libraries/classes/ExcelHelper.php');
+        $class = new ExcelHelper;
+        $id = $this->CI->input->post_get('id',true);
+        return $class->exec('creditnote_my_1',array('selected_id'=>$id,'lensesClass'=>$this),true);
     }
 }
