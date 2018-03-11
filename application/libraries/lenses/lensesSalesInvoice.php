@@ -13,9 +13,9 @@ class lensesSalesInvoice extends lensesMain{
     }
     
     function setup(){
-        $this->CI->cpage->set('breadcrumb',array('Sales Invoice'=>''));
+        $this->CI->cpage->set('breadcrumb',array('Sales Invoice & Credit Note '=>''));
         $this->table = "transactions";
-        $this->title = "Sales Invoice";
+        $this->title = "Sales Invoice & Credit Note";
         $this->selected_menu = "sales_invoice";
         $this->freezePane = 5;
         $this->is_required = false;
