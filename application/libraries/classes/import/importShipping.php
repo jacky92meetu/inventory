@@ -232,7 +232,7 @@ class importShippingClass extends importClass{
                 $temp = implode(", ",$temp);
                 $title = $data['product_name']." ".$temp;
             }
-            $title = "[".$data['account_code']."] ".$title;
+            $title = strtoupper(substr($data['account_code'],0,1))."-".$title;
             $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
             //$worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, 15);
@@ -379,7 +379,7 @@ class importShippingClass extends importClass{
                 $temp = implode(", ",$temp);
                 $title = $data['product_name']." ".$temp;
             }
-            $title = "[".$data['account_code']."] ".$title;
+            $title = strtoupper(substr($data['account_code'],0,1))."-".$title;
             $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
             //$worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, 15);
@@ -511,7 +511,7 @@ class importShippingClass extends importClass{
                 $temp = implode(", ",$temp);
                 $title = $data['product_name']." ".$temp;
             }
-            $title = "[".$data['account_code']."] ".$title;
+            $title = strtoupper(substr($data['account_code'],0,1))."-".$title;
             $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $title);
             $worksheet->setCellValueExplicitByColumnAndRow(12,$row, "PACKAGE");
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, "M");
