@@ -59,8 +59,197 @@ class importShippingClass extends importClass{
             $this->singpost_export($item_list);
         }else if(stristr($template, 'global')!==FALSE){
             $this->globalmail_export($item_list);
+        }else if(stristr($template, 'parceldirect')!==FALSE){
+            $this->parceldirect_export($item_list);
         }
         exit;
+    }
+    
+    function parceldirect_export($item_list){
+        $template_path = APPPATH.'libraries/classes/templates/globalmail_export.xlsx';
+        if(!file_exists($template_path)){
+            exit;
+        }
+        
+        $inputFileType = PHPExcel_IOFactory::identify($template_path);
+        $objPHPExcel = PHPExcel_IOFactory::createReader($inputFileType);
+        $objPHPExcel = $objPHPExcel->load($template_path);
+                
+        $worksheet = $objPHPExcel->getSheetByName('Country Code');
+        $country_list = array();
+        $temp = $worksheet->toArray('',true,true,false);
+        foreach($temp as $v){
+            $name = strtoupper($v[0]);
+            $country_list[$name] = strtoupper($v[1]);
+        }
+        unset($temp);
+        $avail_shipping_list = array('PLE'=>array('US'),'PLT'=>array('GB', 'AU', 'TH', 'SG'));
+        $avail_Incoterm_list = array('DDP'=>array('US', 'TH', 'SG'),'DDU'=>array('AU', 'UK'));
+        
+        $worksheet = $objPHPExcel->getSheetByName('Sheet1');
+        
+        $repeated_row = array();
+        $field_limit = array();
+        $field_limit['sales_id'] = array('col_name'=>'C','col_id'=>2,'size'=>35);
+        $field_limit['buyer_name'] = array('col_name'=>'G','col_id'=>6,'size'=>30);
+        $field_limit['buyer_address'] = array('col_name'=>'H','col_id'=>7,'size'=>50);
+        $field_limit['buyer_address2'] = array('col_name'=>'I','col_id'=>8,'size'=>50);
+        $field_limit['buyer_address3'] = array('col_name'=>'J','col_id'=>9,'size'=>30);
+        $field_limit['buyer_city'] = array('col_name'=>'K','col_id'=>10,'size'=>30);
+        
+        $row = 2;
+        foreach($item_list as $data){
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+                $data['selling_currency'] = strtoupper($this->fp_cur);
+                $data['selling_price'] = $this->fp_amt;
+            }
+            
+            foreach(array('buyer_name','buyer_address') as $cf){
+                $temp = $data[$cf];
+                if(array_key_exists($temp, $repeated_row)!==FALSE){
+                    $worksheet->getStyle('A'.$row.':CA'.$row)->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => '96ffdd')
+                            )
+                        )
+                    );
+                    
+                    $worksheet->getStyle('A'.$repeated_row[$temp].':CA'.$repeated_row[$temp])->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => '96ffdd')
+                            )
+                        )
+                    );
+                    
+                    break;
+                }    
+            }
+            
+            $worksheet->setCellValueExplicitByColumnAndRow(0,$row, "5254892643");
+            $worksheet->setCellValueExplicitByColumnAndRow(1,$row, $data['store_name']);
+            $worksheet->setCellValueExplicitByColumnAndRow(2,$row, $data['sales_id']);
+            
+            foreach($field_limit as $k => $v){
+                if(!isset($data[$k])){continue;}
+                if(strlen($data[$k]) > $v['size']){
+                    $worksheet->getStyle('N'.$row)->applyFromArray(
+                        array(
+                            'fill' => array(
+                                'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                                'color' => array('rgb' => 'FF0000')
+                            )
+                        )
+                    );
+                }
+                $worksheet->setCellValueExplicitByColumnAndRow($v['col_id'],$row, $data[$k]);
+            }
+            
+            $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $data['buyer_state']);
+            $worksheet->setCellValueExplicitByColumnAndRow(12,$row, $data['buyer_postcode']);
+            
+            
+            $temp = strtoupper($data['buyer_country']);
+            if(array_key_exists($temp, $country_list)!==FALSE){
+                $temp = $country_list[$temp];
+            }else if(strlen($temp)==2 && array_search($temp, $country_list)!==FALSE){
+                
+            }else{
+                $worksheet->getStyle('N'.$row)->applyFromArray(
+                    array(
+                        'fill' => array(
+                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FF0000')
+                        )
+                    )
+                );
+                $temp = $data['buyer_country'];
+            }
+            $worksheet->setCellValueExplicitByColumnAndRow(13,$row, $temp);
+                        
+            $selected_shipping = "";
+            foreach($avail_shipping_list as $k => $v){
+                if(array_search(strtoupper($data['buyer_country']), $v)!==FALSE){
+                    $selected_shipping = $k;
+                    break;
+                }
+            }
+            if($selected_shipping==""){
+                $worksheet->getStyle('E'.$row)->applyFromArray(
+                    array(
+                        'fill' => array(
+                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FF0000')
+                        )
+                    )
+                );
+            }
+            $worksheet->setCellValueExplicitByColumnAndRow(4,$row, $selected_shipping);
+            
+            $selected_shipping = "";
+            foreach($avail_Incoterm_list as $k => $v){
+                if(array_search(strtoupper($data['buyer_country']), $v)!==FALSE){
+                    $selected_shipping = $k;
+                    break;
+                }
+            }
+            if($selected_shipping==""){
+                $worksheet->getStyle('W'.$row)->applyFromArray(
+                    array(
+                        'fill' => array(
+                            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                            'color' => array('rgb' => 'FF0000')
+                        )
+                    )
+                );
+            }
+            $worksheet->setCellValueExplicitByColumnAndRow(23,$row, $selected_shipping);
+            
+            
+            //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
+            $worksheet->setCellValueExplicitByColumnAndRow(16,$row, "100");
+            /*
+            $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+                $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
+            }else{
+                $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
+            }
+            */
+            $worksheet->setCellValueExplicitByColumnAndRow(20,$row, 'USD');
+            $worksheet->setCellValueExplicitByColumnAndRow(21,$row, 15);
+            $worksheet->setCellValueExplicitByColumnAndRow(33,$row, "Sunglasses case");
+            
+            $title = $data['product_name']." ".$data['option_name'];
+            if($data['quantity']>1){
+                $temp = array();
+                foreach(explode(",",$data['option_name']) as $v){
+                    $temp[] = $v." * ".$data['quantity'];
+                }
+                $temp = implode(", ",$temp);
+                $title = $data['product_name']." ".$temp;
+            }
+            $title = "[".$data['account_code']."] ".$title;
+            $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
+            //$worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
+            $worksheet->setCellValueExplicitByColumnAndRow(40,$row, 15);
+            $worksheet->setCellValueExplicitByColumnAndRow(41,$row, "MY");
+            
+            //$worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
+            $worksheet->setCellValueExplicitByColumnAndRow(42,$row, "1");
+            
+            $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $title);
+            $worksheet->setCellValueExplicitByColumnAndRow(47,$row, $title);
+            
+            $repeated_row[$data['buyer_name']] = $row;
+            $repeated_row[$data['buyer_address']] = $row;
+            $row++;
+        }
+        
+        $this->_export($objPHPExcel, $inputFileType, 'Parcel_Direct_'.date("YmdHis"));
     }
     
     function globalmail_export($item_list){
@@ -168,13 +357,17 @@ class importShippingClass extends importClass{
             
             //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
             $worksheet->setCellValueExplicitByColumnAndRow(16,$row, "100");
-            
+            /*
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
             if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
                 $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
             }else{
                 $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
             }
+            */
+            $worksheet->setCellValueExplicitByColumnAndRow(20,$row, 'USD');
+            $worksheet->setCellValueExplicitByColumnAndRow(21,$row, 15);
+            
             $worksheet->setCellValueExplicitByColumnAndRow(33,$row, "Sunglasses case");
             
             $title = $data['product_name']." ".$data['option_name'];
@@ -188,7 +381,8 @@ class importShippingClass extends importClass{
             }
             $title = "[".$data['account_code']."] ".$title;
             $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
-            $worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
+            //$worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
+            $worksheet->setCellValueExplicitByColumnAndRow(40,$row, 15);
             $worksheet->setCellValueExplicitByColumnAndRow(41,$row, "MY");
             
             //$worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
