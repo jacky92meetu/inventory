@@ -151,7 +151,7 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $data['buyer_state']);
             $worksheet->setCellValueExplicitByColumnAndRow(12,$row, $data['buyer_postcode']);
             
-            
+/**START********************************/            
             $temp = strtoupper($data['buyer_country']);
             if(array_key_exists($temp, $country_list)!==FALSE){
                 $temp = $country_list[$temp];
@@ -172,7 +172,7 @@ class importShippingClass extends importClass{
                         
             $selected_shipping = "";
             foreach($avail_shipping_list as $k => $v){
-                if(array_search(strtoupper($data['buyer_country']), $v)!==FALSE){
+                if(array_search(strtoupper($temp), $v)!==FALSE){
                     $selected_shipping = $k;
                     break;
                 }
@@ -191,7 +191,7 @@ class importShippingClass extends importClass{
             
             $selected_shipping = "";
             foreach($avail_Incoterm_list as $k => $v){
-                if(array_search(strtoupper($data['buyer_country']), $v)!==FALSE){
+                if(array_search(strtoupper($temp), $v)!==FALSE){
                     $selected_shipping = $k;
                     break;
                 }
@@ -207,7 +207,7 @@ class importShippingClass extends importClass{
                 );
             }
             $worksheet->setCellValueExplicitByColumnAndRow(23,$row, $selected_shipping);
-            
+/**END********************************/            
             
             //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
             $worksheet->setCellValueExplicitByColumnAndRow(16,$row, "100");
