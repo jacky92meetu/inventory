@@ -43,6 +43,8 @@ class lensesSalesInvoice extends lensesMain{
             ,if(ifnull(tcn.inv_id,"")<>"",tcn.cn_text,"") cn_no
             ,if(ifnull(tcn.inv_id,"")<>"",ifnull(tcn.created_date,""),"") cn_date
             ,if(ifnull(tcn.inv_id,"")<>"",1,0) cn_create
+            ,ifnull(tcn.cn_id,"") cn_id
+            ,ifnull(tcn.cn_reason,"") cn_reason
             from transactions a
             join accounts b on a.account_id=b.id
             join store_item c on a.store_item_id=c.id
@@ -77,9 +79,50 @@ class lensesSalesInvoice extends lensesMain{
             array('id'=>'inv_date','name'=>'Inv. Created Date'),
             array('id'=>'inv_create','name'=>'Inv. Was Create','option_text'=>array('0'=>'No','1'=>'Yes')),
             array('id'=>'cn_no','name'=>'CN. No','goto'=>base_url('sales_invoice/print_creditnote')),
-            array('id'=>'cn_date','name'=>'CN. Created Date'),
+            array('id'=>'cn_date','name'=>'CN. Created Date','custom_col'=>'adj_cn_reason'),
             array('id'=>'cn_create','name'=>'CN. Was Create','option_text'=>array('0'=>'No','1'=>'Yes')),
         );
+        
+        $this->adj_cn_reason_header = array(
+            array('id'=>'type','name'=>'type','hidden'=>'1','value'=>'cn_update'),
+            array('id'=>'id','name'=>'id','hidden'=>'1'),
+            array('id'=>'cn_id','name'=>'cn_id','hidden'=>'1'),
+            array('id'=>'store_skucode','name'=>'SKU'),
+            array('id'=>'product_name','name'=>'Frame/Color'),
+            array('id'=>'buyer_name','name'=>'Buyer Name'),
+            array('id'=>'buyer_email','name'=>'Buyer Email'),
+            array('id'=>'payment_date','name'=>'Payment Date','is_date'=>'1','is_date_highlight'=>'1'),
+            array('id'=>'sales_id','name'=>'Sales ID'),
+            array('id'=>'inv_no','name'=>'Inv. No','goto'=>base_url('sales_invoice/print_invoice')),
+            array('id'=>'inv_date','name'=>'Inv. Created Date'),
+            array('id'=>'cn_no','name'=>'CN. No','goto'=>base_url('sales_invoice/print_creditnote')),
+            array('id'=>'cn_date','name'=>'CN. Created Date','custom_col'=>'adj_cn_reason','is_date'=>'1','is_date_highlight'=>'1','editable'=>true),
+            array('id'=>'cn_reason','name'=>'CN. Reason','editable'=>true),
+        );
+    }
+    
+    function ajax_custom_form_save(){
+        $return = array("status"=>"0","message"=>"No record to be save.");
+        if($this->CI->input->post('value[type]',true)=="cn_update"){
+            $value = $this->CI->input->post('value',true);
+            $cn_id = intval($value['cn_id']);
+            $cn_date = $value['cn_date'];
+            $cn_reason = $value['cn_reason'];
+            $set_data_list = array('cn_reason=?');
+            $set_data_array = array($cn_reason);
+            if(($temp = explode('/', $cn_date)) && sizeof($temp)==3){
+                $cn_date = $temp[2].'-'.$temp[1].'-'.$temp[0];
+                $set_data_list[] = 'created_date=?';
+                $set_data_array[] = $cn_date;
+            }
+            $set_data_array[] = $cn_id;
+            $this->CI->db->query('UPDATE transactions_inv_cn SET '.implode(",",$set_data_list).' WHERE cn_id=? LIMIT 1',$set_data_array);
+            $return = array("status"=>"1","message"=>"");
+        }else{
+            $return = parent::ajax_custom_form_save();
+        }
+        
+        return $return;
     }
     
     function ajax_generate_invoice(){
