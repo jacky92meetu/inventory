@@ -40,7 +40,7 @@ class lensesStoreItem extends lensesMain{
             where a.store_id=%s) a',$this->CI->db->escape($id));
         $this->parent_id = array('key'=>'store_id','value'=>$id);
         
-        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Frame Model','custom_col'=>'adj_frame'),array('id'=>'option_name','name'=>'Color'),array('id'=>'store_skucode','name'=>'SKU Code','editable'=>true),array('id'=>'selling_price','name'=>'Selling Price','editable'=>true),array('id'=>'marketplace_item_id','name'=>'Item ID','editable'=>true),array('id'=>'marketplace_variation','name'=>'Variation Desc','editable'=>true),array('id'=>'item_status','name'=>'Enable?','editable'=>true,'option_text'=>array('0'=>'Disabled','1'=>'Enabled')));
+        $this->header = array(array('id'=>'id','name'=>'ID'),array('id'=>'name','name'=>'Frame Model','custom_col'=>'adj_frame'),array('id'=>'option_name','name'=>'Color'),array('id'=>'store_skucode','name'=>'SKU Code','editable'=>true),array('id'=>'selling_price','name'=>'Unit/Combo Selling Price','editable'=>true),array('id'=>'marketplace_item_id','name'=>'Item ID','editable'=>true),array('id'=>'marketplace_variation','name'=>'Variation Desc','editable'=>true),array('id'=>'item_status','name'=>'Enable?','editable'=>true,'option_text'=>array('0'=>'Disabled','1'=>'Enabled')));
     }
     
     function ajax_custom_form(){
