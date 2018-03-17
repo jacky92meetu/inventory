@@ -206,7 +206,7 @@ class importShippingClass extends importClass{
                     )
                 );
             }
-            $worksheet->setCellValueExplicitByColumnAndRow(23,$row, $selected_shipping);
+            $worksheet->setCellValueExplicitByColumnAndRow(22,$row, $selected_shipping);
 /**END********************************/            
             
             //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
