@@ -510,8 +510,7 @@ class lensesMain{
                 }
                 if(isset($col['hidden'])){
                     $temp['hidden'] = '1';
-                }
-                if(!isset($col['editable'])){
+                }else if(!isset($col['editable'])){
                     $temp['readonly'] = '1';
                 }
                 if(isset($col['is_file'])){
