@@ -125,7 +125,7 @@ if (!defined('BASEPATH'))
                             </li>
                             */ ?>
                             <li class="dropdown">
-                                <a href="#" class="dropdown-toggle waves-effect waves-light profile" data-toggle="dropdown" aria-expanded="true"><i class="fa fa-user"></i> </a>
+                                <a href="#" class="dropdown-toggle waves-effect waves-light profile" data-toggle="dropdown" aria-expanded="true" title="User Profile"><i class="fa fa-user"></i> </a>
                                 <ul class="dropdown-menu">
                                     <?php /*
                                     <li><a href="javascript:void(0)"><i class="ti-user m-r-5"></i> Profile</a></li>
@@ -141,7 +141,7 @@ if (!defined('BASEPATH'))
 
                         <div class="menu-item">
                             <!-- Mobile menu toggle-->
-                            <a class="navbar-toggle">
+                            <a class="navbar-toggle" title="Menu">
                                 <div class="lines">
                                     <span></span>
                                     <span></span>

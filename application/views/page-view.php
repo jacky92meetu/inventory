@@ -160,8 +160,8 @@ ul.sortable li.placeholder:before {
                                 <th width="10" style="vertical-align:top;text-align:right;">
                                     <div style="position:relative;">
                                         <div class="btn-group btn-group-xs actions_label" style="position:absolute;top:0;right:0;">
-                                            <button class="resetFilter btn btn-warning waves-effect waves-light"><i class="fa fa-lg fa-refresh"></i></button>
-                                            <button class="select_all_checkbox btn btn-primary waves-effect waves-light"><i class="fa fa-lg fa-check-square-o"></i></button>
+                                            <button class="resetFilter btn btn-warning waves-effect waves-light" title="Reset Filter"><i class="fa fa-lg fa-refresh"></i></button>
+                                            <button class="select_all_checkbox btn btn-primary waves-effect waves-light" title="Select All"><i class="fa fa-lg fa-check-square-o"></i></button>
                                             <input type="checkbox" class="select_all_checkbox hidden">
                                         </div>
                                     </div>
@@ -208,7 +208,7 @@ ul.sortable li.placeholder:before {
                     <div class="col-xs-12 form-field default readonly-default hidden">
                         <div class="form-group">
                             <label class="control-label">Fieldname</label>
-                            <input type="text" class="form-control disabled" DISABLED>
+                            <div class="textbox" style="background:#eee;padding:6px 12px;"></div>
                             <input type="hidden" class="form-control">
                         </div>
                     </div>
@@ -394,6 +394,7 @@ ul.sortable li.placeholder:before {
                                 c.removeClass('default hidden').appendTo(container);
                                 c.find('label').html(data.data[i].name);
                                 c.find('input').attr('name',data.data[i].id).val(data.data[i].value);
+                                c.find('.textbox').html(data.data[i].value);
                             }else if(typeof data.data[i].hidden === 'string'){
                                 var c = container.find('.form-field.hidden-default.default.hidden').clone();
                                 c.removeClass('default hidden').appendTo(container);
@@ -485,7 +486,7 @@ ul.sortable li.placeholder:before {
                             $('#custom_form_modal').find('.form-container').attr('data-id',id);
                         }
                         $('#custom_form_modal').modal('show');
-                        //$('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled)').first().focus();
+                        //$('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled,[class*=date])').first().focus();
                         if(has_ajax){
                             ajax_change_update(has_ajax,true);
                         }
@@ -578,7 +579,7 @@ ul.sortable li.placeholder:before {
             }else{
                 clone.prependTo($('#datatable-editable').find('tbody'));
             }
-            //$('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled)').first().focus();
+            //$('.form-container:visible .form-field:not(.default) .form-control:not(.disabled,:disabled,[class*=date])').first().focus();
             if(has_ajax){
                 ajax_change_update(has_ajax,true);
             }
@@ -959,7 +960,7 @@ ul.sortable li.placeholder:before {
     }).appendTo($('body'));
     jQuery(function ($) {
         $('#custom_form_modal').on('shown.bs.modal', function () {
-            $('#custom_form_modal input:visible').not('.disabled,.hidden').first().focus();
+            $('#custom_form_modal input:visible').not('.disabled,.hidden,[class*=date]').first().focus();
         });
 
         $('#datatable-editable').each(function () {
@@ -1105,9 +1106,12 @@ ul.sortable li.placeholder:before {
                         }
                     }
                     <?php if($editable){ ?>
-                    $(row).find('td').last().addClass('actions').html('<div class="pull-right"><a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row"><i class="fa fa-lg fa-pencil"></i></a></div>');
+                    $(row).find('td').last().addClass('actions').html('<a href="javascript:void(0)" onclick="data_save(this)" class="on-editing save-row" title="Save"><i class="fa fa-lg fa-save"></i></a><a href="javascript:void(0)" onclick="data_cancel(this)" class="on-editing cancel-row" title="Cancel"><i class="fa fa-lg fa-times"></i></a><a href="javascript:void(0)" onclick="data_edit(this)" class="on-default edit-row" title="Edit"><i class="fa fa-lg fa-pencil"></i></a>');
                     $(row).find('td.editable_td').not('.actions').on('dblclick',function(){data_edit($(this).closest('tr').find('td.actions .edit-row'));});
                     <?php } ?>
+                    <?php /*
+                    $(row).find('td').last().addClass('actions').html($(row).find('td').last().addClass('actions').html()+'<a href="javascript:void(0)" class="" title="test"><i class="fa fa-lg fa-plus"></i></a>');
+                    */ ?>
                     <?php if($this->cpage->template_data['delete_btn'] || sizeof($this->cpage->template_data['extra_btn'])>0){ ?>
                     $(row).find('td').not('.actions').on('click',function(){ $('tr[data-id="'+$(this).closest('tr[data-id]').attr('data-id')+'"]').toggleClass('selected'); });
                     //$(row).find('td:first').html('<input type="checkbox" class="select_checkbox" />');

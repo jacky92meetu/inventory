@@ -389,10 +389,10 @@ class lensesMain{
                             if(!empty($v3['is_date'])){
                                 $c = $this->to_display_date($c);
                             }
+                            $temp2[$k] = $c;
                             break;
                         }
                     }
-                    $temp2[$k] = $c;
                 }
                 $temp2[] = '';
                 $temp_data[] = $temp2;
@@ -431,17 +431,11 @@ class lensesMain{
         if(sizeof($data)==0){
             foreach(array((strlen($return['type'])>0?$return['type']:"").'_header','custom_header') as $var){
                 if(isset($this->{$var})){
-                    $temp = array();
-                    foreach($this->{$var} as $value){
-                        $temp[$value['id']] = $value;
-                    }
-                    $this->{$var} = $temp;
                     $data = $this->{$var};
                     break;
                 }
             }
         }
-        
         if(sizeof($data)==0){
             $sql = 'SELECT * FROM '.$this->table;
             if(strlen($this->search_query)>0){
@@ -449,74 +443,17 @@ class lensesMain{
             }
             $sql .= ' LIMIT 1';
             $result = $this->CI->db->query($sql);
+            $avail_key = $result->list_fields();
             foreach($this->header as $col){
-                $col_exists = false;
                 $temp = array('id'=>$col['id'],'name'=>$col['id'],'value'=>'');
-                foreach($result->list_fields() as $key){
-                    if($col['id']==$key){
-                        $col_exists = true;
-                        $temp['name'] = $col['name'];
-                        if(isset($col['is_date'])){
-                            $temp['is_date'] = '1';
-                        }else if(isset($col['option_text'])){
-                            $temp['option_text'] = $col['option_text'];
-                        }
-                        if(isset($col['is_date_highlight'])){
-                            $temp['is_date_highlight'] = '1';
-                            $temp['value'] = $this->to_display_date();
-                        }
-                        if(isset($col['is_ajax'])){
-                            $temp['is_ajax'] = '1';
-                            if(!isset($temp['option_text'])){
-                                $temp['option_text'] = array();
-                            }
-                        }
-                        if(isset($col['hidden'])){
-                            $temp['hidden'] = '1';
-                        }
-                        if(!isset($col['editable'])){
-                            $temp['readonly'] = '1';
-                        }
-                        if(isset($col['is_file'])){
-                            $temp['is_file'] = '1';
-                        }
-                        if(isset($col['is_textarea'])){
-                            $temp['is_textarea'] = '1';
-                        }
-                        if(isset($col['value'])){
-                            $temp['value'] = $col['value'];
-                        }
-                        if(isset($col['form_class'])){
-                            $temp['form_class'] = $col['form_class'];
-                        }
-                        if(isset($col['form_divider'])){
-                            $temp['form_divider'] = '1';
-                        }
-                        if(isset($col['optional'])){
-                            $temp['optional'] = '1';
-                        }
-                        $data[$key] = $temp;
-                        break;
-                    }
+                if(array_search($col['id'], $avail_key)!==FALSE){
+                    $temp['name'] = $col['name'];
+                    $data[$key] = $temp;
                 }
             }
         }
-        $temp = array();
-        foreach($data as $d){
-            if($d['is_date']=='1' && empty($d['value'])){
-                if(empty($d['value']) || strtotime($d['value'])<=0 || date("Y-m-d",strtotime($d['value']))=="1970-01-01"){
-                    $d['value'] = '';
-                }else if($d['is_date_highlight']){
-                    $d['value'] = $this->to_display_date();
-                }
-            }
-            if(!isset($d['value'])){
-                $d['value'] = '';
-            }
-            $temp[$d['id']] = $d;
-        }
-        $data = $temp;
-        
+        $data = $this->form_generator($data);
+                
         if(strlen($this->CI->input->post('id',true))>0 && $this->CI->input->post('id',true)>0){
             $sql = 'SELECT * FROM '.$this->table;
             if(strlen($this->search_query)>0){
@@ -542,6 +479,64 @@ class lensesMain{
         $return['data'] = $data;
         
         return $return;
+    }
+    
+    function form_generator($row_data){
+        $data = array();
+        
+        if(is_array($row_data)){
+            foreach($row_data as $col){
+                $temp = array('id'=>$col['id'],'name'=>$col['id'],'value'=>'');
+                $temp['name'] = $col['name'];
+                if(isset($col['is_date'])){
+                    $temp['is_date'] = '1';
+                    if(empty($temp['value'])){
+                        if(empty($temp['value']) || strtotime($temp['value'])<=0 || date("Y-m-d",strtotime($temp['value']))=="1970-01-01"){
+                            $temp['value'] = '';
+                        }
+                    }
+                }else if(isset($col['option_text'])){
+                    $temp['option_text'] = $col['option_text'];
+                }
+                if(isset($col['is_date_highlight'])){
+                    $temp['is_date_highlight'] = '1';
+                    $temp['value'] = $this->to_display_date();
+                }
+                if(isset($col['is_ajax'])){
+                    $temp['is_ajax'] = '1';
+                    if(!isset($temp['option_text'])){
+                        $temp['option_text'] = array();
+                    }
+                }
+                if(isset($col['hidden'])){
+                    $temp['hidden'] = '1';
+                }
+                if(!isset($col['editable'])){
+                    $temp['readonly'] = '1';
+                }
+                if(isset($col['is_file'])){
+                    $temp['is_file'] = '1';
+                }
+                if(isset($col['is_textarea'])){
+                    $temp['is_textarea'] = '1';
+                }
+                if(isset($col['value'])){
+                    $temp['value'] = $col['value'];
+                }
+                if(isset($col['form_class'])){
+                    $temp['form_class'] = $col['form_class'];
+                }
+                if(isset($col['form_divider'])){
+                    $temp['form_divider'] = '1';
+                }
+                if(isset($col['optional'])){
+                    $temp['optional'] = '1';
+                }
+                $data[$temp['id']] = $temp;
+            }
+        }
+        
+        return $data;
     }
     
     function ajax_custom_form_save(){
