@@ -9,7 +9,7 @@ if(!file_exists($template_path)){
 }
 
 $data = array('header'=>array(),'data'=>array());
-if(($result = $this->CI->db->query('select a.*,b.*,c.inv_text, d.cn_text, d.cn_reason, d.created_date cn_date from transactions a,accounts b,transactions_inv c, transactions_inv_cn d where b.id=a.account_id and c.sales_id=a.sales_id and d.inv_id=c.inv_id and a.id = ? LIMIT 1',array($selected_id))) && $result->num_rows()){
+if(($result = $this->CI->db->query('select a.*,b.*,c.inv_text, d.cn_text, d.cn_reason, d.created_date cn_date from transactions a,accounts b,transactions_inv c, transactions_inv_cn d where b.id=a.account_id and c.sales_id=a.sales_id and d.account_id=c.account_id and d.inv_id=c.inv_id and a.id = ? LIMIT 1',array($selected_id))) && $result->num_rows()){
     $data['header'] = $result->row_array();
     $data['header']['buyer_fulladdr'] = preg_replace("#[\s]*,[,\s]+#iu",", ",trim($data['header']['buyer_address'].",\n".$data['header']['buyer_address2'].",\n".$data['header']['buyer_address3'].",\n".$data['header']['buyer_city'].", ".$data['header']['buyer_state'].", ".$data['header']['buyer_postcode'].", ".$data['header']['buyer_country']));
 }
