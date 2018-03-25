@@ -167,7 +167,7 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'type','name'=>'type','value'=>'sales_import','hidden'=>'1'),
             array('id'=>'account_id','name'=>'Account','is_ajax'=>'1','option_text'=>$supp_list,'editable'=>true),
             array('id'=>'marketplace_template','name'=>'MarketPlace','is_ajax'=>'1','option_text'=>array(),'editable'=>true),
-            array('id'=>'import_type','name'=>'Type','option_text'=>array('sales'=>'Sales Report','payment'=>'Payment Report')),
+            array('id'=>'import_type','name'=>'Import Type','option_text'=>array('sales'=>'Sales Report','payment'=>'Payment Report')),
             array('id'=>'file','name'=>'File','is_file'=>'1')
         );
         

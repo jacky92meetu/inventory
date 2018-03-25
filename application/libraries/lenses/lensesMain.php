@@ -497,6 +497,14 @@ class lensesMain{
                     }
                 }else if(isset($col['option_text'])){
                     $temp['option_text'] = $col['option_text'];
+                }else if(isset($col['is_file'])){
+                    $temp['is_file'] = '1';
+                }else if(isset($col['is_textarea'])){
+                    $temp['is_textarea'] = '1';
+                }else if(isset($col['hidden'])){
+                    $temp['hidden'] = '1';
+                }else if(!isset($col['editable'])){
+                    $temp['readonly'] = '1';
                 }
                 if(isset($col['is_date_highlight'])){
                     $temp['is_date_highlight'] = '1';
@@ -507,17 +515,6 @@ class lensesMain{
                     if(!isset($temp['option_text'])){
                         $temp['option_text'] = array();
                     }
-                }
-                if(isset($col['hidden'])){
-                    $temp['hidden'] = '1';
-                }else if(!isset($col['editable'])){
-                    $temp['readonly'] = '1';
-                }
-                if(isset($col['is_file'])){
-                    $temp['is_file'] = '1';
-                }
-                if(isset($col['is_textarea'])){
-                    $temp['is_textarea'] = '1';
                 }
                 if(isset($col['value'])){
                     $temp['value'] = $col['value'];
@@ -531,6 +528,7 @@ class lensesMain{
                 if(isset($col['optional'])){
                     $temp['optional'] = '1';
                 }
+                
                 $data[$temp['id']] = $temp;
             }
         }
