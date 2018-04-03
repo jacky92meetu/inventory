@@ -84,7 +84,7 @@ class importShippingClass extends importClass{
         }
         unset($temp);
         $avail_shipping_list = array('PLE'=>array('US'),'PLT'=>array('GB', 'AU', 'TH', 'SG'));
-        $avail_Incoterm_list = array('DDP'=>array('US', 'TH', 'SG'),'DDU'=>array('AU', 'UK'));
+        $avail_Incoterm_list = array('DDP'=>array('US', 'TH', 'SG'),'DDU'=>array('AU', 'GB'));
         
         $worksheet = $objPHPExcel->getSheetByName('Sheet1');
         
@@ -232,8 +232,8 @@ class importShippingClass extends importClass{
                 $temp = implode(", ",$temp);
                 $title = $data['product_name']." ".$temp;
             }
-            $title = strtoupper(substr($data['account_code'],0,1))."-".$title;
-            $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
+            $title = strtoupper(substr($data['store_name'],0,1))."-".$title;
+            $worksheet->setCellValueExplicitByColumnAndRow(37,$row, "Sunglasses case");
             //$worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, 15);
             $worksheet->setCellValueExplicitByColumnAndRow(41,$row, "MY");
@@ -241,7 +241,7 @@ class importShippingClass extends importClass{
             //$worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
             $worksheet->setCellValueExplicitByColumnAndRow(42,$row, "1");
             
-            $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $title);
+            $worksheet->setCellValueExplicitByColumnAndRow(44,$row, "Sunglasses case");
             $worksheet->setCellValueExplicitByColumnAndRow(47,$row, $title);
             
             $repeated_row[$data['buyer_name']] = $row;
@@ -379,7 +379,7 @@ class importShippingClass extends importClass{
                 $temp = implode(", ",$temp);
                 $title = $data['product_name']." ".$temp;
             }
-            $title = strtoupper(substr($data['account_code'],0,1))."-".$title;
+            $title = strtoupper(substr($data['store_name'],0,1))."-".$title;
             $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
             //$worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, 15);
@@ -511,7 +511,7 @@ class importShippingClass extends importClass{
                 $temp = implode(", ",$temp);
                 $title = $data['product_name']." ".$temp;
             }
-            $title = strtoupper(substr($data['account_code'],0,1))."-".$title;
+            $title = strtoupper(substr($data['store_name'],0,1))."-".$title;
             $worksheet->setCellValueExplicitByColumnAndRow(11,$row, $title);
             $worksheet->setCellValueExplicitByColumnAndRow(12,$row, "PACKAGE");
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, "M");
