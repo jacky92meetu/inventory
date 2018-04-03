@@ -84,7 +84,7 @@ class importShippingClass extends importClass{
         }
         unset($temp);
         $avail_shipping_list = array('PLE'=>array('US'),'PLT'=>array('GB', 'AU', 'TH', 'SG'));
-        $avail_Incoterm_list = array('DDP'=>array('US', 'TH', 'SG'),'DDU'=>array('AU', 'UK'));
+        $avail_Incoterm_list = array('DDP'=>array('US', 'TH', 'SG'),'DDU'=>array('AU', 'GB'));
         
         $worksheet = $objPHPExcel->getSheetByName('Sheet1');
         
