@@ -233,7 +233,7 @@ class importShippingClass extends importClass{
                 $title = $data['product_name']." ".$temp;
             }
             $title = strtoupper(substr($data['store_name'],0,1))."-".$title;
-            $worksheet->setCellValueExplicitByColumnAndRow(37,$row, $title);
+            $worksheet->setCellValueExplicitByColumnAndRow(37,$row, "Sunglasses case");
             //$worksheet->setCellValueExplicitByColumnAndRow(40,$row, $data['selling_price']);
             $worksheet->setCellValueExplicitByColumnAndRow(40,$row, 15);
             $worksheet->setCellValueExplicitByColumnAndRow(41,$row, "MY");
@@ -241,7 +241,7 @@ class importShippingClass extends importClass{
             //$worksheet->setCellValueExplicitByColumnAndRow(42,$row, $data['quantity']);
             $worksheet->setCellValueExplicitByColumnAndRow(42,$row, "1");
             
-            $worksheet->setCellValueExplicitByColumnAndRow(44,$row, $title);
+            $worksheet->setCellValueExplicitByColumnAndRow(44,$row, "Sunglasses case");
             $worksheet->setCellValueExplicitByColumnAndRow(47,$row, $title);
             
             $repeated_row[$data['buyer_name']] = $row;
