@@ -278,7 +278,7 @@ class lensesSalesEntry extends lensesMain{
                     }
                 }
             }
-            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price','store_skucode');
+            $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','tracking_number','quantity','selling_currency','selling_price','shipping_charges_received','payment_date','shipment_date','courier_id','shipping_charges_paid','sales_id','sales_fees_pect','sales_fees_fixed','paypal_trans_id','paypal_fees_pect','paypal_fees_fixed','cost_price','store_skucode','resend_id');
             foreach($field_list as $field){
                 if(isset($value[$field])){
                     if($field=="sales_id" && $value[$field]==""){
@@ -397,12 +397,13 @@ join products b on wi.product_id=b.id WHERE a.store_id=? GROUP BY b.id ORDER BY 
     function ajax_resend_sales(){
         $return = array("status"=>"0","message"=>"");
         $selection = $this->CI->input->post('selection',true);
-        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','quantity','payment_date','sales_id','cost_price','store_skucode');
+        $field_list = array('account_id','store_item_id','buyer_reference','buyer_id','buyer_name','buyer_address','buyer_address2','buyer_address3','buyer_city','buyer_state','buyer_postcode','buyer_country','buyer_contact','buyer_email','quantity','payment_date','sales_id','cost_price','store_skucode','resend_id');
         if(($result = $this->CI->db->query('select * from transactions a where id in ? '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND created_by="'.$_SESSION['user']['id'].'" ':''),array($selection))) && $result->num_rows()){
             $count = 0;
             foreach($result->result_array() as $row){
                 $temp = array_intersect_key($row,array_flip($field_list));
                 $temp['sales_id'] = "RESEND-".$temp['sales_id'];
+                $temp['resend_id'] = $row['id'];
                 $_POST['value'] = $temp;
                 if(($temp = $this->ajax_custom_form_save()) && $temp['status']=="1"){
                     $count++;

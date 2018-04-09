@@ -50,7 +50,7 @@ class lensesSalesHistory extends lensesMain{
             join option_item e on wi.item_id=e.id
             left join couriers f on a.courier_id=f.id
             join stores g on c.store_id=g.id
-            left join transactions_inv ti on ti.sales_id=a.sales_id
+            left join transactions_inv ti on ti.account_id=a.account_id and ti.sales_id=a.sales_id
             '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE a.created_by="'.$_SESSION['user']['id'].'" {WHERE_AND} ':'').'
             ) a';
         
@@ -167,7 +167,7 @@ class lensesSalesHistory extends lensesMain{
     
     function ajax_custom_form(){
         $id = $this->CI->input->post('id',true);
-        if($id>0 && ($result = $this->CI->db->query('select a.id from transactions a,transactions_inv b where a.sales_id=b.sales_id and a.id=? limit 1',$id)) && ($row = $result->row_array())){
+        if($id>0 && ($result = $this->CI->db->query('select a.id from transactions a,transactions_inv b where a.account_id=b.account_id and a.sales_id=b.sales_id and a.id=? limit 1',$id)) && ($row = $result->row_array())){
             return array("status"=>"0","message"=>"Not allow to change due to invoice created!");
         }
         
@@ -198,7 +198,7 @@ class lensesSalesHistory extends lensesMain{
     function ajax_custom_form_save(){
         $return = array("status"=>"0","message"=>"");
         $id = $this->CI->input->post('id',true);
-        if($id>0 && ($result = $this->CI->db->query('select a.id from transactions a,transactions_inv b where a.sales_id=b.sales_id and a.id=? limit 1',$id)) && ($row = $result->row_array())){
+        if($id>0 && ($result = $this->CI->db->query('select a.id from transactions a,transactions_inv b where a.account_id=b.account_id and a.sales_id=b.sales_id and a.id=? limit 1',$id)) && ($row = $result->row_array())){
             return array("status"=>"0","message"=>"Not allow to change due to invoice created!");
         }
         
