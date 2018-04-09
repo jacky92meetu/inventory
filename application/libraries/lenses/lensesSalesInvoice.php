@@ -85,7 +85,7 @@ class lensesSalesInvoice extends lensesMain{
         
         $this->adj_cn_reason_header = array(
             array('id'=>'type','name'=>'type','hidden'=>'1','value'=>'cn_update'),
-            array('id'=>'id','name'=>'id','hidden'=>'1'),
+            array('id'=>'account_id','name'=>'account_id','hidden'=>'1'),
             array('id'=>'cn_id','name'=>'cn_id','hidden'=>'1'),
             array('id'=>'store_skucode','name'=>'SKU'),
             array('id'=>'product_name','name'=>'Frame/Color'),
@@ -105,6 +105,7 @@ class lensesSalesInvoice extends lensesMain{
         $return = array("status"=>"0","message"=>"No record to be save.");
         if($this->CI->input->post('value[type]',true)=="cn_update"){
             $value = $this->CI->input->post('value',true);
+            $account_id = intval($value['account_id']);
             $cn_id = intval($value['cn_id']);
             $cn_date = $value['cn_date'];
             $cn_reason = $value['cn_reason'];
@@ -115,8 +116,9 @@ class lensesSalesInvoice extends lensesMain{
                 $set_data_list[] = 'created_date=?';
                 $set_data_array[] = $cn_date;
             }
+            $set_data_array[] = $account_id;
             $set_data_array[] = $cn_id;
-            $this->CI->db->query('UPDATE transactions_inv_cn SET '.implode(",",$set_data_list).' WHERE cn_id=? LIMIT 1',$set_data_array);
+            $this->CI->db->query('UPDATE transactions_inv_cn SET '.implode(",",$set_data_list).' WHERE account_id=? and cn_id=?',$set_data_array);
             $return = array("status"=>"1","message"=>"");
         }else{
             $return = parent::ajax_custom_form_save();
@@ -129,10 +131,15 @@ class lensesSalesInvoice extends lensesMain{
         $return = array("status"=>"0","message"=>"");
         $selection = $this->CI->input->post('selection',true);
         $method2 = $this->CI->input->post_get('method2',true);
-        if(($result = $this->CI->db->query('select a.sales_id, a.account_id from transactions a left join transactions_inv b on b.account_id=a.account_id and b.sales_id=a.sales_id where b.sales_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
+        if(($result = $this->CI->db->query('select a.sales_id, a.account_id, a.payment_date from transactions a left join transactions_inv b on b.account_id=a.account_id and b.sales_id=a.sales_id where b.sales_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
-                $this->CI->db->query('INSERT INTO transactions_inv SET account_id=?, sales_id=?',array($row['account_id'],$row['sales_id']));
-                $this->CI->db->query('UPDATE transactions_inv a,accounts b SET a.inv_text=concat(ifnull(b.acc_comp_inv_prefix,""),right(concat("00000000",ifnull(a.inv_id,"")),8)) WHERE a.account_id=b.id and a.sales_id=?',array($row['sales_id']));
+                $custom_id = $row['account_id'];
+                //Netrade and IFT Adjustment After 2018
+                if($row['account_id']==3 && strtotime($row['payment_date'])>=strtotime('2018-01-01')){
+                    $custom_id = 2;
+                }
+                $this->CI->db->query('INSERT INTO transactions_inv SET account_id=?, sales_id=?, custom_account_id=?',array($row['account_id'],$row['sales_id'],$custom_id));
+                $this->CI->db->query('UPDATE transactions_inv a,accounts b SET a.inv_text=concat(ifnull(b.acc_comp_inv_prefix,""),right(concat("00000000",ifnull(a.inv_id,"")),8)) WHERE b.id=a.custom_account_id and a.account_id=? and a.sales_id=?',array($row['account_id'],$row['sales_id']));
             }
             $return['message'] = "Invoice(s) generated successfully.";
             $return['status'] = "1";
@@ -153,7 +160,7 @@ class lensesSalesInvoice extends lensesMain{
         if(($result = $this->CI->db->query('select b.inv_id, a.account_id from transactions a join transactions_inv b on b.account_id=a.account_id and b.sales_id=a.sales_id left join transactions_inv_cn c on c.account_id=b.account_id and c.inv_id=b.inv_id where c.cn_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
                 $this->CI->db->query('INSERT INTO transactions_inv_cn SET account_id=?, inv_id=?',array($row['account_id'],$row['inv_id']));
-                $this->CI->db->query('UPDATE transactions_inv_cn a,accounts b SET a.cn_text=concat(ifnull(b.acc_comp_cn_prefix,""),right(concat("00000000",ifnull(a.cn_id,"")),8)) WHERE a.account_id=b.id and a.inv_id=?',array($row['inv_id']));
+                $this->CI->db->query('UPDATE transactions_inv a2,transactions_inv_cn a,accounts b SET a.cn_text=concat(ifnull(b.acc_comp_cn_prefix,""),right(concat("00000000",ifnull(a.cn_id,"")),8)) WHERE a2.account_id=a.account_id and a2.inv_id=a.inv_id and b.id=a2.custom_account_id and a.account_id=? and a.inv_id=?',array($row['account_id'],$row['inv_id']));
             }
             $return['message'] = "Credit Note(s) generated successfully.";
             $return['status'] = "1";
