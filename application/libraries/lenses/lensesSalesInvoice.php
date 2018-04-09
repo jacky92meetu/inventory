@@ -53,7 +53,7 @@ class lensesSalesInvoice extends lensesMain{
             join option_item e on wi.item_id=e.id
             left join couriers f on a.courier_id=f.id
             join stores g on c.store_id=g.id
-            left join transactions_inv ti on ti.sales_id=a.sales_id
+            left join transactions_inv ti on ti.account_id=a.account_id and ti.sales_id=a.sales_id
             left join transactions_inv_cn tcn on tcn.account_id=ti.account_id and tcn.inv_id=ti.inv_id
             group by a.sales_id
             ) a';
@@ -129,7 +129,7 @@ class lensesSalesInvoice extends lensesMain{
         $return = array("status"=>"0","message"=>"");
         $selection = $this->CI->input->post('selection',true);
         $method2 = $this->CI->input->post_get('method2',true);
-        if(($result = $this->CI->db->query('select a.sales_id, a.account_id from transactions a left join transactions_inv b on b.sales_id=a.sales_id where b.sales_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
+        if(($result = $this->CI->db->query('select a.sales_id, a.account_id from transactions a left join transactions_inv b on b.account_id=a.account_id and b.sales_id=a.sales_id where b.sales_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
                 $this->CI->db->query('INSERT INTO transactions_inv SET account_id=?, sales_id=?',array($row['account_id'],$row['sales_id']));
                 $this->CI->db->query('UPDATE transactions_inv a,accounts b SET a.inv_text=concat(ifnull(b.acc_comp_inv_prefix,""),right(concat("00000000",ifnull(a.inv_id,"")),8)) WHERE a.account_id=b.id and a.sales_id=?',array($row['sales_id']));
@@ -150,7 +150,7 @@ class lensesSalesInvoice extends lensesMain{
         $return = array("status"=>"0","message"=>"");
         $selection = $this->CI->input->post('selection',true);
         $method2 = $this->CI->input->post_get('method2',true);
-        if(($result = $this->CI->db->query('select b.inv_id, a.account_id from transactions a join transactions_inv b on b.sales_id=a.sales_id left join transactions_inv_cn c on c.account_id=b.account_id and c.inv_id=b.inv_id where c.cn_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
+        if(($result = $this->CI->db->query('select b.inv_id, a.account_id from transactions a join transactions_inv b on b.account_id=a.account_id and b.sales_id=a.sales_id left join transactions_inv_cn c on c.account_id=b.account_id and c.inv_id=b.inv_id where c.cn_id is null and a.id in ? group by a.id',array($selection))) && $result->num_rows()){
             foreach($result->result_array() as $row){
                 $this->CI->db->query('INSERT INTO transactions_inv_cn SET account_id=?, inv_id=?',array($row['account_id'],$row['inv_id']));
                 $this->CI->db->query('UPDATE transactions_inv_cn a,accounts b SET a.cn_text=concat(ifnull(b.acc_comp_cn_prefix,""),right(concat("00000000",ifnull(a.cn_id,"")),8)) WHERE a.account_id=b.id and a.inv_id=?',array($row['inv_id']));
