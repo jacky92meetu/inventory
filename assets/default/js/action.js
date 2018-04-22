@@ -60,6 +60,36 @@ function redirect($url){
     location.href = $url;
 }
 
+function ajaxcall(path, params, method) {
+    params = params || {};
+    method = method || "POST"; // Set method to post by default if not specified.
+
+    $.ajax({
+        type: method,
+        url: path,
+        data: params,
+        success: function(data){
+            /*
+            if(data.status=="1"){
+                show_notification('Data save successfuly.','Notification','success');
+            }
+            */
+            if(typeof data.message === 'string' && data.message.length>0){
+                if(typeof data.status=='1'){
+                    show_notification(data.message,'Notification','error');
+                }else{
+                    show_notification(data.message,'Notification');
+                }
+            }
+            if(typeof data.func === 'function'){data.func();}else if(typeof data.func === 'string' && data.func.indexOf("function(")==0){eval('('+data.func+')')();}
+        },
+        dataType: 'json'
+    })
+    .error(function(){
+        show_notification('Submission to server error!','Notification','error');
+    });
+}
+
 function post(path, params, target, method) {
     params = params || {};
     target = target || "_self";

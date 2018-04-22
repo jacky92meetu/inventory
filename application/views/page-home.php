@@ -1,10 +1,25 @@
+<?php
+$chart_color = array("#ffbf00","#bf5340","#40bf44","#b3bf40","#e2761d","#6040bf","#bf4088","#8359a6","#0033ff","#ff0026","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen");
+?>
+
 <link rel="stylesheet" href="<?php echo base_url('/assets/default'); ?>/plugins/morris/morris.css">
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/morris/morris.min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/plugins/raphael/raphael-min.js"></script>
 <script src="<?php echo base_url('/assets/default'); ?>/pages/morris.init.js"></script>
 <script>
-    var CSS_COLOR_NAMES = ["#ffbf00","#bf5340","#40bf44","#b3bf40","#e2761d","#6040bf","#bf4088","#8359a6","#0033ff","#ff0026","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"];
+    var CSS_COLOR_NAMES = [<?php echo '"'.implode('","',$chart_color).'"'; ?>];
 </script>
+
+<div class="row">
+    <div class="col-xs-12">
+        <span class="">
+            <button type="button" onclick=ajaxcall("<?php echo base_url('/ajax/home?method=refresh'); ?>") class="btn btn-warning waves-effect waves-light">Refresh <i class="fa fa-lg fa-refresh"></i></button>
+        </span>
+        <span>
+            Latest update: <?php echo $dashboard_data['latest_update_date']; ?>
+        </span>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-xs-12">
@@ -18,9 +33,9 @@
                     <div class="">
                         <div><h4>Total of Each<h4></div>
                         <ul class="list-inline chart-detail-list">
-                            <?php foreach($dashboard_data['monthly_deals']['total2'] as $k => $v){ ?>
-                            <li style="display:block;"><?php echo (!empty($dashboard_data['monthly_deals']['header'][$k]))?$dashboard_data['monthly_deals']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
-                            <?php } ?>
+                            <?php $count=0;foreach($dashboard_data['monthly_deals']['total2'] as $k => $v){ ?>
+                            <li style="display:block;color:<?php echo $chart_color[$count]; ?>;"><?php echo (!empty($dashboard_data['monthly_deals']['header'][$k]))?$dashboard_data['monthly_deals']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                            <?php $count++;} ?>
                             <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['monthly_deals']['total']; ?></span></li>
                         </ul>
                     </div>
@@ -59,9 +74,9 @@
                     <div class="">
                         <div><h4>Total of Each<h4></div>
                         <ul class="list-inline chart-detail-list">
-                            <?php foreach($dashboard_data['monthly_profit']['total2'] as $k => $v){ ?>
-                            <li style="display:block;"><?php echo (!empty($dashboard_data['monthly_profit']['header'][$k]))?$dashboard_data['monthly_profit']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
-                            <?php } ?>
+                            <?php $count=0;foreach($dashboard_data['monthly_profit']['total2'] as $k => $v){ ?>
+                            <li style="display:block;color:<?php echo $chart_color[$count]; ?>;"><?php echo (!empty($dashboard_data['monthly_profit']['header'][$k]))?$dashboard_data['monthly_profit']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                            <?php $count++;} ?>
                             <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['monthly_profit']['total']; ?></span></li>
                         </ul>
                     </div>
