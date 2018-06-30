@@ -62,7 +62,7 @@ $chart_color = array("#ffbf00","#bf5340","#40bf44","#b3bf40","#e2761d","#6040bf"
                                 }
                             ?>
                         ];
-                        $.MorrisCharts.createLineChart('morris-line-example', $data, 'y', <?php echo $header; ?>, <?php echo $header2; ?>,['0.1'],['#ffffff'],['#999999'], CSS_COLOR_NAMES);
+                        $.MorrisCharts.createLineChart('morris-line-example', $data, 'y', <?php echo $header; ?>, <?php echo $header2; ?>,['0.1'],['#ffffff'],['#999999'], CSS_COLOR_NAMES, true);
                     });
                     </script>
                     
