@@ -445,16 +445,18 @@ class lensesMain{
             $result = $this->CI->db->query($sql);
             $avail_key = $result->list_fields();
             foreach($this->header as $col){
-                $temp = array('id'=>$col['id'],'name'=>$col['id'],'value'=>'');
                 if(array_search($col['id'], $avail_key)!==FALSE){
                     $key = $col['id'];
                     $data[$key] = $this->form_generator($col);
                 }
             }
         }else{
-            foreach($data as $key => $col){
-                $data[$key] = $this->form_generator($col);
+            $temp = array();
+            foreach($data as $col){
+                $key = $col['id'];
+                $temp[$key] = $this->form_generator($col);
             }
+            $data = $temp;
         }
                 
         if(strlen($this->CI->input->post('id',true))>0 && $this->CI->input->post('id',true)>0){
