@@ -35,9 +35,11 @@ include(dirname(__FILE__).'/include-view1.php');
         </div>
         <br />
         <div class="row">
+            <div class="col-xs-12" style="font-weight:bold;">
+                <?php echo $contents['title']; ?>
+            </div>
             <div class="col-xs-12">
                 <div class="">
-
                     <table id="datatable-editable" class="dataTable table table-striped table-bordered table-hover" width="100%">
                         <thead>
                             <tr>
