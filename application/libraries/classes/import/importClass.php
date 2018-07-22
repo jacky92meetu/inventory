@@ -359,7 +359,7 @@ class importClass{
                                 break;
                             }
                             foreach($row as $k => $v){
-                                $row[$k] = iconv(mb_detect_encoding($v, "auto"), "UTF-8//TRANSLIT", $v);
+                                $row[$k] = iconv(mb_detect_encoding($v, 'UTF-8,ISO-8859-1'), "UTF-8//TRANSLIT", $v);
                             }
                             $data[] = $row;
                         }
@@ -369,7 +369,7 @@ class importClass{
                         $data = array();
                         while (($row = fgetcsv($handle, 1024, "\t")) !== FALSE) {
                             foreach($row as $k => $v){
-                                $row[$k] = iconv(mb_detect_encoding($v, "auto"), "UTF-8//TRANSLIT", $v);
+                                $row[$k] = iconv(mb_detect_encoding($v, 'UTF-8,ISO-8859-1'), "UTF-8//TRANSLIT", $v);
                             }
                             $data[] = $row;
                         }
