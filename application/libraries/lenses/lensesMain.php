@@ -366,7 +366,7 @@ class lensesMain{
                 }
             }
             
-            $sql = $this->search_query.$where_query;
+            $sql = $this->search_query;
             if(stristr($sql, 'COUNT(*)')===FALSE){
                 $sql = 'SELECT COUNT(*) as counting FROM ('.$sql.') a';
             }
@@ -378,7 +378,7 @@ class lensesMain{
         }        
         
         $temp_data = array();
-        $sql = $this->search_query.$where_query.$order_query.' LIMIT '.$limit_start.','.$limit_length;
+        $sql = $this->search_query.$order_query.' LIMIT '.$limit_start.','.$limit_length;
         if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
             $temp = $result->result_array();
             foreach($temp as $r){
