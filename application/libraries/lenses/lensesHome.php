@@ -24,7 +24,11 @@ class lensesHome extends lensesMain{
     
     function get_cache_data(){
         if(file_exists($this->cache_path) && is_file($this->cache_path)){
-            return unserialize(file_get_contents($this->cache_path));
+            $data = unserialize(file_get_contents($this->cache_path));
+            if((strtotime('now') - strtotime($data['latest_update_date']))>=900){
+                return $this->get_data();
+            }
+            return $data;
         }
         return $this->get_data();
     }
