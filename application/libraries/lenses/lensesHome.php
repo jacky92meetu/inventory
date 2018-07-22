@@ -5,16 +5,31 @@ require_once('lensesMain.php');
 class lensesHome extends lensesMain{
     
     var $CI = false;
+    var $cache_path = false;
     
     function __construct(){
         parent::__construct();
         $this->CI = get_instance();
+        $this->cache_path = APPPATH.'cache/dashboard.cache';
     }
     
     function view($view){
         $this->title = "Dashboard";
         $this->CI->cpage->set_html_title($this->title);
-        
+        $type = $this->CI->input->post_get('type',true);
+        $data = array();
+        $data = $this->get_cache_data();
+        return $this->CI->load->view('page-home',array('dashboard_data'=>$data));
+    }
+    
+    function get_cache_data(){
+        if(file_exists($this->cache_path) && is_file($this->cache_path)){
+            return unserialize(file_get_contents($this->cache_path));
+        }
+        return $this->get_data();
+    }
+    
+    function get_data(){
         $data = array();
         
         $temp = array();
@@ -158,6 +173,15 @@ class lensesHome extends lensesMain{
         }
         $data['monthly_profit'] = array('total'=>$sum_value,'header'=>$temp3,'total2'=>$temp4,'data'=>array_reverse($temp));
         
-        return $this->CI->load->view('page-home',array('dashboard_data'=>$data));
+        $data['latest_update_date'] = date("Y-m-d H:i:s");
+        file_put_contents($this->cache_path, serialize($data));
+        
+        return $data;
+    }
+    
+    function ajax_refresh(){
+        $this->get_data();
+        $return = array("status"=>"1","message"=>"","func"=>'function(){location.reload();}');
+        return $return;
     }
 }

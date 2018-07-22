@@ -24,15 +24,15 @@ include(dirname(__FILE__).'/include-view1.php');
                 <div class="">
                     <div class="row">
                         <div class="col-xs-12 col-sm-9">
-                            <div id="morris-line-example" style="height: 300px;"></div>
+                            <div id="morris-line-example" style="height: 350px;"></div>
                         </div>
                         <div class="col-xs-12 col-sm-3">
                             <div class="">
                                 <div><h4>Total of Each<h4></div>
                                 <ul class="list-inline chart-detail-list">
-                                    <?php foreach($dashboard_data['total2'] as $k => $v){ ?>
-                                    <li style="display:block;"><?php echo (!empty($dashboard_data['header'][$k]))?$dashboard_data['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
-                                    <?php } ?>
+                                    <?php $count=0;foreach($dashboard_data['total2'] as $k => $v){ ?>
+                                    <li style="display:block;color:<?php echo $chart_color[$count]; ?>;"><?php echo (!empty($dashboard_data['header'][$k]))?$dashboard_data['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                                    <?php $count++;} ?>
                                     <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['total']; ?></span></li>
                                 </ul>
                             </div>
@@ -55,7 +55,7 @@ include(dirname(__FILE__).'/include-view1.php');
                                 }
                             ?>
                         ];
-                        $.MorrisCharts.createLineChart('morris-line-example', $data, 'y', <?php echo $header; ?>, <?php echo $header2; ?>,['0.1'],['#ffffff'],['#999999'], CSS_COLOR_NAMES);
+                        $.MorrisCharts.createLineChart('morris-line-example', $data, 'y', <?php echo $header; ?>, <?php echo $header2; ?>,['0.1'],['#ffffff'],['#999999'], CSS_COLOR_NAMES, true);
                     });
                     </script>
                     

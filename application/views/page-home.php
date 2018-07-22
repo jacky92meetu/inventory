@@ -4,6 +4,17 @@ include(dirname(__FILE__).'/include-view2.php');
 
 <div class="row">
     <div class="col-xs-12">
+        <span class="">
+            <button type="button" onclick=ajaxcall("<?php echo base_url('/ajax/home?method=refresh'); ?>") class="btn btn-warning waves-effect waves-light">Refresh <i class="fa fa-lg fa-refresh"></i></button>
+        </span>
+        <span>
+            Latest update: <?php echo $dashboard_data['latest_update_date']; ?>
+        </span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
         <div class="card-box">
             <h4 class="text-dark  header-title m-t-0">30 Days Deals</h4>
             <div class="row">
@@ -14,9 +25,9 @@ include(dirname(__FILE__).'/include-view2.php');
                     <div class="">
                         <div><h4>Total of Each<h4></div>
                         <ul class="list-inline chart-detail-list">
-                            <?php foreach($dashboard_data['monthly_deals']['total2'] as $k => $v){ ?>
-                            <li style="display:block;"><?php echo (!empty($dashboard_data['monthly_deals']['header'][$k]))?$dashboard_data['monthly_deals']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
-                            <?php } ?>
+                            <?php $count=0;foreach($dashboard_data['monthly_deals']['total2'] as $k => $v){ ?>
+                            <li style="display:block;color:<?php echo $chart_color[$count]; ?>;"><?php echo (!empty($dashboard_data['monthly_deals']['header'][$k]))?$dashboard_data['monthly_deals']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                            <?php $count++;} ?>
                             <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['monthly_deals']['total']; ?></span></li>
                         </ul>
                     </div>
@@ -55,9 +66,9 @@ include(dirname(__FILE__).'/include-view2.php');
                     <div class="">
                         <div><h4>Total of Each<h4></div>
                         <ul class="list-inline chart-detail-list">
-                            <?php foreach($dashboard_data['monthly_profit']['total2'] as $k => $v){ ?>
-                            <li style="display:block;"><?php echo (!empty($dashboard_data['monthly_profit']['header'][$k]))?$dashboard_data['monthly_profit']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
-                            <?php } ?>
+                            <?php $count=0;foreach($dashboard_data['monthly_profit']['total2'] as $k => $v){ ?>
+                            <li style="display:block;color:<?php echo $chart_color[$count]; ?>;"><?php echo (!empty($dashboard_data['monthly_profit']['header'][$k]))?$dashboard_data['monthly_profit']['header'][$k]:"Other"; ?> <span class="pull-right"><?php echo $v; ?></span></li>
+                            <?php $count++;} ?>
                             <li style="display:block;border-top:1px solid #ccc;border-bottom:1px solid #ccc;">Total <span class="pull-right"><?php echo $dashboard_data['monthly_profit']['total']; ?></span></li>
                         </ul>
                     </div>
