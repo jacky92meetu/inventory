@@ -1,14 +1,6 @@
 <?php
-$chart_color = array("#ffbf00","#bf5340","#40bf44","#b3bf40","#e2761d","#6040bf","#bf4088","#8359a6","#0033ff","#ff0026","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen");
+include(dirname(__FILE__).'/include-view2.php');
 ?>
-
-<link rel="stylesheet" href="<?php echo base_url('/assets/default'); ?>/plugins/morris/morris.css">
-<script src="<?php echo base_url('/assets/default'); ?>/plugins/morris/morris.min.js"></script>
-<script src="<?php echo base_url('/assets/default'); ?>/plugins/raphael/raphael-min.js"></script>
-<script src="<?php echo base_url('/assets/default'); ?>/pages/morris.init.js"></script>
-<script>
-    var CSS_COLOR_NAMES = [<?php echo '"'.implode('","',$chart_color).'"'; ?>];
-</script>
 
 <div class="row">
     <div class="col-xs-12">
