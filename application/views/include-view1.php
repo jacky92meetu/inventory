@@ -458,7 +458,6 @@
             }else{
                 show_processing(obj,false);
                 if($(obj).closest('tr.tr-add').length){
-                    //$('#datatable-editable').DataTable().ajax.reload(function(){data_edit()},false);
                     return false;
                 }else if($(obj).closest('tr.tr-edit').length){
                     if(data.status=="1"){
@@ -496,11 +495,13 @@
                 }
             }
             if($('#datatable-editable').length){
-                $('#datatable-editable').DataTable().ajax.reload(function(){
-                    if(typeof $('#datatable-editable').data("selected_data_id") !== 'undefined'){
-                        $('#datatable-editable').parent().scrollTop($('#datatable-editable').data("selected_data_id"));
-                    }
-                },false);
+                if($('#datatable-editable').DataTable().ajax.url()){
+                    $('#datatable-editable').DataTable().ajax.reload(function(){
+                        if(typeof $('#datatable-editable').data("selected_data_id") !== 'undefined'){
+                            $('#datatable-editable').parent().scrollTop($('#datatable-editable').data("selected_data_id"));
+                        }
+                    },false);
+                }
             }
         });
     }
@@ -563,7 +564,9 @@
             })
             .always(function(){
                 show_processing(obj,false);
-                $('#datatable-editable').DataTable().ajax.reload(null,false);
+                if($('#datatable-editable').DataTable().ajax.url()){
+                    $('#datatable-editable').DataTable().ajax.reload(null,false);
+                }
             });
         }
         return false;
@@ -602,11 +605,13 @@
                 })
                 .always(function(){
                     show_processing(obj,false);
-                    $('#datatable-editable').DataTable().ajax.reload(function(){
-                        if(typeof $('#datatable-editable').data("selected_data_id") !== 'undefined'){
-                            $('#datatable-editable').parent().scrollTop($('#datatable-editable').data("selected_data_id"));
-                        }
-                    },false);
+                    if($('#datatable-editable').DataTable().ajax.url()){
+                        $('#datatable-editable').DataTable().ajax.reload(function(){
+                            if(typeof $('#datatable-editable').data("selected_data_id") !== 'undefined'){
+                                $('#datatable-editable').parent().scrollTop($('#datatable-editable').data("selected_data_id"));
+                            }
+                        },false);
+                    }
                 });
             }else{
                 post(url, post_data, '_self', 'POST');

@@ -289,10 +289,6 @@ include(dirname(__FILE__).'/include-view1.php');
         }
     }).appendTo($('body'));
     jQuery(function ($) {
-        $('#custom_form_modal').on('shown.bs.modal', function () {
-            $('#custom_form_modal input:visible').not('.disabled,.hidden,[class*=date]').first().focus();
-        });
-
         $('#datatable-editable').each(function () {
             var filter_sorting = [[ 0, "asc" ]];
             var obj = $(this);

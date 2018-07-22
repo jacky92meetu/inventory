@@ -17,7 +17,8 @@ class lensesReportMonthlySales extends lensesMain{
         $this->freezePane = 2;
         $this->add_btn = false;
         $this->delete_btn = false;
-        $this->display_chart = true;$this->page_view = 'page-monthlyview';
+        $this->display_chart = true;
+        $this->page_view = 'page-view2';
         $this->search_query = 'select * from (select d.name account_name, c.name store_name, concat(left(a.payment_date,7),"-01") payment_date
             ,count(a.id) trans_count
             ,sum(ifnull(a.quantity,0)) sold_qty
@@ -31,13 +32,16 @@ class lensesReportMonthlySales extends lensesMain{
                 + (ifnull(a.paypal_fees_fixed,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1)))
             ,4) fees
             ,round(sum(ifnull(a.cost_price,0) * ifnull(a.quantity,0)),4) cost_price
+            ,c.marketplace_id
+            ,date_format(a.payment_date,"%b %Y") payment_month
             from transactions a
-            left join store_item b on b.id=a.store_item_id
-            left join stores c on c.id=b.store_id
-            left join accounts d on d.id=c.account_id
+            join store_item b on b.id=a.store_item_id
+            join stores c on c.id=b.store_id
+            join accounts d on d.id=c.account_id
             WHERE 1=1 '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND a.created_by="'.$_SESSION['user']['id'].'" ':'').'
             {WHERE_AND}
-            group by b.store_id,payment_date
+            group by payment_month
+            order by payment_date
             ) a';
         
         $sales_year_list = array();
@@ -49,60 +53,47 @@ class lensesReportMonthlySales extends lensesMain{
             }
         }
         
-        $this->header = array(array('id'=>'store_name','name'=>'Store Name'),array('id'=>'payment_date','name'=>'Payment Date','filter-sorting'=>'asc','is_date'=>'1'),array('id'=>'selling_price','name'=>'Unit/Combo Selling Price'),array('id'=>'shipping_charges_received','name'=>'+Shipping $'),array('id'=>'shipping_charges_paid','name'=>'-Shipping $'),array('id'=>'fees','name'=>'Fees'),array('id'=>'cost_price','name'=>'Product Cost'));
+        $marketplace_list = array();
+        if(($result = $this->CI->db->query('SELECT id,name FROM marketplaces order by name'))){
+            foreach($result->result_array() as $value){
+                $marketplace_list[$value['id']] = $value['name'];
+            }
+        }
+        
+        $this->header = array(array('id'=>'store_name','name'=>'Store Name'),array('id'=>'selling_price','name'=>'Unit/Combo Selling Price'),array('id'=>'shipping_charges_received','name'=>'+Shipping $'),array('id'=>'shipping_charges_paid','name'=>'-Shipping $'),array('id'=>'fees','name'=>'Fees'),array('id'=>'cost_price','name'=>'Product Cost'),array('id'=>'payment_month','name'=>'Payment Month'),array('id'=>'marketplace_id','name'=>'MarketPlace ID'),array('id'=>'payment_date','name'=>'Payment Date','is_date'=>'1'));
         
         $this->extra_filter_header = array(
             'sales_year' => array('id'=>'sales_year','name'=>'Sales Year','option_text'=>$sales_year_list,'editable'=>true),
+            'marketplace_id' => array('id'=>'marketplace_id','name'=>'Market Place','option_text'=>$marketplace_list,'editable'=>true),
         );
     }
     
     function view($view){
         $this->ajax_read();
-        $data = array();
-        if(sizeof($this->data)>0){
-            $temp2 = array();
-            $min_date = false;
-            $max_date = false;
-            foreach($this->data as $value){
-                $value[1] = $this->from_display_date($value[1]);
-                if(!isset($temp2[$value[0]])){
-                    $temp2[$value[0]] = array();
-                }
-                $temp2[$value[0]][$value[1]] = floatval($value[2]) + floatval($value[3]) - floatval($value[4]) - floatval($value[5]) - floatval($value[6]);
-                if(!$min_date || strtotime($value[1])<strtotime($min_date)){
-                    $min_date = $value[1];
-                }
-                if(!$max_date || strtotime($value[1])>strtotime($max_date)){
-                    $max_date = $value[1];
-                }
-            }
-            $temp = array();
-            $temp3 = array();
-            $temp4 = array();
-            $count = 'a';
-            foreach(array_keys($temp2) as $v){
-                $temp3[$count] = $v;
-                $count++;
-            }
-            $sum_value = 0;
-            $date = $min_date;
-            if(($size = date_diff(new DateTime($min_date), new DateTime($max_date))) && $size->days>=0){
-                for($i=0; $i<=$size->days; $i++){
-                    $temp[$date] = array();
-                    foreach($temp3 as $k => $v){
-                        $temp[$date][$k] = (!empty($temp2[$v][$date]))?$temp2[$v][$date]:0;
-                        $sum_value += $temp[$date][$k];
-                        if(!isset($temp4[$k])){
-                            $temp4[$k] = 0;
-                        }
-                        $temp4[$k] += $temp[$date][$k];
-                    }
-                    $date = date("Y-m-d",strtotime($date.' +1 day'));
-                }
-            }
-            $data = array('total'=>$sum_value,'header'=>$temp3,'total2'=>$temp4,'data'=>$temp);
-        }
+        $data = array('title'=>'','header'=>array('Monthly_Item_Detail'),'data'=>array());
+        $data['title'] = "[ ".$this->extra_filter_header['marketplace_id']['option_text'][$this->extra_filter_header['marketplace_id']['value']]." ]";
+        $data['title'] .= " : From ".$this->extra_filter_header['payment_date|from_date']['value']." To ".$this->extra_filter_header['payment_date|to_date']['value'];
         
+        $data['data'] = array(
+            array('Item Selling Price'),
+            array('+Shipping $'),
+            array('Gross Profit'),
+            array('-Shipping $'),
+            array('Fees'),
+            array('Product Cost'),
+            array('Net Profit'),
+        );
+        
+        foreach($this->data as $v){
+            $data['data'][0][] = $v[1];
+            $data['data'][1][] = $v[2];
+            $data['data'][2][] = $v[1]+$v[2];
+            $data['data'][3][] = $v[3];
+            $data['data'][4][] = $v[4];
+            $data['data'][5][] = $v[5];
+            $data['data'][6][] = $v[1]+$v[2]-$v[3]-$v[4]-$v[5];
+            $data['header'][] = $v[6];
+        }
         $this->CI->cpage->set_html_title($this->title);
         $this->CI->cpage->set('selected_menu',$this->selected_menu);
         $this->CI->cpage->set('view_title',$this->title);
