@@ -81,7 +81,12 @@ class Home extends CI_Controller {
             //forex update
             $this->load->library('cbnmforex');
             $this->cbnmforex->update();
-            print_r("Forex update done!");
+        }
+        
+        public function live_update2(){
+            //dashboard update
+            require_once(APPPATH."libraries/lenses/lensesHome.php");
+            (new lensesHome)->get_data();
             exit;
         }
         
