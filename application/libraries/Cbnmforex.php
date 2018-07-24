@@ -3,6 +3,7 @@
 class Cbnmforex{
     
     function __construct() {
+        set_time_limit(0);
         $this->CI =& get_instance();
     }
     
@@ -116,6 +117,30 @@ class Cbnmforex{
         }
         if (strlen($data) > 0) {
             return $data;
+        }
+        return false;
+    }
+    
+    function rate_verification(){
+        $stop = 0;
+        $count = 0;
+        while($stop==0 and $count<1000){
+            if(!$this->_insert_missing_data()){
+                $stop=1;
+            }
+            $count++;
+        }
+    }
+    
+    private function _insert_missing_data(){
+        if(($result = $this->CI->db->query('select a.from_code,a.to_code,a.rate,date_add(a.created_date,interval +1 day) created_date
+                from exchange_rate a
+                left join exchange_rate b on b.from_code=a.from_code and b.to_code=a.to_code and b.created_date=date_add(a.created_date,interval +1 day)
+                where b.id is null and a.created_date<(select max(created_date) from exchange_rate)'))){
+            foreach($result->result_array() as $value){
+                $this->CI->db->query('INSERT IGNORE INTO exchange_rate SET from_code=?, to_code=?, rate=?, created_date=?',$value);
+            }
+            return $result->num_rows();
         }
         return false;
     }

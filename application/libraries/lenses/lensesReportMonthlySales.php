@@ -22,14 +22,14 @@ class lensesReportMonthlySales extends lensesMain{
         $this->search_query = 'select * from (select d.name account_name, c.name store_name, concat(left(a.payment_date,7),"-01") payment_date
             ,count(a.id) trans_count
             ,sum(ifnull(a.quantity,0)) sold_qty
-            ,round(sum(ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1)),4) selling_price
-            ,round(sum(ifnull(a.shipping_charges_received,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1)),4) shipping_charges_received
-            ,round(sum(ifnull(a.shipping_charges_paid,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1)),4) shipping_charges_paid
+            ,round(sum(ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(er.rate,1)),4) selling_price
+            ,round(sum(ifnull(a.shipping_charges_received,0) / ifnull(er.rate,1)),4) shipping_charges_received
+            ,round(sum(ifnull(a.shipping_charges_paid,0) / ifnull(er.rate,1)),4) shipping_charges_paid
             ,round(
-                sum((ifnull(a.sales_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
-                + (ifnull(a.sales_fees_fixed,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
-                + (ifnull(a.paypal_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1))
-                + (ifnull(a.paypal_fees_fixed,0) / ifnull((select rate from exchange_rate where from_code="MYR" and to_code=a.selling_currency and created_date<=a.payment_date order by id desc limit 1),1)))
+                sum((ifnull(a.sales_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(er.rate,1))
+                + (ifnull(a.sales_fees_fixed,0) / ifnull(er.rate,1))
+                + (ifnull(a.paypal_fees_pect,0) / 100 * ifnull(a.selling_price,0) * ifnull(a.quantity,0) / ifnull(er.rate,1))
+                + (ifnull(a.paypal_fees_fixed,0) / ifnull(er.rate,1)))
             ,4) fees
             ,round(sum(ifnull(a.cost_price,0) * ifnull(a.quantity,0)),4) cost_price
             ,c.marketplace_id
@@ -38,6 +38,7 @@ class lensesReportMonthlySales extends lensesMain{
             join store_item b on b.id=a.store_item_id
             join stores c on c.id=b.store_id
             join accounts d on d.id=c.account_id
+            left join exchange_rate er on er.from_code="MYR" and er.to_code=a.selling_currency and er.created_date=a.payment_date
             WHERE 1=1 '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND a.created_by="'.$_SESSION['user']['id'].'" ':'').'
             {WHERE_AND}
             group by payment_month

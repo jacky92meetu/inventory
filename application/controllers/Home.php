@@ -81,6 +81,7 @@ class Home extends CI_Controller {
             //forex update
             $this->load->library('cbnmforex');
             $this->cbnmforex->update();
+            $this->cbnmforex->rate_verification();
         }
         
         public function live_update2(){
