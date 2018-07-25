@@ -359,7 +359,7 @@ class importClass{
                                 break;
                             }
                             foreach($row as $k => $v){
-                                $row[$k] = iconv(mb_detect_encoding($v, 'UTF-8,ISO-8859-1'), "UTF-8//TRANSLIT", $v);
+                                $row[$k] = $this->ConvertToUTF8($v);
                             }
                             $data[] = $row;
                         }
@@ -369,7 +369,7 @@ class importClass{
                         $data = array();
                         while (($row = fgetcsv($handle, 1024, "\t")) !== FALSE) {
                             foreach($row as $k => $v){
-                                $row[$k] = iconv(mb_detect_encoding($v, 'UTF-8,ISO-8859-1'), "UTF-8//TRANSLIT", $v);
+                                $row[$k] = $this->ConvertToUTF8($v);
                             }
                             $data[] = $row;
                         }
@@ -471,6 +471,16 @@ class importClass{
         $value = str_ireplace(array("'","\""), "", $value);
         $value = $this->CI->db->escape_str($value);
         return $value;
+    }
+    
+    function ConvertToUTF8($text){
+        $encoding = mb_detect_encoding($text, mb_detect_order(), false);
+        if($encoding == "UTF-8")
+        {
+            $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');    
+        }
+        $out = iconv(mb_detect_encoding($text, mb_detect_order(), false), "UTF-8//IGNORE", $text);
+        return $out;
     }
     
 }
