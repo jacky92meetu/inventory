@@ -330,8 +330,6 @@ class lensesMain{
         }else{
             $where_query = '';
         }
-        $this->search_query = str_replace("{WHERE_AND}", str_replace(" WHERE ", " AND ", $where_query), $this->search_query);
-        $this->search_query = str_replace("{WHERE}", $where_query, $this->search_query);
         
         $order_list = array();
         if(!empty($this->CI->input->post('order',true))){
@@ -345,6 +343,13 @@ class lensesMain{
             $order_query = ' ORDER BY '.implode(" , ",$order_list);
         }else{
             $order_query = '';
+        }
+        
+        $temp = $this->search_query;
+        $this->search_query = str_replace("{WHERE_AND}", str_replace(" WHERE ", " AND ", $where_query), $this->search_query);
+        $this->search_query = str_replace("{WHERE}", $where_query, $this->search_query);
+        if($temp!=$this->search_query){
+            $where_query = "";
         }
         
         $limit_start = 0;
