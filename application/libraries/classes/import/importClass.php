@@ -350,6 +350,7 @@ class importClass{
             }
             if(!$data || empty($data[0]) || empty($data[0][0]) || empty($data[0][1]) || strlen(trim($data[0][0]))==0){
                 try{
+                    $encoding = $this->detectFileEncoding($file);
                     $step = 1;
                     if (($handle = fopen($file, "r")) !== FALSE) {
                         $data = array();
@@ -359,7 +360,7 @@ class importClass{
                                 break;
                             }
                             foreach($row as $k => $v){
-                                $row[$k] = $this->ConvertToUTF8($v);
+                                $row[$k] = $this->ConvertToUTF8($v,$encoding);
                             }
                             $data[] = $row;
                         }
@@ -369,7 +370,7 @@ class importClass{
                         $data = array();
                         while (($row = fgetcsv($handle, 1024, "\t")) !== FALSE) {
                             foreach($row as $k => $v){
-                                $row[$k] = $this->ConvertToUTF8($v);
+                                $row[$k] = $this->ConvertToUTF8($v,$encoding);
                             }
                             $data[] = $row;
                         }
@@ -473,14 +474,31 @@ class importClass{
         return $value;
     }
     
-    function ConvertToUTF8($text){
-        $encoding = mb_detect_encoding($text, mb_detect_order(), false);
-        if($encoding == "UTF-8")
-        {
+    function ConvertToUTF8($text,$encoding=""){
+        if($encoding==""){
+            $encoding = mb_detect_encoding($text, mb_detect_order(), false);
+        }
+        if($encoding == "UTF-8"){
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');    
         }
-        $out = iconv(mb_detect_encoding($text, mb_detect_order(), false), "UTF-8//IGNORE", $text);
+        $out = iconv($encoding, "UTF-8//IGNORE", $text);
         return $out;
+    }
+    
+    function detectFileEncoding($filepath) {
+        $return = null;
+        try{
+            $output = array();
+            exec('file -i ' . $filepath, $output);
+            if (isset($output[0])){
+                $ex = explode('charset=', $output[0]);
+                $return = isset($ex[1]) ? $ex[1] : null;
+            }
+        } catch (Exception $ex) {}
+        if($return==null){
+            $return = mb_detect_encoding(file_get_contents($filepath));
+        }
+        return $return;
     }
     
 }
