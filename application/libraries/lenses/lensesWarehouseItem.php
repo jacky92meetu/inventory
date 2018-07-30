@@ -78,11 +78,11 @@ where (ifnull(w.allow_combo,"")="Y" or ifnull(c.type,"0")="1") and a.warehouse_i
             $data['option_name'] = ['id'=>'option_name','name'=>'Color','value'=>'','readonly'=>'1'];
             $data['quantity'] = ['id'=>'quantity','name'=>'Storage A Quantity','value'=>'','readonly'=>'1'];
             $data['quantity2'] = ['id'=>'quantity2','name'=>'Storage B Quantity','value'=>'','readonly'=>'1'];
-            $data['adj_quantity'] = ['id'=>'adj_quantity','name'=>'Storage A Quantity Adjustment','value'=>'','optional'=>'1'];
-            $data['adj_quantity2'] = ['id'=>'adj_quantity2','name'=>'Storage B Quantity Adjustment','value'=>'','optional'=>'1'];
+            $data['adj_quantity'] = ['id'=>'adj_quantity','name'=>'Storage A Quantity Adjustment','value'=>'','editable'=>'1','optional'=>'1'];
+            $data['adj_quantity2'] = ['id'=>'adj_quantity2','name'=>'Storage B Quantity Adjustment','value'=>'','editable'=>'1','optional'=>'1'];
             $data['transfer_warehouse'] = ['id'=>'transfer_warehouse','name'=>'Warehouse Transfer','option_text'=>$warehouse_list,'value'=>'','optional'=>'1'];
-            $data['transfer_quantity'] = ['id'=>'transfer_quantity','name'=>'Storage A Quantity Transfer','value'=>'','optional'=>'1'];
-            $data['transfer_quantity2'] = ['id'=>'transfer_quantity2','name'=>'Storage B Quantity Transfer','value'=>'','optional'=>'1'];
+            $data['transfer_quantity'] = ['id'=>'transfer_quantity','name'=>'Storage A Quantity Transfer','value'=>'','editable'=>'1','optional'=>'1'];
+            $data['transfer_quantity2'] = ['id'=>'transfer_quantity2','name'=>'Storage B Quantity Transfer','value'=>'','editable'=>'1','optional'=>'1'];
         }
         $return = parent::ajax_custom_form($data);
         
