@@ -11,14 +11,14 @@ class importAmazonClass extends importClass{
     function sales_import($file){
         $return = array("status"=>"0","message"=>"");
         
-        $cols_list = ["default" => array('buyer_name'=>'recipient-name','buyer_contact'=>'buyer-phone-number','buyer_email'=>'buyer-email','buyer_addr1'=>'ship-address-1','buyer_addr2'=>'ship-address-2','buyer_addr3'=>'ship-address-3','buyer_city'=>'ship-city','buyer_state'=>'ship-state','buyer_postcode'=>'ship-postal-code','buyer_country'=>'ship-country','quantity'=>'quantity-purchased','item_id'=>'order-item-id','sales_id'=>'order-id','selling_price'=>'item-price','shipping_charges_paid'=>'shipping-price','paid_date'=>'payments-date','buyer_reference'=>'delivery-Instructions','item_sku'=>'sku','amazon-order-id'=>'amazon-order-id','amazon-order-item-id'=>'amazon-order-item-id','tracking_number'=>'tracking-number','shipment_date'=>'shipment-date','courier_id'=>'carrier','ship-promotion-discount'=>'ship-promotion-discount','currency'=>'currency','item_name'=>'product-name','quantity-shipped'=>'quantity-shipped')
-        ,"cols_20180730" => array('buyer_name'=>'Buyer Name','buyer_contact'=>'Buyer Phone Number','buyer_email'=>'Buyer Email','buyer_addr1'=>'Shipping Address 1','buyer_addr2'=>'Shipping Address 2','buyer_addr3'=>'Shipping Address 3','buyer_city'=>'Shipping City','buyer_state'=>'Shipping State','buyer_postcode'=>'Shipping Postal Code','buyer_country'=>'Shipping Country Code','quantity'=>'quantity-purchased','item_id'=>'Merchant Order Item Id','sales_id'=>'Merchant Order Id','selling_price'=>'Item Price','shipping_charges_paid'=>'Shipping Price','paid_date'=>'Payments Date','buyer_reference'=>'delivery-Instructions','item_sku'=>'Merchant SKU','amazon-order-id'=>'Amazon Order Id','amazon-order-item-id'=>'Amazon Order Item Id','tracking_number'=>'Tracking Number','shipment_date'=>'Shipment Date','courier_id'=>'Carrier','ship-promotion-discount'=>'Shipment Promo Discount','currency'=>'Currency','item_name'=>'Title','quantity-shipped'=>'Shipped Quantity')];
+        $path = APPPATH."config".DS."templates".DS."amazon_sales_import.php";
+        if(file_exists($path)){
+            include($path);
+        }else{
+            $cols = array('buyer_name'=>'recipient-name','buyer_contact'=>'buyer-phone-number','buyer_email'=>'buyer-email','buyer_addr1'=>'ship-address-1','buyer_addr2'=>'ship-address-2','buyer_addr3'=>'ship-address-3','buyer_city'=>'ship-city','buyer_state'=>'ship-state','buyer_postcode'=>'ship-postal-code','buyer_country'=>'ship-country','quantity'=>'quantity-purchased','item_id'=>'order-item-id','sales_id'=>'order-id','selling_price'=>'item-price','shipping_charges_paid'=>'shipping-price','paid_date'=>'payments-date','buyer_reference'=>'delivery-Instructions','item_sku'=>'sku','amazon-order-id'=>'amazon-order-id','amazon-order-item-id'=>'amazon-order-item-id','tracking_number'=>'tracking-number','shipment_date'=>'shipment-date','courier_id'=>'carrier','ship-promotion-discount'=>'ship-promotion-discount','currency'=>'currency','item_name'=>'product-name','quantity-shipped'=>'quantity-shipped');
+        }
         
-        foreach($cols_list as $cols){
-            $temp_records = $this->excel_read($file, $cols);
-            if(empty($this->excel_cols) || (sizeof($cols) - sizeof($this->excel_cols))>5){
-                continue;
-            }
+        if(($temp_records = $this->excel_read($file, $cols))){
             $temp_list = array();
             $missing = array();
             
