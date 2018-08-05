@@ -49,8 +49,8 @@ class lensesSalesEntry extends lensesMain{
             join option_item e on wi.item_id=e.id
             left join couriers f on a.courier_id=f.id
             join stores g on c.store_id=g.id
-            '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE a.created_by="'.$_SESSION['user']['id'].'" {WHERE_AND} ':'').'
-            ) a';
+            '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' WHERE a.created_by="'.$_SESSION['user']['id'].'"':'').'
+            ) a {WHERE} ';
         
         $supp_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM accounts ORDER BY name'))){

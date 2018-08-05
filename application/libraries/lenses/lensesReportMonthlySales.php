@@ -40,10 +40,9 @@ class lensesReportMonthlySales extends lensesMain{
             join accounts d on d.id=c.account_id
             left join exchange_rate er on er.from_code="MYR" and er.to_code=a.selling_currency and er.created_date=a.payment_date
             WHERE 1=1 '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND a.created_by="'.$_SESSION['user']['id'].'" ':'').'
-            {WHERE_AND}
             group by payment_month
             order by payment_date
-            ) a';
+            ) a {WHERE} ';
         
         $sales_year_list = array();
         if(($result = $this->CI->db->query('SELECT year(payment_date) sales_year FROM transactions group by sales_year order by sales_year'))){

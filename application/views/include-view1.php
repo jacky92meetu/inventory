@@ -366,6 +366,9 @@
                                 data.data[i].value = "";
                             }
                             $(this).val(data.data[i].value);
+                            $(this).parent().find('.textbox').each(function(){
+                                $(this).html(data.data[i].value);
+                            });
                         });
                     }
                 }

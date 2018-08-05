@@ -34,9 +34,8 @@ class lensesReportYearlySales extends lensesMain{
             left join stores c on c.id=b.store_id
             left join exchange_rate er on er.from_code="MYR" and er.to_code=a.selling_currency and er.created_date=a.payment_date
             WHERE 1=1 '.((!$this->get_user_access($_SESSION['user']['user_type'],"view_all_user_transaction"))?' AND a.created_by="'.$_SESSION['user']['id'].'" ':'').'
-            {WHERE_AND}
             group by b.store_id,a.payment_date
-            ) a';
+            ) a {WHERE} ';
         
         $this->header = array(array('id'=>'store_name','name'=>'Store Name'),array('id'=>'payment_date','name'=>'Payment Date','filter-sorting'=>'asc','is_date'=>'1'),array('id'=>'selling_price','name'=>'Unit/Combo Selling Price'),array('id'=>'shipping_charges_received','name'=>'+Shipping $'),array('id'=>'shipping_charges_paid','name'=>'-Shipping $'),array('id'=>'fees','name'=>'Fees'),array('id'=>'cost_price','name'=>'Product Cost'));
         

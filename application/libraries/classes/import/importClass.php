@@ -391,12 +391,17 @@ class importClass{
                     if(strlen(trim($c))==0){
                         break;
                     }
-                    foreach($cols as $k => $v){
-                        if(strlen(trim($v))==0){continue;}
-                        if((string)$count==(string)$v || strtolower($v)==strtolower($c)){
-                            $temp[$k] = $count;
-                            unset($cols[$k]);
-                            break;
+                    foreach($cols as $k => $j){
+                        if(!is_array($j)){
+                            $j = array($j);
+                        }
+                        foreach($j as $v){
+                            if(strlen(trim($v))==0){continue;}
+                            if((string)$count==(string)$v || strtolower($v)==strtolower($c)){
+                                $temp[$k] = $count;
+                                unset($cols[$k]);
+                                break(2);
+                            }
                         }
                     }
                     $count++;

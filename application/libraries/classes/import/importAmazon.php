@@ -11,7 +11,12 @@ class importAmazonClass extends importClass{
     function sales_import($file){
         $return = array("status"=>"0","message"=>"");
         
-        $cols = array('buyer_name'=>'recipient-name','buyer_contact'=>'buyer-phone-number','buyer_email'=>'buyer-email','buyer_addr1'=>'ship-address-1','buyer_addr2'=>'ship-address-2','buyer_addr3'=>'ship-address-3','buyer_city'=>'ship-city','buyer_state'=>'ship-state','buyer_postcode'=>'ship-postal-code','buyer_country'=>'ship-country','quantity'=>'quantity-purchased','item_id'=>'order-item-id','sales_id'=>'order-id','selling_price'=>'item-price','shipping_charges_paid'=>'shipping-price','paid_date'=>'payments-date','buyer_reference'=>'delivery-Instructions','item_sku'=>'sku','amazon-order-id'=>'amazon-order-id','amazon-order-item-id'=>'amazon-order-item-id','tracking_number'=>'tracking-number','shipment_date'=>'shipment-date','courier_id'=>'carrier','ship-promotion-discount'=>'ship-promotion-discount','currency'=>'currency','item_name'=>'product-name','quantity-shipped'=>'quantity-shipped');
+        $path = APPPATH."config".DS."templates".DS."amazon_sales_import.php";
+        if(file_exists($path)){
+            include($path);
+        }else{
+            $cols = array('buyer_name'=>'recipient-name','buyer_contact'=>'buyer-phone-number','buyer_email'=>'buyer-email','buyer_addr1'=>'ship-address-1','buyer_addr2'=>'ship-address-2','buyer_addr3'=>'ship-address-3','buyer_city'=>'ship-city','buyer_state'=>'ship-state','buyer_postcode'=>'ship-postal-code','buyer_country'=>'ship-country','quantity'=>'quantity-purchased','item_id'=>'order-item-id','sales_id'=>'order-id','selling_price'=>'item-price','shipping_charges_paid'=>'shipping-price','paid_date'=>'payments-date','buyer_reference'=>'delivery-Instructions','item_sku'=>'sku','amazon-order-id'=>'amazon-order-id','amazon-order-item-id'=>'amazon-order-item-id','tracking_number'=>'tracking-number','shipment_date'=>'shipment-date','courier_id'=>'carrier','ship-promotion-discount'=>'ship-promotion-discount','currency'=>'currency','item_name'=>'product-name','quantity-shipped'=>'quantity-shipped');
+        }
         
         if(($temp_records = $this->excel_read($file, $cols))){
             $temp_list = array();
