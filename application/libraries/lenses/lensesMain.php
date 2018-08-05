@@ -63,7 +63,7 @@ class lensesMain{
             $data = array();
             $sql = 'SELECT * FROM '.$this->table;
             if(strlen($this->search_query)>0){
-                $sql = $this->search_query;
+                $sql = str_replace(["{WHERE_AND}","{WHERE}"], ["",""], $this->search_query);
             }
             $sql .= ' LIMIT 1';
             $result = $this->CI->db->query($sql);
@@ -444,7 +444,7 @@ class lensesMain{
         if(sizeof($data)==0){
             $sql = 'SELECT * FROM '.$this->table;
             if(strlen($this->search_query)>0){
-                $sql = $this->search_query;
+                $sql = str_replace(["{WHERE_AND}","{WHERE}"], ["",""], $this->search_query);
             }
             $sql .= ' LIMIT 1';
             $result = $this->CI->db->query($sql);
@@ -467,7 +467,7 @@ class lensesMain{
         if(strlen($this->CI->input->post('id',true))>0 && $this->CI->input->post('id',true)>0){
             $sql = 'SELECT * FROM '.$this->table;
             if(strlen($this->search_query)>0){
-                $sql = $this->search_query;
+                $sql = str_replace(["{WHERE_AND}","{WHERE}"], ["",""], $this->search_query);
             }
             $sql .= sprintf(' WHERE id=%s LIMIT 1',$this->CI->db->escape($this->CI->input->post('id',true)));
             if(($result = $this->CI->db->query($sql)) && $result->num_rows()){
@@ -509,7 +509,8 @@ class lensesMain{
             $temp['is_textarea'] = '1';
         }else if(isset($col['hidden'])){
             $temp['hidden'] = '1';
-        }else if(!isset($col['editable'])){
+        }
+        if(isset($col['readonly'])){
             $temp['readonly'] = '1';
         }
         if(isset($col['is_date_highlight'])){
@@ -582,7 +583,7 @@ class lensesMain{
         }else if(strlen($this->update_query)==0 || strlen($this->insert_query)==0){
             $sql = 'SELECT * FROM '.$this->table;
             if(strlen($this->search_query)>0){
-                $sql = $this->search_query;
+                $sql = str_replace(["{WHERE_AND}","{WHERE}"], ["",""], $this->search_query);
             }
             $sql .= ' LIMIT 1';
             $result = $this->CI->db->query($sql);
@@ -702,7 +703,8 @@ class lensesMain{
         $return = array("status"=>"0","message"=>"","data"=>false);
         
         if(strlen($reset)>0){
-            if(($result = $this->CI->db->query($this->search_query.' WHERE id=? limit 1',array($reset)))){
+            $sql = str_replace(["{WHERE_AND}","{WHERE}"], ["",""], $this->search_query);
+            if(($result = $this->CI->db->query($sql.' WHERE id=? limit 1',array($reset)))){
                 foreach($result->result_array() as $v){
                     $reset = $v;
                     break;
