@@ -787,7 +787,7 @@ class lensesMain{
     
     function get_user_access($group_id = 0, $priv_id = 0){
         static $instance = array();
-        if($group_id==0){
+        if($group_id==0 || $group_id==1){
             return true;
         }
         if(!isset($instance[$group_id])){
