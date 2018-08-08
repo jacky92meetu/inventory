@@ -304,7 +304,7 @@ class lensesMain{
         }
         if($this->extra_filter_header && sizeof($this->extra_filter_header)>0){
             foreach($this->extra_filter_header as $v){
-                if(strpos($v['id'],"|range_date")!==false || strlen($v['value'])==0){continue;}
+                if(strpos($v['id'],"|range_date")!==false || (strpos($v['id'],"_id")!==false && $v['value']=="0") || strlen($v['value'])==0){continue;}
                 $col = explode("|",$v['id']);
                 foreach($this->header as $v2){
                     if($col[0]==$v2['id']){

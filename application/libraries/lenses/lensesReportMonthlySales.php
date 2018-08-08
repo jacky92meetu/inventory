@@ -33,6 +33,7 @@ class lensesReportMonthlySales extends lensesMain{
             ,4) fees
             ,round(sum(ifnull(a.cost_price,0) * ifnull(a.quantity,0)),4) cost_price
             ,c.marketplace_id
+            ,c.account_id
             ,date_format(a.payment_date,"%b %Y") payment_month
             from transactions a
             join store_item b on b.id=a.store_item_id
@@ -55,15 +56,25 @@ class lensesReportMonthlySales extends lensesMain{
         
         $marketplace_list = array();
         if(($result = $this->CI->db->query('SELECT id,name FROM marketplaces order by name'))){
+            $marketplace_list[0] = "All Marketplaces";
             foreach($result->result_array() as $value){
                 $marketplace_list[$value['id']] = $value['name'];
             }
         }
         
-        $this->header = array(array('id'=>'store_name','name'=>'Store Name'),array('id'=>'selling_price','name'=>'Unit/Combo Selling Price'),array('id'=>'shipping_charges_received','name'=>'+Shipping $'),array('id'=>'shipping_charges_paid','name'=>'-Shipping $'),array('id'=>'fees','name'=>'Fees'),array('id'=>'cost_price','name'=>'Product Cost'),array('id'=>'payment_month','name'=>'Payment Month'),array('id'=>'marketplace_id','name'=>'MarketPlace ID'),array('id'=>'payment_date','name'=>'Payment Date','is_date'=>'1'));
+        $account_list = array();
+        if(($result = $this->CI->db->query('SELECT id,name FROM accounts order by name'))){
+            $account_list[0] = "All Accounts";
+            foreach($result->result_array() as $value){
+                $account_list[$value['id']] = $value['name'];
+            }
+        }
+        
+        $this->header = array(array('id'=>'store_name','name'=>'Store Name'),array('id'=>'selling_price','name'=>'Unit/Combo Selling Price'),array('id'=>'shipping_charges_received','name'=>'+Shipping $'),array('id'=>'shipping_charges_paid','name'=>'-Shipping $'),array('id'=>'fees','name'=>'Fees'),array('id'=>'cost_price','name'=>'Product Cost'),array('id'=>'payment_month','name'=>'Payment Month'),array('id'=>'marketplace_id','name'=>'MarketPlace ID'),array('id'=>'account_id','name'=>'Account ID'),array('id'=>'payment_date','name'=>'Payment Date','is_date'=>'1'));
         
         $this->extra_filter_header = array(
             'sales_year' => array('id'=>'sales_year','name'=>'Sales Year','option_text'=>$sales_year_list,'editable'=>true),
+            'account_id' => array('id'=>'account_id','name'=>'Account','option_text'=>$account_list,'editable'=>true),
             'marketplace_id' => array('id'=>'marketplace_id','name'=>'Market Place','option_text'=>$marketplace_list,'editable'=>true),
         );
     }
@@ -71,8 +82,17 @@ class lensesReportMonthlySales extends lensesMain{
     function view($view){
         $this->ajax_read();
         $data = array('title'=>'','header'=>array('Monthly_Item_Detail'),'data'=>array());
-        $data['title'] = "[ ".$this->extra_filter_header['marketplace_id']['option_text'][$this->extra_filter_header['marketplace_id']['value']]." ]";
-        $data['title'] .= " : From ".$this->extra_filter_header['payment_date|from_date']['value']." To ".$this->extra_filter_header['payment_date|to_date']['value'];
+        $temp = $this->extra_filter_header['account_id']['option_text'][$this->extra_filter_header['account_id']['value']];
+        if(empty($temp) || $temp=="0"){
+            $temp = "All Accounts";
+        }
+        $data['title'] .= "[ ".$temp." ] : ";
+        $temp = $this->extra_filter_header['marketplace_id']['option_text'][$this->extra_filter_header['marketplace_id']['value']];
+        if(empty($temp) || $temp=="0"){
+            $temp = "All Marketplaces";
+        }
+        $data['title'] .= "[ ".$temp." ] : ";
+        $data['title'] .= "From ".$this->extra_filter_header['payment_date|from_date']['value']." To ".$this->extra_filter_header['payment_date|to_date']['value'];
         
         $data['data'] = array(
             array('Item Selling Price'),
