@@ -80,10 +80,12 @@ class lensesSalesEntry extends lensesMain{
         }
         
         $currency_list = array();
+        $currency_list2 = array('Default'=>'--Follow Item Selling Price--');
         if(!empty($temp = $this->get_global_config("support_currency"))){
             $temp = explode(",",$temp);
             foreach($temp as $v){
                 $currency_list[$v] = $v;
+                $currency_list2[$v] = $v;
             }
         }else{
             $this->CI->load->library('cmessage');
@@ -183,7 +185,7 @@ class lensesSalesEntry extends lensesMain{
             array('id'=>'id','name'=>'ID','hidden'=>'1'),
             array('id'=>'type','name'=>'type','value'=>'shipping_export','hidden'=>'1'),
             array('id'=>'courier_id','name'=>'Courier Company','option_text'=>$courier_list2,'editable'=>true,'value'=>((!empty($temp['courier_id']))?$temp['courier_id']:"")),
-            array('id'=>'fixed_price_currency','name'=>'Fixed Price Currency','option_text'=>$currency_list,'editable'=>true,'value'=>((!empty($temp['fixed_price_currency']))?$temp['fixed_price_currency']:"")),
+            array('id'=>'fixed_price_currency','name'=>'Fixed Price Currency','option_text'=>$currency_list2,'editable'=>true,'value'=>((!empty($temp['fixed_price_currency']))?$temp['fixed_price_currency']:"")),
             array('id'=>'fixed_price_amount','name'=>'Fixed Price Amount','editable'=>true,'value'=>((!empty($temp['fixed_price_amount']))?$temp['fixed_price_amount']:""))
         );
     }

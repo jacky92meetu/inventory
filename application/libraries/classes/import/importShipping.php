@@ -15,7 +15,7 @@ class importShippingClass extends importClass{
         if(empty($post_data['selection'])){
             return false;
         }
-        if(!empty($post_data['fp_amt']) && is_numeric($post_data['fp_amt']) && !empty($post_data['fp_cur']) && strlen($post_data['fp_cur'])==3){
+        if(!empty($post_data['fp_amt']) && is_numeric($post_data['fp_amt']) && !empty($post_data['fp_cur'])){
             $this->fp_cur = $post_data['fp_cur'];
             $this->fp_amt = $post_data['fp_amt'];
         }
@@ -61,6 +61,8 @@ class importShippingClass extends importClass{
             $this->globalmail_export($item_list);
         }else if(stristr($template, 'parceldirect')!==FALSE){
             $this->parceldirect_export($item_list);
+        }else if(stristr($template, 'fdc')!==FALSE){
+            $this->fdc_export($item_list);
         }
         exit;
     }
@@ -99,7 +101,7 @@ class importShippingClass extends importClass{
         
         $row = 2;
         foreach($item_list as $data){
-            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0 && strtolower($this->fp_cur)!='default'){
                 $data['selling_currency'] = strtoupper($this->fp_cur);
                 $data['selling_price'] = $this->fp_amt;
             }
@@ -211,16 +213,17 @@ class importShippingClass extends importClass{
             
             //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
             $worksheet->setCellValueExplicitByColumnAndRow(16,$row, "100");
-            /*
+            
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
-            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0 && strtolower($this->fp_cur)!='default'){
                 $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
             }else{
                 $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
             }
-            */
+            /*
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, 'USD');
             $worksheet->setCellValueExplicitByColumnAndRow(21,$row, 15);
+            */
             $worksheet->setCellValueExplicitByColumnAndRow(33,$row, "Sunglasses case");
             
             $title = $data['product_name']." ".$data['option_name'];
@@ -284,7 +287,7 @@ class importShippingClass extends importClass{
         
         $row = 2;
         foreach($item_list as $data){
-            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0 && strtolower($this->fp_cur)!='default'){
                 $data['selling_currency'] = strtoupper($this->fp_cur);
                 $data['selling_price'] = $this->fp_amt;
             }
@@ -357,17 +360,17 @@ class importShippingClass extends importClass{
             
             //$worksheet->setCellValueExplicitByColumnAndRow(16,$row, (100 * $data['quantity']));
             $worksheet->setCellValueExplicitByColumnAndRow(16,$row, "100");
-            /*
+            
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, $data['selling_currency']);
             if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
                 $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['selling_price']);
             }else{
                 $worksheet->setCellValueExplicitByColumnAndRow(21,$row, $data['quantity'] * $data['selling_price']);
             }
-            */
+            /*
             $worksheet->setCellValueExplicitByColumnAndRow(20,$row, 'USD');
             $worksheet->setCellValueExplicitByColumnAndRow(21,$row, 15);
-            
+            */
             $worksheet->setCellValueExplicitByColumnAndRow(33,$row, "Sunglasses case");
             
             $title = $data['product_name']." ".$data['option_name'];
@@ -433,7 +436,7 @@ class importShippingClass extends importClass{
         
         $row = 2;
         foreach($item_list as $data){
-            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0 && strtolower($this->fp_cur)!='default'){
                 $data['selling_currency'] = strtoupper($this->fp_cur);
                 $data['selling_price'] = $this->fp_amt;
             }
@@ -517,7 +520,7 @@ class importShippingClass extends importClass{
             $worksheet->setCellValueExplicitByColumnAndRow(13,$row, "M");
             $worksheet->setCellValueExplicitByColumnAndRow(15,$row, "EZYPRI");
             $worksheet->setCellValueExplicitByColumnAndRow(15,$row, "EZYPRI");
-            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0){
+            if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0 && strtolower($this->fp_cur)!='default'){
                 $worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['selling_price']);
             }else{
                 $worksheet->setCellValueExplicitByColumnAndRow(16,$row, $data['quantity'] * $data['selling_price']);
@@ -540,6 +543,60 @@ class importShippingClass extends importClass{
         $this->_export($objPHPExcel, $inputFileType, 'singpost_'.date("YmdHis"));
     }
     
+    function fdc_export($item_list){
+        $template_path = APPPATH.'libraries/classes/templates/FDC_export_include.php';
+        if(!file_exists($template_path)){
+            exit;
+        }
+        include($template_path);
+        
+        $data_list = array();
+        foreach($item_list as $data){
+            $temp = $data['buyer_name'].$data['buyer_address'].$data['buyer_city'].$data['buyer_postcode'];
+            if(isset($data_list[$temp])){
+                $data_list[$temp] = array();
+            }
+            $data_list[$temp][] = $data;
+        }
+        
+        $file = tempnam(sys_get_temp_dir(), 'tmp');
+        $fp = fopen($file, 'w');
+        
+        /*header*/
+        fputcsv($fp, $report_header);
+        
+        foreach($data_list as $a){
+            $fields = array();
+            $count = 0;
+            foreach($a as $data){
+                if(strlen($this->fp_amt)>0 && strlen($this->fp_cur)>0 && strtolower($this->fp_cur)!='default'){
+                    $data['selling_currency'] = strtoupper($this->fp_cur);
+                    $data['selling_price'] = $this->fp_amt;
+                }
+                if(($count%8)==0){
+                    if($count>0){
+                        fputcsv($fp, $fields);
+                    }
+                    $fields = array_merge($report_body,['Order Id'=>$data['sales_id'],'Bill First'=>$data['buyer_name'],'Bill Last'=>$data['buyer_name'],'Bill Address1'=>$data['buyer_address'],'Bill Address2'=>trim(trim($data['buyer_address2'].",".$data['buyer_address3']),","),'Bill City'=>$data['buyer_city'],'Bill State'=>$data['buyer_state'],'Bill Zip'=>$data['buyer_postcode'],'Bill Country'=>$data['buyer_country'],'Bill Phone'=>$data['buyer_contact'],'Bill Email'=>$data['buyer_email'],'Ship First'=>$data['buyer_name'],'Ship Last'=>$data['buyer_name'],'Ship Address1'=>$data['buyer_address'],'Ship Address2'=>trim(trim($data['buyer_address2'].",".$data['buyer_address3']),","),'Ship City'=>$data['buyer_city'],'Ship State'=>$data['buyer_state'],'Ship Zip'=>$data['buyer_postcode'],'Ship Country'=>$data['buyer_country'],'Ship Phone'=>$data['buyer_contact'],'Ship Email'=>$data['buyer_email'],'Ship Method Name'=>'DHL GLOBAL PARCEL EXPEDITED MAX']);
+                }
+                                
+                foreach(['Product Name'=>$data['store_skucode'],'Product Description'=>'','Product Price'=>$data['selling_price'],'Product SKU #'=>$data['store_skucode'],'Product Category'=>'','Quantity'=>$data['quantity']] as $k => $v){
+                    $temp = $k."_".$count;
+                    $fields[$temp] = $v;
+                }
+                
+                $count++;
+            }
+            if(sizeof($fields)>0){
+                fputcsv($fp, $fields);
+            }
+        }
+            
+        fclose($fp);
+        
+        $this->_export_echo($file, 'FDC_shipping_'.date("YmdHis"));
+    }
+    
     private function _export($objPHPExcel,$inputFileType,$filename){
         try{
             $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $inputFileType);
@@ -553,6 +610,19 @@ class importShippingClass extends importClass{
             header('Content-Disposition: attachment; filename="'.$filename.$ext.'"');
             header('Cache-Control: max-age=0');
             $objWriter->save('php://output');
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
+        exit;
+    }
+    
+    private function _export_echo($file,$filename){
+        try{
+            header('Content-type: '.mime_content_type($file));
+            $ext = ".csv";
+            header('Content-Disposition: attachment; filename="'.$filename.$ext.'"');
+            header('Cache-Control: max-age=0');
+            echo file_get_contents($file);
         } catch (Exception $ex) {
             echo $ex->getMessage();
         }

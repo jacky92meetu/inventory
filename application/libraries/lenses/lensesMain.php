@@ -997,7 +997,7 @@ class lensesMain{
     function get_combo_list($store_item_id=0){
         $return = 0;
         
-        $result = $result = $this->CI->db->query('select ifnull(b.id,0) warehouse_item_id, ifnull(b.item_id,0) item_id 
+        $result = $this->CI->db->query('select ifnull(b.id,0) warehouse_item_id, ifnull(b.item_id,0) item_id 
             ,ifnull(b.quantity,0) quantity1
             ,ifnull(b.quantity2,0) quantity2
             from store_item a
