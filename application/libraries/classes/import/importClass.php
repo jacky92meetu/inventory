@@ -480,6 +480,20 @@ class importClass{
     }
     
     function ConvertToUTF8($text,$encoding=""){
+        //Convert Smart Quotes with PHP
+        $search = array(chr(145),
+                chr(146),
+                chr(147),
+                chr(148),
+                chr(151));
+        $replace = array("'",
+                         "'",
+                         '"',
+                         '"',
+                         '-');
+        $text = str_replace($search, $replace, $text);
+        $ori = $text;
+        
         if($encoding==""){
             $encoding = mb_detect_encoding($text, mb_detect_order(), false);
         }
@@ -487,6 +501,10 @@ class importClass{
             $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');    
         }
         $out = iconv($encoding, "UTF-8//IGNORE", $text);
+        if(!$out){
+            $out = mb_convert_encoding($ori, "UTF-8", "UTF-8");
+            return iconv('UTF-8', 'UTF-8//IGNORE', $out);
+        }
         return $out;
     }
     
